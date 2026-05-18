@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import AdminApp from './admin/AdminApp'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
 import BottomTabs from './components/BottomTabs'
@@ -18,7 +19,10 @@ function getEstado(financiero) {
   return { label: '🔄 Pago Parcial', cls: 'estado-parcial' }
 }
 
+const isAdmin = new URLSearchParams(window.location.search).has('admin')
+
 export default function App() {
+  if (isAdmin) return <AdminApp />
   const [booking,     setBooking]     = useState(null)
   const [status,      setStatus]      = useState('loading')
   const [tab,         setTab]         = useState('overview')
