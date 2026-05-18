@@ -1,0 +1,94 @@
+{
+  "id": "demo",
+  "titular": "Familia García",
+  "destinos": ["Disney World", "Universal Studios"],
+  "hotel": {
+    "nombre": "Disney's Art of Animation Resort",
+    "categoria": "Moderado",
+    "checkIn": "2026-12-20",
+    "checkOut": "2026-12-27",
+    "habitacion": "Suite Familiar – El Rey León (4 personas)"
+  },
+  "tickets": {
+    "disney": "7 días – Park Hopper Plus con Disney Genie+",
+    "universal": "3 días – Park-to-Park con Express Pass"
+  },
+  "extras": [
+    "Disney Dining Plan (7 noches)",
+    "Mickey's Very Merry Christmas Party – 4 entradas",
+    "Bippidi Boppidi Boutique – Princess Makeover"
+  ],
+  "auto": {
+    "empresa": "Alamo Rent a Car",
+    "categoria": "SUV Intermedia",
+    "retiro": "2026-12-20",
+    "devolucion": "2026-12-27"
+  },
+  "asistencia": {
+    "plan": "Assist Card Total",
+    "cobertura": "Médica, equipaje, cancelación y asistencia 24/7"
+  },
+  "promos": [
+    "Early Bird 2025: 10% de descuento en hotel",
+    "Promo Familia: 5% de descuento en tickets Universal"
+  ],
+  "regalos": [
+    "Kit de bienvenida Mama Mouse",
+    "Guía Disney personalizada",
+    "Tarjeta de cortesía para The Earl of Sandwich"
+  ],
+  "itinerario": [
+    { "dia": 1, "fecha": "2026-12-20", "plan": "Llegada a Orlando – Check-in hotel – Descanso y bienvenida mágica" },
+    { "dia": 2, "fecha": "2026-12-21", "plan": "Magic Kingdom – Desfile Festival of Fantasy – Fuegos artificiales navideños" },
+    { "dia": 3, "fecha": "2026-12-22", "plan": "EPCOT – World Showcase – Festival of the Holidays" },
+    { "dia": 4, "fecha": "2026-12-23", "plan": "Hollywood Studios – Star Wars: Galaxy's Edge – Toy Story Land" },
+    { "dia": 5, "fecha": "2026-12-24", "plan": "Animal Kingdom – Avatar Flight of Passage – Noche Buena en Disney Springs" },
+    { "dia": 6, "fecha": "2026-12-25", "plan": "Universal Studios Florida – Navidad en Wizarding World of Harry Potter" },
+    { "dia": 7, "fecha": "2026-12-26", "plan": "Islands of Adventure – Epic Universe – Día libre para shopping" },
+    { "dia": 8, "fecha": "2026-12-27", "plan": "Check-out y regreso a casa con miles de recuerdos mágicos para siempre" }
+  ],
+  "tips": [
+    {
+      "categoria": "Disney World",
+      "icono": "🏰",
+      "items": [
+        "Descargá la app My Disney Experience antes de viajar para gestionar Lightning Lanes",
+        "Llegá 30 minutos antes de la apertura del parque para aprovechar las menores colas",
+        "El desfile de Magic Kingdom sale a las 3 PM y 8 PM – elegí el de la noche para ver los fuegos",
+        "Reservá los restaurantes con 60 días de anticipación, especialmente Be Our Guest y Cinderella's Table",
+        "Llevá poncho impermeable liviano – los aguaceros tropicales son rápidos pero intensos"
+      ]
+    },
+    {
+      "categoria": "Universal Studios",
+      "icono": "🎬",
+      "items": [
+        "El Express Pass te permite saltar la fila en la mayoría de las atracciones – ¡úsalo en las horas pico!",
+        "Hogsmeade (Harry Potter) es mejor visitarlo a primera hora de la mañana",
+        "Butterbeer caliente en invierno es una experiencia imperdible",
+        "El transporte entre Universal Studios e Islands of Adventure es el Hogwarts Express (incluido en tu ticket)",
+        "Guardá energía para Hagrid's Magical Creatures Motorbike Adventure – es la mejor atracción del parque"
+      ]
+    },
+    {
+      "categoria": "Tips Generales",
+      "icono": "✈️",
+      "items": [
+        "Orlando en diciembre tiene clima templado (~20°C). Llevá una campera liviana para las noches",
+        "Comprá agua en los supermercados (Publix, Walmart) y llevá una botella reutilizable",
+        "Las propinas en restaurantes son del 18-20% – es parte de la cultura local",
+        "Activá datos internacionales o comprá una SIM local en el aeropuerto",
+        "Guardá los tickets digitales en modo offline en tu teléfono por si no hay señal"
+      ]
+    }
+  ],
+  "financiero": {
+    "total": 8500,
+    "moneda": "USD",
+    "fechaLimite": "2026-10-15",
+    "pagos": [
+      { "fecha": "2026-02-10", "monto": 2000, "concepto": "Seña inicial" },
+      { "fecha": "2026-04-15", "monto": 1500, "concepto": "2da cuota" }
+    ]
+  }
+}
