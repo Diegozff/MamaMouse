@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
 import BottomTabs from './components/BottomTabs'
@@ -7,6 +7,7 @@ import PaymentStatus from './components/PaymentStatus'
 import Itinerary from './components/Itinerary'
 import TravelGuide from './components/TravelGuide'
 import Benefits from './components/Benefits'
+import SplashScreen from './components/SplashScreen'
 import { TABS } from './tabs'
 
 function getEstado(financiero) {
@@ -18,10 +19,13 @@ function getEstado(financiero) {
 }
 
 export default function App() {
-  const [booking, setBooking] = useState(null)
-  const [status,  setStatus]  = useState('loading')
-  const [tab,     setTab]     = useState('overview')
+  const [booking,     setBooking]     = useState(null)
+  const [status,      setStatus]      = useState('loading')
+  const [tab,         setTab]         = useState('overview')
+  const [showSplash,  setShowSplash]  = useState(true)
   const contentRef = useRef(null)
+
+  const handleSplashDone = useCallback(() => setShowSplash(false), [])
 
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTop = 0
@@ -35,8 +39,10 @@ export default function App() {
       .catch(() => setStatus('error'))
   }, [])
 
+  if (showSplash) return <SplashScreen onDone={handleSplashDone} />
+
   if (status === 'loading') return <div className="loading"><div className="loading-spinner"/></div>
-  if (status === 'error')   return (
+  if (status === 'error') return (
     <div className="not-found">
       <div className="not-found-icon">🧭</div>
       <h2>Reserva no encontrada</h2>

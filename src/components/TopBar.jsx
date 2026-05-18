@@ -1,23 +1,12 @@
-function LogoImg() {
-  return (
-    <div className="topbar-logo">
-      <img
-        src="/logo.png"
-        alt="Mama Mouse"
-        onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }}
-      />
-      <span style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontSize: 18 }}>🐭</span>
-    </div>
-  )
-}
-
 export default function TopBar({ titular, destinos, estado }) {
   const initials = titular.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
     <header className="topbar">
       <div className="topbar-brand">
-        <LogoImg />
+        <div className="topbar-logo">
+          <img src="/logo.png" alt="Mama Mouse" />
+        </div>
         <span className="topbar-name">MAMA MOUSE</span>
       </div>
 
