@@ -855,26 +855,173 @@ body {
 .admin-login-sub { font-size: 13px; color: var(--text-light); font-weight: 600; margin: 0; }
 .admin-login-error { font-size: 12px; color: var(--pink); font-weight: 700; margin: 0; }
 
-/* Shell */
-.admin-shell { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+/* ── Shell base ── */
+.admin-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
 
-/* Topbar */
+/* ── Shell en modo editor: topbar sticky + body fijo ── */
+.admin-shell-editor {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Topbar ── */
 .admin-topbar {
   height: 64px;
   background: white;
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   padding: 0 24px;
   justify-content: space-between;
   flex-shrink: 0;
+  gap: 12px;
 }
-.admin-topbar-brand { display: flex; align-items: center; gap: 12px; }
+.admin-topbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.admin-topbar-brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .admin-topbar-logo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid var(--pink-light); }
 .admin-topbar-name { font-size: 15px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .admin-topbar-sub { font-size: 11px; font-weight: 700; color: var(--text-light); }
-.admin-topbar-right { display: flex; gap: 8px; align-items: center; }
+.admin-topbar-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.admin-topbar-booking-id { font-size: 13px; font-weight: 700; color: var(--dark); }
+.admin-topbar-link {
+  font-size: 11px;
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--purple);
+  font-family: monospace;
+  font-weight: 700;
+}
+.admin-topbar-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
-/* Content */
+/* ── Body: sidebar + main ── */
+.admin-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 64px);
+}
+
+/* ── Sidebar ── */
+.admin-sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  background: white;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px 12px;
+  gap: 8px;
+}
+
+.asb-booking-card {
+  background: var(--gradient-soft);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.asb-booking-label {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+.asb-booking-id {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--purple);
+  word-break: break-all;
+}
+
+.asb-nav { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.asb-nav-title {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-light);
+  padding: 4px 10px;
+  margin-bottom: 2px;
+}
+
+.asb-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-light);
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+  position: relative;
+}
+.asb-nav-btn:hover {
+  background: var(--bg);
+  color: var(--dark);
+}
+.asb-nav-active {
+  background: var(--gradient-soft) !important;
+  color: var(--purple) !important;
+  font-weight: 900;
+}
+.asb-nav-icon { font-size: 17px; flex-shrink: 0; }
+.asb-nav-label { flex: 1; }
+.asb-nav-dot {
+  width: 6px; height: 6px;
+  background: var(--purple);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.asb-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+.asb-footer-btn {
+  width: 100%;
+  font-size: 12px;
+  justify-content: center;
+}
+
+/* ── Main scrollable content ── */
+.admin-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.admin-main .af-form { max-width: 800px; width: 100%; }
+
+/* ── Content (selector mode, no sidebar) ── */
 .admin-content { flex: 1; padding: 28px; max-width: 960px; margin: 0 auto; width: 100%; }
 
 /* Booking selector */
@@ -885,20 +1032,36 @@ body {
 .admin-selector-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-selector-row .admin-input { flex: 1; min-width: 160px; }
 
-/* Booking header */
-.admin-booking-header {
-  background: white; border-radius: var(--radius); padding: 16px 20px;
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 16px; box-shadow: var(--shadow); flex-wrap: wrap; gap: 12px;
-}
-.admin-booking-id { font-size: 15px; font-weight: 700; color: var(--dark); }
-.admin-booking-link { font-size: 12px; color: var(--text-light); font-weight: 600; margin-top: 2px; }
-.admin-booking-link code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--purple); }
-
 /* Save badge */
 .save-badge { font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 50px; background: var(--bg); color: var(--text); }
 .save-ok  { background: #E8F5E9; color: #2E7D32; }
 .save-err { background: #FFEBEE; color: #C62828; }
+
+/* Responsive sidebar */
+@media (max-width: 700px) {
+  .admin-body { flex-direction: column; height: auto; overflow: visible; }
+  .admin-sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    overflow-y: visible;
+  }
+  .asb-booking-card { display: none; }
+  .asb-nav { flex-direction: row; flex-wrap: wrap; flex: unset; gap: 4px; }
+  .asb-nav-title { display: none; }
+  .asb-nav-btn { width: auto; padding: 7px 10px; font-size: 12px; }
+  .asb-nav-label { display: none; }
+  .asb-footer { display: none; }
+  .admin-main {
+    overflow-y: visible;
+    padding: 16px;
+    height: auto;
+  }
+  .admin-shell-editor { height: auto; overflow: visible; }
+}
 
 /* Shared inputs */
 .admin-input {
@@ -1352,69 +1515,8 @@ select.admin-input { cursor: pointer; }
   font-size: 14px;
 }
 
-/* ══════════════════════════════════
-   ADMIN – SECTION NAV (barra vertical)
-══════════════════════════════════ */
-.af-form-wrapper {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.af-section-nav {
-  width: 140px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 80px;
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.af-nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-light);
-  transition: all 0.15s;
-  text-align: left;
-  width: 100%;
-}
-.af-nav-btn:hover { background: var(--bg); color: var(--dark); }
-.af-nav-active {
-  background: var(--gradient-soft) !important;
-  color: var(--purple) !important;
-  font-weight: 900;
-}
-.af-nav-icon { font-size: 16px; flex-shrink: 0; }
-.af-nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.af-form { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-
-@media (max-width: 700px) {
-  .af-form-wrapper { flex-direction: column; }
-  .af-section-nav {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    position: static;
-    top: unset;
-  }
-  .af-nav-btn { flex: 1; justify-content: center; font-size: 11px; padding: 7px 6px; }
-  .af-nav-label { display: none; }
-}
+/* af-form is now a simple vertical stack inside admin-main */
+.af-form { display: flex; flex-direction: column; gap: 16px; }
 
 /* ══════════════════════════════════
    ADMIN – DESTINOS LIBRES

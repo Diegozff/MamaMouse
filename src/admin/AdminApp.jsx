@@ -1,6 +1,13 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import AdminLogin from './AdminLogin'
 import BookingForm from './BookingForm'
+
+const NAV_SECTIONS = [
+  { id: 'sec-general',    icon: '👤', label: 'General'    },
+  { id: 'sec-items',      icon: '💳', label: 'Ítems'      },
+  { id: 'sec-beneficios', icon: '🎁', label: 'Beneficios' },
+  { id: 'sec-itinerario', icon: '🗺️', label: 'Itinerario' },
+]
 
 function emptyBooking(id = '') {
   return {
@@ -16,11 +23,14 @@ function emptyBooking(id = '') {
 }
 
 export default function AdminApp() {
-  const [authed,     setAuthed]     = useState(() => sessionStorage.getItem('mm_admin') === '1')
-  const [bookingId,  setBookingId]  = useState('')
-  const [inputId,    setInputId]    = useState('')
-  const [booking,    setBooking]    = useState(null)
-  const [saveStatus, setSaveStatus] = useState('idle') // idle | saving | ok | error
+  const [authed,      setAuthed]      = useState(() => sessionStorage.getItem('mm_admin') === '1')
+  const [bookingId,   setBookingId]   = useState('')
+  const [inputId,     setInputId]     = useState('')
+  const [booking,     setBooking]     = useState(null)
+  const [saveStatus,  setSaveStatus]  = useState('idle')
+  const [activeNav,   setActiveNav]   = useState('sec-general')
+
+  const mainRef = useRef(null)
 
   const handleLogin = useCallback(() => {
     sessionStorage.setItem('mm_admin', '1')
@@ -33,13 +43,19 @@ export default function AdminApp() {
     setBooking(null)
   }
 
+  const handleBack = () => {
+    setBooking(null)
+    setBookingId('')
+    setInputId('')
+    setActiveNav('sec-general')
+  }
+
   const loadBooking = async () => {
     const id = inputId.trim().toLowerCase().replace(/\s+/g, '-')
     if (!id) return
     try {
       const r = await fetch(`/bookings/${id}.json?t=${Date.now()}`)
-      if (r.ok) { setBooking(await r.json()) }
-      else       { setBooking(emptyBooking(id)) }
+      setBooking(r.ok ? await r.json() : emptyBooking(id))
       setBookingId(id)
     } catch {
       setBooking(emptyBooking(id))
@@ -61,49 +77,60 @@ export default function AdminApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: bookingId, data: { ...data, id: bookingId } }),
       })
-      if (r.ok) {
-        setSaveStatus('ok')
-        setTimeout(() => setSaveStatus('idle'), 3000)
-      } else throw new Error()
+      if (r.ok) { setSaveStatus('ok'); setTimeout(() => setSaveStatus('idle'), 3000) }
+      else throw new Error()
     } catch {
       setSaveStatus('error')
       setTimeout(() => setSaveStatus('idle'), 3000)
     }
   }
 
+  // Scroll-to-section using the admin-main scroll container
+  const scrollToSection = (id) => {
+    const el      = document.getElementById(id)
+    const container = mainRef.current
+    if (!el || !container) return
+    const top = el.offsetTop - 16
+    container.scrollTo({ top, behavior: 'smooth' })
+  }
+
+  // Track active section via IntersectionObserver on scroll container
+  useEffect(() => {
+    if (!booking || !mainRef.current) return
+    const container = mainRef.current
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter(e => e.isIntersecting)
+        if (visible.length) setActiveNav(visible[0].target.id)
+      },
+      { root: container, rootMargin: '-10% 0px -60% 0px', threshold: 0 }
+    )
+    NAV_SECTIONS.forEach(s => {
+      const el = document.getElementById(s.id)
+      if (el) obs.observe(el)
+    })
+    return () => obs.disconnect()
+  }, [booking])
+
   if (!authed) return <AdminLogin onLogin={handleLogin} />
 
-  return (
-    <div className="admin-shell">
-      {/* TOP BAR */}
-      <header className="admin-topbar">
-        <div className="admin-topbar-brand">
-          <img src="/logo.png" alt="Mama Mouse" className="admin-topbar-logo" />
-          <div>
-            <div className="admin-topbar-name">MAMA MOUSE</div>
-            <div className="admin-topbar-sub">Panel de Administración</div>
+  /* ── SELECTOR (no booking loaded) ── */
+  if (!booking) {
+    return (
+      <div className="admin-shell">
+        <header className="admin-topbar">
+          <div className="admin-topbar-brand">
+            <img src="/logo.png" alt="Mama Mouse" className="admin-topbar-logo" />
+            <div>
+              <div className="admin-topbar-name">MAMA MOUSE</div>
+              <div className="admin-topbar-sub">Panel de Administración</div>
+            </div>
           </div>
-        </div>
-        <div className="admin-topbar-right">
-          {bookingId && (
-            <a
-              href={`/?id=${bookingId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="admin-btn admin-btn-ghost"
-            >
-              👁 Ver como viajero
-            </a>
-          )}
-          <button className="admin-btn admin-btn-ghost" onClick={handleLogout}>
-            Salir
-          </button>
-        </div>
-      </header>
-
-      <div className="admin-content">
-        {/* BOOKING SELECTOR */}
-        {!booking ? (
+          <div className="admin-topbar-right">
+            <button className="admin-btn admin-btn-ghost" onClick={handleLogout}>Salir</button>
+          </div>
+        </header>
+        <div className="admin-content">
           <div className="admin-selector">
             <div className="admin-selector-card">
               <h2 className="admin-selector-title">¿Qué reserva querés gestionar?</h2>
@@ -116,45 +143,91 @@ export default function AdminApp() {
                   onChange={e => setInputId(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && loadBooking()}
                 />
-                <button className="admin-btn admin-btn-primary" onClick={loadBooking}>
-                  Cargar
-                </button>
-                <button className="admin-btn admin-btn-secondary" onClick={newBooking}>
-                  + Nueva reserva
-                </button>
+                <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Cargar</button>
+                <button className="admin-btn admin-btn-secondary" onClick={newBooking}>+ Nueva reserva</button>
               </div>
             </div>
           </div>
-        ) : (
-          <>
-            {/* BOOKING HEADER */}
-            <div className="admin-booking-header">
-              <div>
-                <div className="admin-booking-id">Reserva: <strong>{bookingId}</strong></div>
-                <div className="admin-booking-link">
-                  Link del viajero: <code>/?id={bookingId}</code>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {saveStatus === 'ok'    && <span className="save-badge save-ok">✅ Guardado</span>}
-                {saveStatus === 'error' && <span className="save-badge save-err">❌ Error al guardar</span>}
-                {saveStatus === 'saving'&& <span className="save-badge">⏳ Guardando...</span>}
-                <button
-                  className="admin-btn admin-btn-ghost"
-                  onClick={() => { setBooking(null); setBookingId(''); setInputId('') }}
-                >
-                  ← Cambiar reserva
-                </button>
-              </div>
-            </div>
+        </div>
+      </div>
+    )
+  }
 
-            <BookingForm
-              initialData={booking}
-              onSave={saveBooking}
-              saving={saveStatus === 'saving'}
-            />
-          </>
-        )}
+  /* ── EDITOR (booking loaded) ── */
+  return (
+    <div className="admin-shell admin-shell-editor">
+      {/* STICKY TOPBAR */}
+      <header className="admin-topbar admin-topbar-sticky">
+        <div className="admin-topbar-brand">
+          <img src="/logo.png" alt="Mama Mouse" className="admin-topbar-logo" />
+          <div>
+            <div className="admin-topbar-name">MAMA MOUSE</div>
+            <div className="admin-topbar-sub">Panel de Administración</div>
+          </div>
+        </div>
+        <div className="admin-topbar-center">
+          <span className="admin-topbar-booking-id">Reserva: <strong>{bookingId}</strong></span>
+          <code className="admin-topbar-link">/?id={bookingId}</code>
+        </div>
+        <div className="admin-topbar-right">
+          {saveStatus === 'ok'    && <span className="save-badge save-ok">✅ Guardado</span>}
+          {saveStatus === 'error' && <span className="save-badge save-err">❌ Error</span>}
+          {saveStatus === 'saving'&& <span className="save-badge">⏳ Guardando…</span>}
+          <a href={`/?id=${bookingId}`} target="_blank" rel="noreferrer"
+             className="admin-btn admin-btn-ghost">
+            👁 Ver viajero
+          </a>
+          <button className="admin-btn admin-btn-ghost" onClick={handleLogout}>Salir</button>
+        </div>
+      </header>
+
+      {/* BODY: sidebar + main */}
+      <div className="admin-body">
+
+        {/* ── SIDEBAR ── */}
+        <aside className="admin-sidebar">
+          {/* booking info */}
+          <div className="asb-booking-card">
+            <div className="asb-booking-label">Reserva activa</div>
+            <div className="asb-booking-id">{bookingId}</div>
+          </div>
+
+          {/* section nav */}
+          <nav className="asb-nav">
+            <div className="asb-nav-title">Secciones</div>
+            {NAV_SECTIONS.map(s => (
+              <button
+                key={s.id}
+                className={`asb-nav-btn ${activeNav === s.id ? 'asb-nav-active' : ''}`}
+                onClick={() => scrollToSection(s.id)}
+              >
+                <span className="asb-nav-icon">{s.icon}</span>
+                <span className="asb-nav-label">{s.label}</span>
+                {activeNav === s.id && <span className="asb-nav-dot" />}
+              </button>
+            ))}
+          </nav>
+
+          {/* footer actions */}
+          <div className="asb-footer">
+            <button
+              className="admin-btn admin-btn-ghost asb-footer-btn"
+              onClick={handleBack}
+            >
+              ← Cambiar reserva
+            </button>
+          </div>
+        </aside>
+
+        {/* ── MAIN CONTENT ── */}
+        <main className="admin-main" ref={mainRef}>
+          <BookingForm
+            initialData={booking}
+            onSave={saveBooking}
+            saving={saveStatus === 'saving'}
+          />
+        </main>
+
       </div>
     </div>
   )
