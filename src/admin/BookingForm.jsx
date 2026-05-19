@@ -1,8 +1,27 @@
 import { useState, useEffect } from 'react'
 
-const DESTINOS_OPT = ['Disney World', 'Universal Studios', 'SeaWorld', 'Hoteles']
+const DESTINOS_OPT = ['Disney World', 'Universal Studios', 'SeaWorld', 'Busch Gardens']
 const MONEDAS      = ['USD', 'ARS', 'EUR']
 
+const ITEM_TIPOS = [
+  { tipo: 'Aéreos',              icono: '✈️' },
+  { tipo: 'Hoteles',             icono: '🏨' },
+  { tipo: 'Tickets Disney',      icono: '🏰' },
+  { tipo: 'Tickets Universal',   icono: '🎢' },
+  { tipo: 'Otros Tickets',       icono: '🎟️' },
+  { tipo: 'Paquete Universal',   icono: '🌟' },
+  { tipo: 'Paquete Disney',      icono: '✨' },
+  { tipo: 'Renta de Auto',       icono: '🚗' },
+  { tipo: 'Asistencia al Viajero', icono: '🛡️' },
+]
+
+function icono(tipo) {
+  return ITEM_TIPOS.find(t => t.tipo === tipo)?.icono || '📦'
+}
+
+function uid() { return Math.random().toString(36).slice(2, 9) }
+
+/* ── Generic helpers ── */
 function Field({ label, children }) {
   return (
     <div className="af-field">
@@ -28,38 +47,17 @@ function DynamicList({ label, items, onChange, placeholder = 'Agregar ítem...' 
   const add    = () => onChange([...items, ''])
   const remove = i  => onChange(items.filter((_, idx) => idx !== i))
   const update = (i, v) => { const n = [...items]; n[i] = v; onChange(n) }
-
   return (
     <div className="af-dynamic">
       <label className="af-label">{label}</label>
       {items.map((item, i) => (
         <div key={i} className="af-dynamic-row">
-          <input
-            className="admin-input"
-            value={item}
-            placeholder={placeholder}
-            onChange={e => update(i, e.target.value)}
-          />
+          <input className="admin-input" value={item} placeholder={placeholder}
+            onChange={e => update(i, e.target.value)} />
           <button className="af-remove-btn" onClick={() => remove(i)}>✕</button>
         </div>
       ))}
-      <button className="admin-btn admin-btn-ghost af-add-btn" onClick={add}>
-        + Agregar
-      </button>
-    </div>
-  )
-}
-
-function PaymentRow({ pago, onChange, onRemove }) {
-  return (
-    <div className="af-pago-row">
-      <input className="admin-input" type="date" value={pago.fecha}
-        onChange={e => onChange({ ...pago, fecha: e.target.value })} />
-      <input className="admin-input" type="number" placeholder="Monto" value={pago.monto}
-        onChange={e => onChange({ ...pago, monto: Number(e.target.value) })} />
-      <input className="admin-input" placeholder="Concepto" value={pago.concepto}
-        onChange={e => onChange({ ...pago, concepto: e.target.value })} />
-      <button className="af-remove-btn" onClick={onRemove}>✕</button>
+      <button className="admin-btn admin-btn-ghost af-add-btn" onClick={add}>+ Agregar</button>
     </div>
   )
 }
@@ -78,6 +76,114 @@ function ItineraryRow({ item, onChange, onRemove }) {
   )
 }
 
+/* ── Item Editor ── */
+function ItemEditor({ item, onChange, onRemove }) {
+  const [open, setOpen] = useState(true)
+
+  const setField = (key, val) => onChange({ ...item, [key]: val })
+
+  const addPago = () => setField('pagos', [...item.pagos, { fecha: '', monto: 0, concepto: '' }])
+  const updatePago = (i, p) => {
+    const pagos = [...item.pagos]; pagos[i] = p; setField('pagos', pagos)
+  }
+  const removePago = i => setField('pagos', item.pagos.filter((_, idx) => idx !== i))
+
+  const totalPaid = item.pagos.reduce((s, p) => s + (Number(p.monto) || 0), 0)
+  const saldo     = (Number(item.total) || 0) - totalPaid
+
+  return (
+    <div className="af-item-editor">
+      {/* item header */}
+      <div className="af-item-header" onClick={() => setOpen(o => !o)}>
+        <span className="af-item-icono">{icono(item.tipo)}</span>
+        <div className="af-item-header-info">
+          <span className="af-item-tipo">{item.tipo || 'Nuevo ítem'}</span>
+          <span className="af-item-summary">
+            ${(Number(item.total)||0).toLocaleString('es-AR')} {item.moneda}
+            {saldo > 0 && ` · Saldo $${saldo.toLocaleString('es-AR')}`}
+          </span>
+        </div>
+        <div className="af-item-header-actions" onClick={e => e.stopPropagation()}>
+          <button className="af-remove-btn" onClick={onRemove} title="Eliminar ítem">✕</button>
+        </div>
+        <span className="af-item-toggle">{open ? '▲' : '▼'}</span>
+      </div>
+
+      {open && (
+        <div className="af-item-body">
+          {/* tipo + descripcion */}
+          <div className="af-grid-2">
+            <Field label="Tipo de servicio">
+              <select className="admin-input" value={item.tipo}
+                onChange={e => onChange({ ...item, tipo: e.target.value, icono: icono(e.target.value) })}>
+                <option value="">— Seleccioná —</option>
+                {ITEM_TIPOS.map(t => (
+                  <option key={t.tipo} value={t.tipo}>{t.icono} {t.tipo}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Moneda">
+              <select className="admin-input" value={item.moneda}
+                onChange={e => setField('moneda', e.target.value)}>
+                {MONEDAS.map(m => <option key={m}>{m}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Descripción">
+            <input className="admin-input" value={item.descripcion} placeholder="Detalle del servicio..."
+              onChange={e => setField('descripcion', e.target.value)} />
+          </Field>
+
+          <div className="af-grid-2">
+            <Field label="Total del ítem">
+              <input className="admin-input" type="number" value={item.total}
+                onChange={e => setField('total', Number(e.target.value))} />
+            </Field>
+            <Field label="Fecha límite de pago">
+              <input className="admin-input" type="date" value={item.fechaLimite}
+                onChange={e => setField('fechaLimite', e.target.value)} />
+            </Field>
+          </div>
+
+          {/* payment summary */}
+          <div className="af-payment-summary">
+            <span>Abonado: <strong>${totalPaid.toLocaleString('es-AR')} {item.moneda}</strong></span>
+            <span className={saldo > 0 ? 'af-saldo-due' : 'af-saldo-ok'}>
+              Saldo: <strong>${saldo.toLocaleString('es-AR')} {item.moneda}</strong>
+            </span>
+          </div>
+
+          {/* pagos */}
+          <div className="af-dynamic">
+            <label className="af-label">Historial de Pagos</label>
+            {item.pagos.length > 0 && (
+              <div className="af-pago-header">
+                <span>Fecha</span><span>Monto</span><span>Concepto</span><span></span>
+              </div>
+            )}
+            {item.pagos.map((p, i) => (
+              <div key={i} className="af-pago-row">
+                <input className="admin-input" type="date" value={p.fecha}
+                  onChange={e => updatePago(i, { ...p, fecha: e.target.value })} />
+                <input className="admin-input" type="number" placeholder="Monto" value={p.monto}
+                  onChange={e => updatePago(i, { ...p, monto: Number(e.target.value) })} />
+                <input className="admin-input" placeholder="Concepto" value={p.concepto}
+                  onChange={e => updatePago(i, { ...p, concepto: e.target.value })} />
+                <button className="af-remove-btn" onClick={() => removePago(i)}>✕</button>
+              </div>
+            ))}
+            <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addPago}>
+              + Registrar pago
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Main Form ── */
 export default function BookingForm({ initialData, onSave, saving }) {
   const [d, setD] = useState(initialData)
 
@@ -86,34 +192,33 @@ export default function BookingForm({ initialData, onSave, saving }) {
   const set  = (path, val) => setD(prev => setNested({ ...prev }, path, val))
   const setA = (key, val)  => setD(prev => ({ ...prev, [key]: val }))
 
-  // paid total
-  const totalPaid = d.financiero.pagos.reduce((s, p) => s + (Number(p.monto) || 0), 0)
-  const saldo     = (Number(d.financiero.total) || 0) - totalPaid
-
-  const addPago = () => setA('financiero', {
-    ...d.financiero,
-    pagos: [...d.financiero.pagos, { fecha: '', monto: 0, concepto: '' }]
-  })
-  const updatePago = (i, p) => {
-    const pagos = [...d.financiero.pagos]; pagos[i] = p
-    setA('financiero', { ...d.financiero, pagos })
-  }
-  const removePago = i => {
-    setA('financiero', { ...d.financiero, pagos: d.financiero.pagos.filter((_, idx) => idx !== i) })
-  }
-
-  const addDia = () => setA('itinerario', [
-    ...d.itinerario,
-    { dia: d.itinerario.length + 1, fecha: '', plan: '' }
-  ])
-  const updateDia = (i, item) => {
-    const it = [...d.itinerario]; it[i] = item; setA('itinerario', it)
-  }
-  const removeDia = i => setA('itinerario', d.itinerario.filter((_, idx) => idx !== i))
-
   const toggleDestino = (dest) => {
     const cur = d.destinos || []
     setA('destinos', cur.includes(dest) ? cur.filter(x => x !== dest) : [...cur, dest])
+  }
+
+  /* Items handlers */
+  const addItem = () => setA('items', [
+    ...(d.items || []),
+    { id: uid(), tipo: '', icono: '📦', descripcion: '', moneda: 'USD', total: 0, fechaLimite: '', pagos: [] }
+  ])
+  const updateItem = (i, item) => {
+    const items = [...(d.items || [])]; items[i] = item; setA('items', items)
+  }
+  const removeItem = i => setA('items', (d.items || []).filter((_, idx) => idx !== i))
+
+  /* Itinerary handlers */
+  const addDia    = () => setA('itinerario', [...d.itinerario, { dia: d.itinerario.length + 1, fecha: '', plan: '' }])
+  const updateDia = (i, item) => { const it = [...d.itinerario]; it[i] = item; setA('itinerario', it) }
+  const removeDia = i => setA('itinerario', d.itinerario.filter((_, idx) => idx !== i))
+
+  /* Global financial totals */
+  const items = d.items || []
+  const byCur = {}
+  for (const it of items) {
+    if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0 }
+    byCur[it.moneda].total += Number(it.total) || 0
+    byCur[it.moneda].paid  += it.pagos.reduce((s, p) => s + (Number(p.monto)||0), 0)
   }
 
   return (
@@ -130,8 +235,7 @@ export default function BookingForm({ initialData, onSave, saving }) {
         <Field label="Destinos">
           <div className="af-chips-opt">
             {DESTINOS_OPT.map(dest => (
-              <button
-                key={dest}
+              <button key={dest}
                 className={`af-chip-opt ${(d.destinos||[]).includes(dest) ? 'active' : ''}`}
                 onClick={() => toggleDestino(dest)}
               >{dest}</button>
@@ -159,107 +263,46 @@ export default function BookingForm({ initialData, onSave, saving }) {
             <input className="admin-input" type="date" value={d.hotel.checkOut}
               onChange={e => set('hotel.checkOut', e.target.value)} />
           </Field>
-          <Field label="Tipo de Habitación">
+          <Field label="Tipo de Habitación" style={{ gridColumn:'1/-1' }}>
             <input className="admin-input" value={d.hotel.habitacion}
-              onChange={e => set('hotel.habitacion', e.target.value)} placeholder="Ej: Suite Familiar" style={{ gridColumn: '1/-1' }} />
+              onChange={e => set('hotel.habitacion', e.target.value)} placeholder="Ej: Suite Familiar – 4 personas" />
           </Field>
         </div>
       </Section>
 
-      {/* ── TICKETS ── */}
-      <Section icon="🎟️" title="Tickets y Experiencias">
-        <div className="af-grid-2">
-          <Field label="Disney">
-            <input className="admin-input" value={d.tickets.disney}
-              onChange={e => set('tickets.disney', e.target.value)} placeholder="Ej: 7 días – Park Hopper Plus" />
-          </Field>
-          <Field label="Universal">
-            <input className="admin-input" value={d.tickets.universal}
-              onChange={e => set('tickets.universal', e.target.value)} placeholder="Ej: 3 días – Park-to-Park" />
-          </Field>
-        </div>
-        <DynamicList label="Extras / Adicionales" items={d.extras}
-          onChange={v => setA('extras', v)} placeholder="Ej: Disney Dining Plan, Halloween Party..." />
-      </Section>
+      {/* ── ITEMS CONTRATADOS ── */}
+      <Section icon="💳" title="Ítems Contratados y Pagos">
+        {/* global summary */}
+        {Object.entries(byCur).map(([cur, { total, paid }]) => (
+          <div key={cur} className="af-payment-summary af-global-summary">
+            <span>Total {cur}: <strong>${total.toLocaleString('es-AR')}</strong></span>
+            <span>Abonado: <strong>${paid.toLocaleString('es-AR')}</strong></span>
+            <span className={(total - paid) > 0 ? 'af-saldo-due' : 'af-saldo-ok'}>
+              Saldo: <strong>${(total - paid).toLocaleString('es-AR')}</strong>
+            </span>
+          </div>
+        ))}
 
-      {/* ── LOGÍSTICA ── */}
-      <Section icon="🚗" title="Logística y Protección">
-        <div className="af-grid-2">
-          <Field label="Empresa de Autos">
-            <input className="admin-input" value={d.auto.empresa}
-              onChange={e => set('auto.empresa', e.target.value)} placeholder="Ej: Alamo" />
-          </Field>
-          <Field label="Categoría">
-            <input className="admin-input" value={d.auto.categoria}
-              onChange={e => set('auto.categoria', e.target.value)} placeholder="Ej: SUV Intermedia" />
-          </Field>
-          <Field label="Fecha de Retiro">
-            <input className="admin-input" type="date" value={d.auto.retiro}
-              onChange={e => set('auto.retiro', e.target.value)} />
-          </Field>
-          <Field label="Fecha de Devolución">
-            <input className="admin-input" type="date" value={d.auto.devolucion}
-              onChange={e => set('auto.devolucion', e.target.value)} />
-          </Field>
-          <Field label="Plan de Asistencia">
-            <input className="admin-input" value={d.asistencia.plan}
-              onChange={e => set('asistencia.plan', e.target.value)} placeholder="Ej: Assist Card Total" />
-          </Field>
-          <Field label="Cobertura">
-            <input className="admin-input" value={d.asistencia.cobertura}
-              onChange={e => set('asistencia.cobertura', e.target.value)} placeholder="Ej: Médica, equipaje..." />
-          </Field>
-        </div>
+        {items.map((item, i) => (
+          <ItemEditor
+            key={item.id || i}
+            item={item}
+            onChange={updated => updateItem(i, updated)}
+            onRemove={() => removeItem(i)}
+          />
+        ))}
+
+        <button className="admin-btn admin-btn-ghost af-add-item-btn" onClick={addItem}>
+          + Agregar ítem contratado
+        </button>
       </Section>
 
       {/* ── BENEFICIOS ── */}
       <Section icon="🎁" title="Beneficios Mama Mouse">
-        <DynamicList label="Promociones Aplicadas" items={d.promos}
+        <DynamicList label="Promociones Aplicadas" items={d.promos || []}
           onChange={v => setA('promos', v)} placeholder="Ej: Early Bird 10% de descuento..." />
-        <DynamicList label="Regalos y Sorpresas" items={d.regalos}
+        <DynamicList label="Regalos y Sorpresas" items={d.regalos || []}
           onChange={v => setA('regalos', v)} placeholder="Ej: Kit de bienvenida Mama Mouse..." />
-      </Section>
-
-      {/* ── FINANCIERO ── */}
-      <Section icon="💳" title="Estado Financiero">
-        <div className="af-grid-3">
-          <Field label="Total del Paquete">
-            <input className="admin-input" type="number" value={d.financiero.total}
-              onChange={e => setA('financiero', { ...d.financiero, total: Number(e.target.value) })} />
-          </Field>
-          <Field label="Moneda">
-            <select className="admin-input" value={d.financiero.moneda}
-              onChange={e => setA('financiero', { ...d.financiero, moneda: e.target.value })}>
-              {MONEDAS.map(m => <option key={m}>{m}</option>)}
-            </select>
-          </Field>
-          <Field label="Fecha Límite de Pago">
-            <input className="admin-input" type="date" value={d.financiero.fechaLimite}
-              onChange={e => setA('financiero', { ...d.financiero, fechaLimite: e.target.value })} />
-          </Field>
-        </div>
-
-        <div className="af-payment-summary">
-          <span>Total abonado: <strong>${totalPaid.toLocaleString('es-AR')} {d.financiero.moneda}</strong></span>
-          <span className={saldo > 0 ? 'af-saldo-due' : 'af-saldo-ok'}>
-            Saldo pendiente: <strong>${saldo.toLocaleString('es-AR')} {d.financiero.moneda}</strong>
-          </span>
-        </div>
-
-        <div className="af-dynamic">
-          <label className="af-label">Historial de Pagos</label>
-          <div className="af-pago-header">
-            <span>Fecha</span><span>Monto</span><span>Concepto</span><span></span>
-          </div>
-          {d.financiero.pagos.map((p, i) => (
-            <PaymentRow key={i} pago={p}
-              onChange={p => updatePago(i, p)}
-              onRemove={() => removePago(i)} />
-          ))}
-          <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addPago}>
-            + Agregar pago
-          </button>
-        </div>
       </Section>
 
       {/* ── ITINERARIO ── */}
@@ -291,7 +334,6 @@ export default function BookingForm({ initialData, onSave, saving }) {
   )
 }
 
-// Helper: set nested property by dot path
 function setNested(obj, path, val) {
   const keys = path.split('.')
   let cur = obj

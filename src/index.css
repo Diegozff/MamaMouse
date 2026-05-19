@@ -1063,3 +1063,291 @@ select.admin-input { cursor: pointer; }
   .grid-2 { grid-template-columns: 1fr; }
   .countdown-num { width: 58px; height: 58px; font-size: 24px; }
 }
+
+/* ══════════════════════════════════
+   PAYMENT STATUS – PER-ITEM CARDS
+══════════════════════════════════ */
+
+/* Global hero right-side pct */
+.payment-total-right {
+  text-align: right;
+}
+.payment-total-pct {
+  font-size: 40px;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+}
+.payment-total-pct-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+}
+
+/* Items list container */
+.items-payment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+/* Individual item card */
+.item-payment-card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.item-payment-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.item-payment-icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.item-payment-info {
+  flex: 1;
+  min-width: 0;
+}
+.item-payment-tipo {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1.2;
+}
+.item-payment-desc {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Estado badge */
+.item-estado-badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.item-estado-ok      { background: #E8F5E9; color: #2E7D32; }
+.item-estado-parcial { background: #FFF3E0; color: #E65100; }
+.item-estado-pending { background: #F3E5F5; color: #6A1B9A; }
+
+/* Progress bar */
+.item-progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+.item-progress-track {
+  height: 10px;
+  background: var(--border);
+  border-radius: 50px;
+  overflow: hidden;
+}
+.item-progress-fill {
+  height: 100%;
+  background: var(--gradient);
+  border-radius: 50px;
+  transition: width 0.4s ease;
+}
+.item-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+.item-progress-pct {
+  font-weight: 900;
+  color: var(--purple);
+}
+
+/* Footer: totals + deadline */
+.item-payment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.item-totals { display: flex; flex-direction: column; gap: 3px; }
+.item-total-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.item-total-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  min-width: 42px;
+}
+.item-total-val {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--dark);
+}
+.item-saldo-row .item-saldo-val {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--pink);
+}
+
+/* Deadline badges */
+.deadline-badge {
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.deadline-badge-done    { background: #E8F5E9; color: #2E7D32; }
+.deadline-badge-ok      { background: #E3F2FD; color: #1565C0; }
+.deadline-badge-warn    { background: #FFF8E1; color: #F57F17; }
+.deadline-badge-urgent  { background: #FFF3E0; color: #E65100; }
+.deadline-badge-expired { background: #FFEBEE; color: #C62828; }
+
+/* Payment history inside item card */
+.item-pagos-history {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.item-pagos-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+}
+
+/* ══════════════════════════════════
+   OVERVIEW – ITEMS ROW
+══════════════════════════════════ */
+.overview-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.overview-item-row:last-child { border-bottom: none; }
+.overview-item-icon { font-size: 20px; flex-shrink: 0; }
+.overview-item-info { flex: 1; min-width: 0; }
+.overview-item-tipo {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--dark);
+  display: block;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.overview-item-bar-wrap {
+  height: 5px;
+  background: var(--border);
+  border-radius: 50px;
+  overflow: hidden;
+}
+.overview-item-bar-fill {
+  height: 100%;
+  background: var(--gradient);
+  border-radius: 50px;
+}
+.overview-item-amounts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.overview-item-total {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--dark);
+}
+.overview-item-saldo {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pink);
+}
+
+/* ══════════════════════════════════
+   ADMIN – ITEM EDITOR
+══════════════════════════════════ */
+.af-item-editor {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.af-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.af-item-header:hover { background: #EEE8F8; }
+.af-item-icono { font-size: 22px; flex-shrink: 0; }
+.af-item-header-info { flex: 1; min-width: 0; }
+.af-item-tipo {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--dark);
+  display: block;
+}
+.af-item-summary {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  display: block;
+  margin-top: 1px;
+}
+.af-item-header-actions { display: flex; gap: 6px; }
+.af-item-toggle {
+  font-size: 11px;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+.af-item-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  background: white;
+}
+
+.af-add-item-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+  border-style: dashed;
+  font-size: 13px;
+}
+
+.af-global-summary {
+  margin-bottom: 4px;
+  border: 1.5px solid var(--border);
+  font-size: 14px;
+}

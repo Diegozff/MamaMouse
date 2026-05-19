@@ -41,7 +41,7 @@ function InfoRow({ label, value }) {
 }
 
 export default function Overview({ booking, onTabChange }) {
-  const { hotel, tickets, financiero, destinos } = booking
+  const { hotel, items = [], destinos } = booking
   const [cd, setCd] = useState(() => calcCountdown(hotel.checkIn))
 
   useEffect(() => {
@@ -51,8 +51,17 @@ export default function Overview({ booking, onTabChange }) {
 
   const pad = n => String(n).padStart(2, '0')
   const nights = nightsBetween(hotel.checkIn, hotel.checkOut)
-  const totalPaid = financiero.pagos.reduce((s, p) => s + p.monto, 0)
-  const pct = Math.round((totalPaid / financiero.total) * 100)
+
+  // Compute financial totals from items (group by currency, show USD first)
+  const byCur = {}
+  for (const it of items) {
+    if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0 }
+    byCur[it.moneda].total += it.total
+    byCur[it.moneda].paid  += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+  }
+  const mainCur   = byCur['USD'] || Object.values(byCur)[0] || { total: 0, paid: 0 }
+  const mainLabel = byCur['USD'] ? 'USD' : (Object.keys(byCur)[0] || 'USD')
+  const pct = mainCur.total > 0 ? Math.round((mainCur.paid / mainCur.total) * 100) : 0
 
   return (
     <div className="fade-in">
@@ -120,14 +129,14 @@ export default function Overview({ booking, onTabChange }) {
             <span className="card-header-title">Hospedaje</span>
           </div>
           <div className="card-body">
-            <InfoRow label="Hotel"       value={hotel.nombre} />
-            <InfoRow label="Habitación"  value={hotel.habitacion} />
-            <InfoRow label="Check-In"    value={formatDate(hotel.checkIn)} />
-            <InfoRow label="Check-Out"   value={formatDate(hotel.checkOut)} />
+            <InfoRow label="Hotel"      value={hotel.nombre} />
+            <InfoRow label="Habitación" value={hotel.habitacion} />
+            <InfoRow label="Check-In"   value={formatDate(hotel.checkIn)} />
+            <InfoRow label="Check-Out"  value={formatDate(hotel.checkOut)} />
           </div>
         </div>
 
-        <div className="card" style={{ cursor: 'pointer' }} onClick={() => onTabChange('pagos')}>
+        <div className="card" style={{ cursor:'pointer' }} onClick={() => onTabChange('pagos')}>
           <div className="card-header">
             <div className="card-header-icon">💳</div>
             <span className="card-header-title">Estado de Pago</span>
@@ -135,17 +144,17 @@ export default function Overview({ booking, onTabChange }) {
           <div className="card-body">
             <div style={{ textAlign:'center', padding:'8px 0 12px' }}>
               <div style={{ fontSize:28, fontWeight:900, color:'var(--purple)' }}>
-                ${financiero.total.toLocaleString('es-AR')} {financiero.moneda}
+                ${mainCur.total.toLocaleString('es-AR')} {mainLabel}
               </div>
               <div style={{ fontSize:11, fontWeight:700, color:'var(--text-light)', textTransform:'uppercase', marginTop:2 }}>
-                Total del paquete
+                Total del viaje
               </div>
             </div>
             <div className="progress-bar-wrap">
               <div className="progress-bar-fill" style={{ width:`${pct}%` }} />
             </div>
             <div className="progress-labels">
-              <span className="progress-paid">${totalPaid.toLocaleString('es-AR')} abonados</span>
+              <span className="progress-paid">${mainCur.paid.toLocaleString('es-AR')} abonados</span>
               <span className="progress-pct">{pct}%</span>
             </div>
             <div style={{ marginTop:10, fontSize:12, fontWeight:600, color:'var(--purple)', textAlign:'center' }}>
@@ -155,17 +164,39 @@ export default function Overview({ booking, onTabChange }) {
         </div>
       </div>
 
-      {/* TICKETS */}
-      <div className="card grid-1">
-        <div className="card-header">
-          <div className="card-header-icon">🎟️</div>
-          <span className="card-header-title">Tickets y Experiencias</span>
+      {/* ITEMS CONTRATADOS */}
+      {items.length > 0 && (
+        <div className="card grid-1">
+          <div className="card-header">
+            <div className="card-header-icon">🎒</div>
+            <span className="card-header-title">Ítems Contratados</span>
+          </div>
+          <div className="card-body">
+            {items.map(it => {
+              const paid  = it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+              const saldo = it.total - paid
+              const p     = it.total > 0 ? Math.min(100, Math.round((paid / it.total) * 100)) : 0
+              return (
+                <div key={it.id} className="overview-item-row">
+                  <span className="overview-item-icon">{it.icono}</span>
+                  <div className="overview-item-info">
+                    <span className="overview-item-tipo">{it.tipo}</span>
+                    <div className="overview-item-bar-wrap">
+                      <div className="overview-item-bar-fill" style={{ width:`${p}%` }} />
+                    </div>
+                  </div>
+                  <div className="overview-item-amounts">
+                    <span className="overview-item-total">${it.total.toLocaleString('es-AR')} {it.moneda}</span>
+                    {saldo > 0 && (
+                      <span className="overview-item-saldo">-${saldo.toLocaleString('es-AR')}</span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
-        <div className="card-body">
-          {tickets.disney   && <InfoRow label="Disney"   value={tickets.disney} />}
-          {tickets.universal && <InfoRow label="Universal" value={tickets.universal} />}
-        </div>
-      </div>
+      )}
     </div>
   )
 }

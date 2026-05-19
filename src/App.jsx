@@ -12,9 +12,13 @@ import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
 import { TABS } from './tabs'
 
-function getEstado(financiero) {
-  const paid = financiero.pagos.reduce((s, p) => s + p.monto, 0)
-  const saldo = financiero.total - paid
+function getEstado(items = []) {
+  let total = 0, paid = 0
+  for (const it of items) {
+    total += it.total
+    paid  += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+  }
+  const saldo = total - paid
   if (saldo <= 0) return { label: '✅ Totalmente Pagado', cls: 'estado-total' }
   if (paid === 0)  return { label: '⏳ Pendiente de Pago', cls: 'estado-pendiente' }
   return { label: '🔄 Pago Parcial', cls: 'estado-parcial' }
@@ -55,7 +59,7 @@ export default function App() {
     </div>
   )
 
-  const estado = getEstado(booking.financiero)
+  const estado = getEstado(booking.items)
 
   return (
     <div className="dashboard">
@@ -64,7 +68,7 @@ export default function App() {
         <Sidebar activeTab={tab} onTabChange={setTab} />
         <main className="content-area" ref={contentRef}>
           {tab === 'overview'   && <Overview   booking={booking} onTabChange={setTab} />}
-          {tab === 'pagos'      && <PaymentStatus financiero={booking.financiero} />}
+          {tab === 'pagos'      && <PaymentStatus items={booking.items} />}
           {tab === 'itinerario' && <Itinerary  itinerario={booking.itinerario} />}
           {tab === 'guias'      && <GuidesLibrary />}
           {tab === 'beneficios' && <Benefits   booking={booking} />}

@@ -1,90 +1,143 @@
-function fmt(dateStr) {
-  const [, month, day] = dateStr.split('-')
-  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
-  return `${parseInt(day)} ${months[parseInt(month)-1]}`
-}
 function fmtFull(dateStr) {
   const [year, month, day] = dateStr.split('-')
   const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
   return `${parseInt(day)} ${months[parseInt(month)-1]} ${year}`
 }
-function money(n, cur) { return `$${n.toLocaleString('es-AR')} ${cur}` }
+function money(n, cur) { return `$${Number(n).toLocaleString('es-AR')} ${cur}` }
 
-export default function PaymentStatus({ financiero }) {
-  const { total, moneda, fechaLimite, pagos } = financiero
-  const totalPaid = pagos.reduce((s, p) => s + p.monto, 0)
-  const saldo = total - totalPaid
-  const pct = Math.min(100, Math.round((totalPaid / total) * 100))
+function daysUntil(dateStr) {
+  return Math.ceil((new Date(dateStr + 'T00:00:00') - new Date()) / (1000*60*60*24))
+}
+
+function DeadlineBadge({ fechaLimite, saldo }) {
+  if (saldo <= 0) return <span className="deadline-badge deadline-badge-done">✅ Pagado</span>
+  const days = daysUntil(fechaLimite)
+  let cls = 'deadline-badge-ok'
+  let label = `Vence en ${days} días`
+  if (days < 0)       { cls = 'deadline-badge-expired'; label = `Venció hace ${Math.abs(days)} días` }
+  else if (days === 0){ cls = 'deadline-badge-urgent';  label = 'Vence hoy' }
+  else if (days <= 30){ cls = 'deadline-badge-urgent';  label = `⚠️ ${days} días restantes` }
+  else if (days <= 60){ cls = 'deadline-badge-warn';    label = `${days} días restantes` }
+  return <span className={`deadline-badge ${cls}`}>{label}</span>
+}
+
+function ItemCard({ item }) {
+  const totalPaid = item.pagos.reduce((s, p) => s + Number(p.monto), 0)
+  const saldo     = item.total - totalPaid
+  const pct       = item.total > 0 ? Math.min(100, Math.round((totalPaid / item.total) * 100)) : 0
+
+  const estado = saldo <= 0
+    ? { label: '✅ Pagado',   cls: 'item-estado-ok'      }
+    : totalPaid > 0
+    ? { label: '🔄 Parcial',  cls: 'item-estado-parcial' }
+    : { label: '⏳ Pendiente',cls: 'item-estado-pending'  }
 
   return (
-    <div className="fade-in">
-      <div className="content-header">
-        <div className="content-title">Estado de Pagos 💳</div>
-        <div className="content-subtitle">Seguí el progreso financiero de tu viaje</div>
+    <div className="item-payment-card">
+      {/* header */}
+      <div className="item-payment-header">
+        <div className="item-payment-icon">{item.icono}</div>
+        <div className="item-payment-info">
+          <div className="item-payment-tipo">{item.tipo}</div>
+          <div className="item-payment-desc">{item.descripcion}</div>
+        </div>
+        <span className={`item-estado-badge ${estado.cls}`}>{estado.label}</span>
       </div>
 
-      {/* total hero */}
-      <div className="payment-total-card">
-        <div className="payment-total-left">
-          <div className="payment-total-label">Total del paquete</div>
-          <div className="payment-total-amount">{money(total, moneda)}</div>
-          <div className="payment-total-sub">Fecha límite: {fmtFull(fechaLimite)}</div>
+      {/* progress bar */}
+      <div className="item-progress-wrap">
+        <div className="item-progress-track">
+          <div className="item-progress-fill" style={{ width: `${pct}%` }} />
         </div>
-        <div style={{ textAlign:'right' }}>
-          <div style={{ fontSize:40, fontWeight:900, color:'white', lineHeight:1 }}>{pct}%</div>
-          <div style={{ fontSize:12, color:'rgba(255,255,255,0.7)', fontWeight:700 }}>abonado</div>
+        <div className="item-progress-labels">
+          <span>{money(totalPaid, item.moneda)} abonados</span>
+          <span className="item-progress-pct">{pct}%</span>
         </div>
       </div>
 
-      {/* progress */}
-      <div className="card grid-1">
-        <div className="card-header">
-          <div className="card-header-icon">📈</div>
-          <span className="card-header-title">Progreso de pago</span>
-        </div>
-        <div className="card-body">
-          <div className="progress-bar-wrap" style={{ height:16 }}>
-            <div className="progress-bar-fill" style={{ width:`${pct}%` }} />
+      {/* totals + deadline */}
+      <div className="item-payment-footer">
+        <div className="item-totals">
+          <div className="item-total-row">
+            <span className="item-total-label">Total</span>
+            <span className="item-total-val">{money(item.total, item.moneda)}</span>
           </div>
-          <div className="progress-labels" style={{ marginTop:8 }}>
-            <span className="progress-paid">Abonado: {money(totalPaid, moneda)}</span>
-            <span className="progress-pct">{pct}% completado</span>
-          </div>
-
           {saldo > 0 && (
-            <div className="saldo-box" style={{ marginTop:16 }}>
-              <div>
-                <div className="saldo-label">Saldo pendiente</div>
-                <div className="saldo-deadline">Vence: {fmtFull(fechaLimite)}</div>
-              </div>
-              <div className="saldo-amount">{money(saldo, moneda)}</div>
+            <div className="item-total-row item-saldo-row">
+              <span className="item-total-label">Saldo</span>
+              <span className="item-saldo-val">{money(saldo, item.moneda)}</span>
             </div>
           )}
         </div>
+        <DeadlineBadge fechaLimite={item.fechaLimite} saldo={saldo} />
       </div>
 
-      {/* history */}
-      <div className="card grid-1">
-        <div className="card-header">
-          <div className="card-header-icon">🧾</div>
-          <span className="card-header-title">Historial de pagos</span>
-        </div>
-        <div className="card-body">
-          {pagos.length === 0 && (
-            <div style={{ textAlign:'center', color:'var(--text-light)', fontSize:13, fontWeight:600, padding:16 }}>
-              Aún no hay pagos registrados
-            </div>
-          )}
-          {pagos.map((p, i) => (
+      {/* payment history */}
+      {item.pagos.length > 0 && (
+        <div className="item-pagos-history">
+          <div className="item-pagos-label">Historial de pagos</div>
+          {item.pagos.map((p, i) => (
             <div key={i} className="payment-row">
               <div className="payment-row-left">
                 <span className="payment-row-concepto">{p.concepto}</span>
                 <span className="payment-row-fecha">{fmtFull(p.fecha)}</span>
               </div>
-              <span className="payment-row-amount">+{money(p.monto, moneda)}</span>
+              <span className="payment-row-amount">+{money(p.monto, item.moneda)}</span>
             </div>
           ))}
         </div>
+      )}
+    </div>
+  )
+}
+
+export default function PaymentStatus({ items = [] }) {
+  // Group totals by currency for the summary hero
+  const byCur = {}
+  for (const it of items) {
+    if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0 }
+    byCur[it.moneda].total += it.total
+    byCur[it.moneda].paid  += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+  }
+
+  return (
+    <div className="fade-in">
+      <div className="content-header">
+        <div className="content-title">Estado de Pagos 💳</div>
+        <div className="content-subtitle">Progreso financiero de cada ítem contratado</div>
+      </div>
+
+      {/* Global hero card per currency */}
+      {Object.entries(byCur).map(([cur, { total, paid }]) => {
+        const saldo = total - paid
+        const pct   = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0
+        return (
+          <div key={cur} className="payment-total-card">
+            <div className="payment-total-left">
+              <div className="payment-total-label">Total del viaje ({cur})</div>
+              <div className="payment-total-amount">${total.toLocaleString('es-AR')} {cur}</div>
+              <div className="payment-total-sub">
+                {saldo > 0
+                  ? `Saldo pendiente: $${saldo.toLocaleString('es-AR')} ${cur}`
+                  : '✅ ¡Todo pagado!'}
+              </div>
+            </div>
+            <div className="payment-total-right">
+              <div className="payment-total-pct">{pct}%</div>
+              <div className="payment-total-pct-label">abonado</div>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* One card per item */}
+      <div className="items-payment-list">
+        {items.map(item => <ItemCard key={item.id} item={item} />)}
+        {items.length === 0 && (
+          <div style={{ textAlign:'center', color:'var(--text-light)', padding:40, fontWeight:600 }}>
+            No hay ítems registrados
+          </div>
+        )}
       </div>
     </div>
   )

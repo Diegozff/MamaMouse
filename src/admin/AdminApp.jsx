@@ -8,15 +8,11 @@ function emptyBooking(id = '') {
     titular: '',
     destinos: ['Disney World'],
     hotel: { nombre: '', categoria: '', checkIn: '', checkOut: '', habitacion: '' },
-    tickets: { disney: '', universal: '' },
-    extras: [],
-    auto: { empresa: '', categoria: '', retiro: '', devolucion: '' },
-    asistencia: { plan: '', cobertura: '' },
+    items: [],
     promos: [],
     regalos: [],
     tips: [],
     itinerario: [],
-    financiero: { total: 0, moneda: 'USD', fechaLimite: '', pagos: [] },
   }
 }
 
