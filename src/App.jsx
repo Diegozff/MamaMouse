@@ -7,6 +7,7 @@ import Overview from './components/Overview'
 import PaymentStatus from './components/PaymentStatus'
 import Itinerary from './components/Itinerary'
 import TravelGuide from './components/TravelGuide'
+import GuidesLibrary from './components/GuidesLibrary'
 import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
 import { TABS } from './tabs'
@@ -65,7 +66,7 @@ export default function App() {
           {tab === 'overview'   && <Overview   booking={booking} onTabChange={setTab} />}
           {tab === 'pagos'      && <PaymentStatus financiero={booking.financiero} />}
           {tab === 'itinerario' && <Itinerary  itinerario={booking.itinerario} />}
-          {tab === 'guias'      && <TravelGuide tips={booking.tips} />}
+          {tab === 'guias'      && <GuidesLibrary />}
           {tab === 'beneficios' && <Benefits   booking={booking} />}
         </main>
       </div>

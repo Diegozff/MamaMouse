@@ -1,0 +1,42 @@
+{
+  "id": "familia-garcia",
+  "titular": "",
+  "destinos": [
+    "Disney World",
+    "Universal Studios",
+    "SeaWorld",
+    "Hoteles"
+  ],
+  "hotel": {
+    "nombre": "",
+    "categoria": "",
+    "checkIn": "",
+    "checkOut": "",
+    "habitacion": ""
+  },
+  "tickets": {
+    "disney": "",
+    "universal": ""
+  },
+  "extras": [],
+  "auto": {
+    "empresa": "",
+    "categoria": "",
+    "retiro": "",
+    "devolucion": ""
+  },
+  "asistencia": {
+    "plan": "",
+    "cobertura": ""
+  },
+  "promos": [],
+  "regalos": [],
+  "tips": [],
+  "itinerario": [],
+  "financiero": {
+    "total": 0,
+    "moneda": "USD",
+    "fechaLimite": "",
+    "pagos": []
+  }
+}

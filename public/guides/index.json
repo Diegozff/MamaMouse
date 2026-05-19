@@ -1,0 +1,112 @@
+[
+  {
+    "id": "disney-magic-kingdom",
+    "nombre": "Magic Kingdom",
+    "categoria": "Disney World",
+    "icono": "🏰",
+    "descripcion": "El parque más mágico del mundo. Atracciones, desfiles, fuegos artificiales, FastPass y tips exclusivos.",
+    "color": "#78C5E0",
+    "archivo": "disney-magic-kingdom.pdf",
+    "tamano": "3.8 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "disney-epcot",
+    "nombre": "EPCOT",
+    "categoria": "Disney World",
+    "icono": "🌍",
+    "descripcion": "World Showcase, Future World, festivales gastronómicos y las mejores atracciones de innovación.",
+    "color": "#9B7EC8",
+    "archivo": "disney-epcot.pdf",
+    "tamano": "3.2 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "disney-hollywood-studios",
+    "nombre": "Hollywood Studios",
+    "categoria": "Disney World",
+    "icono": "🎬",
+    "descripcion": "Star Wars: Galaxy's Edge, Toy Story Land, Tower of Terror y todo el mundo del cine.",
+    "color": "#E8609A",
+    "archivo": "disney-hollywood-studios.pdf",
+    "tamano": "2.9 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "disney-animal-kingdom",
+    "nombre": "Animal Kingdom",
+    "categoria": "Disney World",
+    "icono": "🦁",
+    "descripcion": "Pandora – The World of Avatar, Festival of the Lion King, safaris y expediciones únicas.",
+    "color": "#4CAF50",
+    "archivo": "disney-animal-kingdom.pdf",
+    "tamano": "2.7 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "universal-studios",
+    "nombre": "Universal Studios Florida",
+    "categoria": "Universal",
+    "icono": "🎭",
+    "descripcion": "Diagon Alley, Springfield, Hollywood, Minion Land y todas las atracciones imperdibles.",
+    "color": "#FF9800",
+    "archivo": "universal-studios.pdf",
+    "tamano": "3.5 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "universal-islands",
+    "nombre": "Islands of Adventure",
+    "categoria": "Universal",
+    "icono": "🧙",
+    "descripcion": "Hogsmeade, Hagrid's Motorbike, Jurassic World, Marvel Super Hero Island y más.",
+    "color": "#7B5EA8",
+    "archivo": "universal-islands.pdf",
+    "tamano": "3.1 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "universal-epic",
+    "nombre": "Epic Universe",
+    "categoria": "Universal",
+    "icono": "🌌",
+    "descripcion": "El nuevo parque 2025. Wizarding World, Monsters, Nintendo y Ministry of Magic.",
+    "color": "#1565C0",
+    "archivo": "universal-epic.pdf",
+    "tamano": "2.4 MB",
+    "actualizado": "Mar 2026"
+  },
+  {
+    "id": "orlando-general",
+    "nombre": "Guía General Orlando",
+    "categoria": "Destino",
+    "icono": "🌴",
+    "descripcion": "Transporte, restaurantes, compras, outlets, tips de clima y todo lo que necesitás saber de Orlando.",
+    "color": "#00897B",
+    "archivo": "orlando-general.pdf",
+    "tamano": "4.1 MB",
+    "actualizado": "Ene 2026"
+  },
+  {
+    "id": "disney-springs",
+    "nombre": "Disney Springs",
+    "categoria": "Destino",
+    "icono": "🛍️",
+    "descripcion": "Shopping, restaurantes, entretenimiento y la mejor experiencia sin ticket de parque.",
+    "color": "#F06292",
+    "archivo": "disney-springs.pdf",
+    "tamano": "1.8 MB",
+    "actualizado": "Feb 2026"
+  },
+  {
+    "id": "hoteles-disney",
+    "nombre": "Hoteles Disney & Universal",
+    "categoria": "Destino",
+    "icono": "🏨",
+    "descripcion": "Comparativa completa de hoteles, beneficios exclusivos, categorías y cuál elegir según tu viaje.",
+    "color": "#6D4C41",
+    "archivo": "hoteles-disney-universal.pdf",
+    "tamano": "5.2 MB",
+    "actualizado": "Ene 2026"
+  }
+]
