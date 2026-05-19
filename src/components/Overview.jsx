@@ -10,14 +10,25 @@ function nightsBetween(a, b) {
   return Math.round((new Date(b) - new Date(a)) / (1000*60*60*24))
 }
 
-function calcCountdown(checkIn) {
-  const diff = new Date(checkIn + 'T00:00:00') - new Date()
+function calcCountdown(dateStr) {
+  if (!dateStr) return null
+  const diff = new Date(dateStr + 'T00:00:00') - new Date()
   if (diff <= 0) return null
   return {
     days:    Math.floor(diff / (1000*60*60*24)),
     hours:   Math.floor((diff % (1000*60*60*24)) / (1000*60*60)),
     minutes: Math.floor((diff % (1000*60*60)) / (1000*60)),
     seconds: Math.floor((diff % (1000*60)) / 1000),
+  }
+}
+
+// Derive trip start/end from items fechaInicio/fechaFin, fallback to hotel
+function tripDates(items = [], hotel = {}) {
+  const starts = items.map(i => i.fechaInicio).filter(Boolean).sort()
+  const ends   = items.map(i => i.fechaFin).filter(Boolean).sort()
+  return {
+    checkIn:  starts[0]              || hotel?.checkIn  || '',
+    checkOut: ends[ends.length - 1]  || hotel?.checkOut || '',
   }
 }
 
@@ -41,18 +52,20 @@ function InfoRow({ label, value }) {
 }
 
 export default function Overview({ booking, onTabChange }) {
-  const { hotel, items = [], destinos } = booking
-  const [cd, setCd] = useState(() => calcCountdown(hotel.checkIn))
+  const { hotel = {}, items = [], destinos } = booking
+  const { checkIn, checkOut } = tripDates(items, hotel)
+
+  const [cd, setCd] = useState(() => calcCountdown(checkIn))
 
   useEffect(() => {
-    const t = setInterval(() => setCd(calcCountdown(hotel.checkIn)), 1000)
+    const t = setInterval(() => setCd(calcCountdown(checkIn)), 1000)
     return () => clearInterval(t)
-  }, [hotel.checkIn])
+  }, [checkIn])
 
-  const pad = n => String(n).padStart(2, '0')
-  const nights = nightsBetween(hotel.checkIn, hotel.checkOut)
+  const pad    = n => String(n).padStart(2, '0')
+  const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : null
 
-  // Compute financial totals from items (group by currency, show USD first)
+  // Financial totals from items
   const byCur = {}
   for (const it of items) {
     if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0 }
@@ -81,7 +94,7 @@ export default function Overview({ booking, onTabChange }) {
         />
         <StatCard
           icon="🌙"
-          value={nights}
+          value={nights ?? '–'}
           label="Noches de estadía"
           iconClass="stat-icon-purple"
           valueClass="stat-value-purple"
@@ -114,27 +127,34 @@ export default function Overview({ booking, onTabChange }) {
               </div>
             ))}
           </div>
-          <div className="countdown-dates">
-            <div className="date-pill">🛬 {formatDate(hotel.checkIn)}</div>
-            <div className="date-pill">🛫 {formatDate(hotel.checkOut)}</div>
-          </div>
+          {checkIn && checkOut && (
+            <div className="countdown-dates">
+              <div className="date-pill">🛬 {formatDate(checkIn)}</div>
+              <div className="date-pill">🛫 {formatDate(checkOut)}</div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* HOTEL + PAGOS side by side */}
+      {/* PAGOS CARD */}
       <div className="grid-2">
-        <div className="card">
-          <div className="card-header">
-            <div className="card-header-icon">🏨</div>
-            <span className="card-header-title">Hospedaje</span>
+        {/* Fechas del viaje */}
+        {(checkIn || checkOut) && (
+          <div className="card">
+            <div className="card-header">
+              <div className="card-header-icon">📅</div>
+              <span className="card-header-title">Fechas del Viaje</span>
+            </div>
+            <div className="card-body">
+              {checkIn  && <InfoRow label="Salida"  value={formatDate(checkIn)} />}
+              {checkOut && <InfoRow label="Regreso" value={formatDate(checkOut)} />}
+              {nights && <InfoRow label="Duración" value={`${nights} noches`} />}
+              {destinos.map(d => (
+                <InfoRow key={d} label="Destino" value={d} />
+              ))}
+            </div>
           </div>
-          <div className="card-body">
-            <InfoRow label="Hotel"      value={hotel.nombre} />
-            <InfoRow label="Habitación" value={hotel.habitacion} />
-            <InfoRow label="Check-In"   value={formatDate(hotel.checkIn)} />
-            <InfoRow label="Check-Out"  value={formatDate(hotel.checkOut)} />
-          </div>
-        </div>
+        )}
 
         <div className="card" style={{ cursor:'pointer' }} onClick={() => onTabChange('pagos')}>
           <div className="card-header">

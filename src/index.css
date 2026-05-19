@@ -1351,3 +1351,118 @@ select.admin-input { cursor: pointer; }
   border: 1.5px solid var(--border);
   font-size: 14px;
 }
+
+/* ══════════════════════════════════
+   ADMIN – SECTION NAV (barra vertical)
+══════════════════════════════════ */
+.af-form-wrapper {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.af-section-nav {
+  width: 140px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.af-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-light);
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+}
+.af-nav-btn:hover { background: var(--bg); color: var(--dark); }
+.af-nav-active {
+  background: var(--gradient-soft) !important;
+  color: var(--purple) !important;
+  font-weight: 900;
+}
+.af-nav-icon { font-size: 16px; flex-shrink: 0; }
+.af-nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.af-form { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+
+@media (max-width: 700px) {
+  .af-form-wrapper { flex-direction: column; }
+  .af-section-nav {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+    top: unset;
+  }
+  .af-nav-btn { flex: 1; justify-content: center; font-size: 11px; padding: 7px 6px; }
+  .af-nav-label { display: none; }
+}
+
+/* ══════════════════════════════════
+   ADMIN – DESTINOS LIBRES
+══════════════════════════════════ */
+.af-destinos-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+.af-chip-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 14px;
+  border-radius: 50px;
+  background: var(--gradient);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+.af-chip-custom button {
+  background: rgba(255,255,255,0.3);
+  border: none;
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: white;
+  font-weight: 900;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.af-chip-add {
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 2px dashed var(--purple);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.15s;
+}
+.af-chip-add:hover { background: var(--gradient-soft); }
+
+.af-custom-dest-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.af-custom-dest-row .admin-input { flex: 1; min-width: 200px; }

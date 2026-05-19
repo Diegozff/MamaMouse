@@ -1,24 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const DESTINOS_OPT = ['Disney World', 'Universal Studios', 'SeaWorld', 'Busch Gardens']
 const MONEDAS      = ['USD', 'ARS', 'EUR']
 
 const ITEM_TIPOS = [
-  { tipo: 'Aéreos',              icono: '✈️' },
-  { tipo: 'Hoteles',             icono: '🏨' },
-  { tipo: 'Tickets Disney',      icono: '🏰' },
-  { tipo: 'Tickets Universal',   icono: '🎢' },
-  { tipo: 'Otros Tickets',       icono: '🎟️' },
-  { tipo: 'Paquete Universal',   icono: '🌟' },
-  { tipo: 'Paquete Disney',      icono: '✨' },
-  { tipo: 'Renta de Auto',       icono: '🚗' },
+  { tipo: 'Aéreos',                icono: '✈️' },
+  { tipo: 'Hoteles',               icono: '🏨' },
+  { tipo: 'Tickets Disney',        icono: '🏰' },
+  { tipo: 'Tickets Universal',     icono: '🎢' },
+  { tipo: 'Otros Tickets',         icono: '🎟️' },
+  { tipo: 'Paquete Universal',     icono: '🌟' },
+  { tipo: 'Paquete Disney',        icono: '✨' },
+  { tipo: 'Renta de Auto',         icono: '🚗' },
   { tipo: 'Asistencia al Viajero', icono: '🛡️' },
 ]
 
-function icono(tipo) {
+const NAV_SECTIONS = [
+  { id: 'sec-general',   icon: '👤', label: 'General'    },
+  { id: 'sec-items',     icon: '💳', label: 'Ítems'      },
+  { id: 'sec-beneficios',icon: '🎁', label: 'Beneficios' },
+  { id: 'sec-itinerario',icon: '🗺️', label: 'Itinerario' },
+]
+
+function iconoFor(tipo) {
   return ITEM_TIPOS.find(t => t.tipo === tipo)?.icono || '📦'
 }
-
 function uid() { return Math.random().toString(36).slice(2, 9) }
 
 /* ── Generic helpers ── */
@@ -31,9 +37,9 @@ function Field({ label, children }) {
   )
 }
 
-function Section({ icon, title, children }) {
+function Section({ id, icon, title, children }) {
   return (
-    <div className="af-section">
+    <div id={id} className="af-section">
       <div className="af-section-header">
         <span>{icon}</span>
         <span className="af-section-title">{title}</span>
@@ -76,6 +82,73 @@ function ItineraryRow({ item, onChange, onRemove }) {
   )
 }
 
+/* ── Destinos con opción libre ── */
+function DestinosField({ destinos, onChange }) {
+  const [customInput, setCustomInput] = useState('')
+  const [showCustom, setShowCustom]   = useState(false)
+
+  const toggle = (dest) => {
+    onChange(destinos.includes(dest)
+      ? destinos.filter(x => x !== dest)
+      : [...destinos, dest])
+  }
+
+  const addCustom = () => {
+    const val = customInput.trim()
+    if (val && !destinos.includes(val)) onChange([...destinos, val])
+    setCustomInput('')
+    setShowCustom(false)
+  }
+
+  const removeCustom = (dest) => onChange(destinos.filter(x => x !== dest))
+
+  const customDestinos = destinos.filter(d => !DESTINOS_OPT.includes(d))
+
+  return (
+    <div className="af-destinos-wrap">
+      {/* predefined chips */}
+      <div className="af-chips-opt">
+        {DESTINOS_OPT.map(dest => (
+          <button key={dest}
+            className={`af-chip-opt ${destinos.includes(dest) ? 'active' : ''}`}
+            onClick={() => toggle(dest)}
+          >{dest}</button>
+        ))}
+
+        {/* custom chips already added */}
+        {customDestinos.map(dest => (
+          <div key={dest} className="af-chip-custom">
+            <span>{dest}</span>
+            <button onClick={() => removeCustom(dest)}>✕</button>
+          </div>
+        ))}
+
+        {/* add otro destino */}
+        {!showCustom && (
+          <button className="af-chip-add" onClick={() => setShowCustom(true)}>
+            + Otro destino
+          </button>
+        )}
+      </div>
+
+      {showCustom && (
+        <div className="af-custom-dest-row">
+          <input
+            className="admin-input"
+            placeholder="Ej: Cruise Disney, Washington DC..."
+            value={customInput}
+            onChange={e => setCustomInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') addCustom(); if (e.key === 'Escape') setShowCustom(false) }}
+            autoFocus
+          />
+          <button className="admin-btn admin-btn-primary" onClick={addCustom}>Agregar</button>
+          <button className="admin-btn admin-btn-ghost" onClick={() => { setShowCustom(false); setCustomInput('') }}>✕</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Item Editor ── */
 function ItemEditor({ item, onChange, onRemove }) {
   const [open, setOpen] = useState(true)
@@ -95,7 +168,7 @@ function ItemEditor({ item, onChange, onRemove }) {
     <div className="af-item-editor">
       {/* item header */}
       <div className="af-item-header" onClick={() => setOpen(o => !o)}>
-        <span className="af-item-icono">{icono(item.tipo)}</span>
+        <span className="af-item-icono">{iconoFor(item.tipo)}</span>
         <div className="af-item-header-info">
           <span className="af-item-tipo">{item.tipo || 'Nuevo ítem'}</span>
           <span className="af-item-summary">
@@ -111,11 +184,11 @@ function ItemEditor({ item, onChange, onRemove }) {
 
       {open && (
         <div className="af-item-body">
-          {/* tipo + descripcion */}
+          {/* tipo + moneda */}
           <div className="af-grid-2">
             <Field label="Tipo de servicio">
               <select className="admin-input" value={item.tipo}
-                onChange={e => onChange({ ...item, tipo: e.target.value, icono: icono(e.target.value) })}>
+                onChange={e => onChange({ ...item, tipo: e.target.value, icono: iconoFor(e.target.value) })}>
                 <option value="">— Seleccioná —</option>
                 {ITEM_TIPOS.map(t => (
                   <option key={t.tipo} value={t.tipo}>{t.icono} {t.tipo}</option>
@@ -130,12 +203,22 @@ function ItemEditor({ item, onChange, onRemove }) {
             </Field>
           </div>
 
+          {/* descripción */}
           <Field label="Descripción">
             <input className="admin-input" value={item.descripcion} placeholder="Detalle del servicio..."
               onChange={e => setField('descripcion', e.target.value)} />
           </Field>
 
+          {/* fechas de servicio + fecha límite + total */}
           <div className="af-grid-2">
+            <Field label="Fecha de inicio">
+              <input className="admin-input" type="date" value={item.fechaInicio || ''}
+                onChange={e => setField('fechaInicio', e.target.value)} />
+            </Field>
+            <Field label="Fecha de fin">
+              <input className="admin-input" type="date" value={item.fechaFin || ''}
+                onChange={e => setField('fechaFin', e.target.value)} />
+            </Field>
             <Field label="Total del ítem">
               <input className="admin-input" type="number" value={item.total}
                 onChange={e => setField('total', Number(e.target.value))} />
@@ -183,24 +266,62 @@ function ItemEditor({ item, onChange, onRemove }) {
   )
 }
 
+/* ── Section Nav (sticky left bar) ── */
+function SectionNav({ active }) {
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+  return (
+    <nav className="af-section-nav">
+      {NAV_SECTIONS.map(s => (
+        <button
+          key={s.id}
+          className={`af-nav-btn ${active === s.id ? 'af-nav-active' : ''}`}
+          onClick={() => scrollTo(s.id)}
+          title={s.label}
+        >
+          <span className="af-nav-icon">{s.icon}</span>
+          <span className="af-nav-label">{s.label}</span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
 /* ── Main Form ── */
 export default function BookingForm({ initialData, onSave, saving }) {
-  const [d, setD] = useState(initialData)
+  const [d, setD]         = useState(initialData)
+  const [activeNav, setActiveNav] = useState('sec-general')
+  const formRef = useRef(null)
 
   useEffect(() => { setD(initialData) }, [initialData])
 
-  const set  = (path, val) => setD(prev => setNested({ ...prev }, path, val))
-  const setA = (key, val)  => setD(prev => ({ ...prev, [key]: val }))
+  // Track which section is in view
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter(e => e.isIntersecting)
+        if (visible.length) setActiveNav(visible[0].target.id)
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    )
+    NAV_SECTIONS.forEach(s => {
+      const el = document.getElementById(s.id)
+      if (el) obs.observe(el)
+    })
+    return () => obs.disconnect()
+  }, [d !== null])
 
-  const toggleDestino = (dest) => {
-    const cur = d.destinos || []
-    setA('destinos', cur.includes(dest) ? cur.filter(x => x !== dest) : [...cur, dest])
-  }
+  const setA = (key, val) => setD(prev => ({ ...prev, [key]: val }))
+  const set  = (path, val) => setD(prev => setNested({ ...prev }, path, val))
 
   /* Items handlers */
   const addItem = () => setA('items', [
     ...(d.items || []),
-    { id: uid(), tipo: '', icono: '📦', descripcion: '', moneda: 'USD', total: 0, fechaLimite: '', pagos: [] }
+    { id: uid(), tipo: '', icono: '📦', descripcion: '',
+      moneda: 'USD', total: 0,
+      fechaInicio: '', fechaFin: '', fechaLimite: '',
+      pagos: [] }
   ])
   const updateItem = (i, item) => {
     const items = [...(d.items || [])]; items[i] = item; setA('items', items)
@@ -222,114 +343,88 @@ export default function BookingForm({ initialData, onSave, saving }) {
   }
 
   return (
-    <div className="af-form">
+    <div className="af-form-wrapper">
+      <SectionNav active={activeNav} />
 
-      {/* ── GENERAL ── */}
-      <Section icon="👤" title="Información General">
-        <div className="af-grid-2">
-          <Field label="Nombre del Titular">
-            <input className="admin-input" value={d.titular}
-              onChange={e => setA('titular', e.target.value)} placeholder="Ej: Familia García" />
-          </Field>
-        </div>
-        <Field label="Destinos">
-          <div className="af-chips-opt">
-            {DESTINOS_OPT.map(dest => (
-              <button key={dest}
-                className={`af-chip-opt ${(d.destinos||[]).includes(dest) ? 'active' : ''}`}
-                onClick={() => toggleDestino(dest)}
-              >{dest}</button>
-            ))}
+      <div className="af-form" ref={formRef}>
+
+        {/* ── GENERAL ── */}
+        <Section id="sec-general" icon="👤" title="Información General">
+          <div className="af-grid-2">
+            <Field label="Nombre del Titular">
+              <input className="admin-input" value={d.titular}
+                onChange={e => setA('titular', e.target.value)} placeholder="Ej: Familia García" />
+            </Field>
           </div>
-        </Field>
-      </Section>
-
-      {/* ── HOSPEDAJE ── */}
-      <Section icon="🏨" title="Hospedaje y Estadía">
-        <div className="af-grid-2">
-          <Field label="Hotel">
-            <input className="admin-input" value={d.hotel.nombre}
-              onChange={e => set('hotel.nombre', e.target.value)} placeholder="Nombre del hotel" />
+          <Field label="Destinos">
+            <DestinosField
+              destinos={d.destinos || []}
+              onChange={v => setA('destinos', v)}
+            />
           </Field>
-          <Field label="Categoría">
-            <input className="admin-input" value={d.hotel.categoria}
-              onChange={e => set('hotel.categoria', e.target.value)} placeholder="Ej: Moderado, Deluxe..." />
-          </Field>
-          <Field label="Check-In">
-            <input className="admin-input" type="date" value={d.hotel.checkIn}
-              onChange={e => set('hotel.checkIn', e.target.value)} />
-          </Field>
-          <Field label="Check-Out">
-            <input className="admin-input" type="date" value={d.hotel.checkOut}
-              onChange={e => set('hotel.checkOut', e.target.value)} />
-          </Field>
-          <Field label="Tipo de Habitación" style={{ gridColumn:'1/-1' }}>
-            <input className="admin-input" value={d.hotel.habitacion}
-              onChange={e => set('hotel.habitacion', e.target.value)} placeholder="Ej: Suite Familiar – 4 personas" />
-          </Field>
-        </div>
-      </Section>
+        </Section>
 
-      {/* ── ITEMS CONTRATADOS ── */}
-      <Section icon="💳" title="Ítems Contratados y Pagos">
-        {/* global summary */}
-        {Object.entries(byCur).map(([cur, { total, paid }]) => (
-          <div key={cur} className="af-payment-summary af-global-summary">
-            <span>Total {cur}: <strong>${total.toLocaleString('es-AR')}</strong></span>
-            <span>Abonado: <strong>${paid.toLocaleString('es-AR')}</strong></span>
-            <span className={(total - paid) > 0 ? 'af-saldo-due' : 'af-saldo-ok'}>
-              Saldo: <strong>${(total - paid).toLocaleString('es-AR')}</strong>
-            </span>
-          </div>
-        ))}
-
-        {items.map((item, i) => (
-          <ItemEditor
-            key={item.id || i}
-            item={item}
-            onChange={updated => updateItem(i, updated)}
-            onRemove={() => removeItem(i)}
-          />
-        ))}
-
-        <button className="admin-btn admin-btn-ghost af-add-item-btn" onClick={addItem}>
-          + Agregar ítem contratado
-        </button>
-      </Section>
-
-      {/* ── BENEFICIOS ── */}
-      <Section icon="🎁" title="Beneficios Mama Mouse">
-        <DynamicList label="Promociones Aplicadas" items={d.promos || []}
-          onChange={v => setA('promos', v)} placeholder="Ej: Early Bird 10% de descuento..." />
-        <DynamicList label="Regalos y Sorpresas" items={d.regalos || []}
-          onChange={v => setA('regalos', v)} placeholder="Ej: Kit de bienvenida Mama Mouse..." />
-      </Section>
-
-      {/* ── ITINERARIO ── */}
-      <Section icon="🗺️" title="Itinerario Día a Día">
-        <div className="af-dynamic">
-          {d.itinerario.map((item, i) => (
-            <ItineraryRow key={i} item={item}
-              onChange={v => updateDia(i, v)}
-              onRemove={() => removeDia(i)} />
+        {/* ── ITEMS CONTRATADOS ── */}
+        <Section id="sec-items" icon="💳" title="Ítems Contratados y Pagos">
+          {/* global summary */}
+          {Object.entries(byCur).map(([cur, { total, paid }]) => (
+            <div key={cur} className="af-payment-summary af-global-summary">
+              <span>Total {cur}: <strong>${total.toLocaleString('es-AR')}</strong></span>
+              <span>Abonado: <strong>${paid.toLocaleString('es-AR')}</strong></span>
+              <span className={(total - paid) > 0 ? 'af-saldo-due' : 'af-saldo-ok'}>
+                Saldo: <strong>${(total - paid).toLocaleString('es-AR')}</strong>
+              </span>
+            </div>
           ))}
-          <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addDia}>
-            + Agregar día
+
+          {items.map((item, i) => (
+            <ItemEditor
+              key={item.id || i}
+              item={item}
+              onChange={updated => updateItem(i, updated)}
+              onRemove={() => removeItem(i)}
+            />
+          ))}
+
+          <button className="admin-btn admin-btn-ghost af-add-item-btn" onClick={addItem}>
+            + Agregar ítem contratado
+          </button>
+        </Section>
+
+        {/* ── BENEFICIOS ── */}
+        <Section id="sec-beneficios" icon="🎁" title="Beneficios Mama Mouse">
+          <DynamicList label="Promociones Aplicadas" items={d.promos || []}
+            onChange={v => setA('promos', v)} placeholder="Ej: Early Bird 10% de descuento..." />
+          <DynamicList label="Regalos y Sorpresas" items={d.regalos || []}
+            onChange={v => setA('regalos', v)} placeholder="Ej: Kit de bienvenida Mama Mouse..." />
+        </Section>
+
+        {/* ── ITINERARIO ── */}
+        <Section id="sec-itinerario" icon="🗺️" title="Itinerario Día a Día">
+          <div className="af-dynamic">
+            {d.itinerario.map((item, i) => (
+              <ItineraryRow key={i} item={item}
+                onChange={v => updateDia(i, v)}
+                onRemove={() => removeDia(i)} />
+            ))}
+            <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addDia}>
+              + Agregar día
+            </button>
+          </div>
+        </Section>
+
+        {/* ── SAVE BAR ── */}
+        <div className="af-save-bar">
+          <button
+            className="admin-btn admin-btn-primary af-save-btn"
+            onClick={() => onSave(d)}
+            disabled={saving}
+          >
+            {saving ? '⏳ Guardando...' : '💾 Guardar Reserva'}
           </button>
         </div>
-      </Section>
 
-      {/* ── SAVE BAR ── */}
-      <div className="af-save-bar">
-        <button
-          className="admin-btn admin-btn-primary af-save-btn"
-          onClick={() => onSave(d)}
-          disabled={saving}
-        >
-          {saving ? '⏳ Guardando...' : '💾 Guardar Reserva'}
-        </button>
       </div>
-
     </div>
   )
 }

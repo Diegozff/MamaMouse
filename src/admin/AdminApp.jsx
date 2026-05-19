@@ -7,7 +7,6 @@ function emptyBooking(id = '') {
     id,
     titular: '',
     destinos: ['Disney World'],
-    hotel: { nombre: '', categoria: '', checkIn: '', checkOut: '', habitacion: '' },
     items: [],
     promos: [],
     regalos: [],

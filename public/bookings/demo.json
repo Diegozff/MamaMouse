@@ -2,13 +2,6 @@
   "id": "demo",
   "titular": "Familia García",
   "destinos": ["Disney World", "Universal Studios"],
-  "hotel": {
-    "nombre": "Disney's Art of Animation Resort",
-    "categoria": "Moderado",
-    "checkIn": "2026-12-20",
-    "checkOut": "2026-12-27",
-    "habitacion": "Suite Familiar – El Rey León (4 personas)"
-  },
   "items": [
     {
       "id": "aereos",
@@ -17,6 +10,8 @@
       "descripcion": "Vuelo Buenos Aires (EZE) → Orlando (MCO) ida y vuelta",
       "moneda": "USD",
       "total": 3200,
+      "fechaInicio": "2026-12-20",
+      "fechaFin": "2026-12-27",
       "fechaLimite": "2026-09-15",
       "pagos": [
         { "fecha": "2026-02-10", "monto": 1000, "concepto": "Seña inicial" }
@@ -29,6 +24,8 @@
       "descripcion": "Disney's Art of Animation + Park Hopper 7 días + Genie+",
       "moneda": "USD",
       "total": 4800,
+      "fechaInicio": "2026-12-20",
+      "fechaFin": "2026-12-27",
       "fechaLimite": "2026-10-01",
       "pagos": [
         { "fecha": "2026-02-10", "monto": 1500, "concepto": "Seña paquete" },
@@ -42,6 +39,8 @@
       "descripcion": "3 días Park-to-Park con Express Pass incluido",
       "moneda": "USD",
       "total": 900,
+      "fechaInicio": "2026-12-25",
+      "fechaFin": "2026-12-27",
       "fechaLimite": "2026-10-15",
       "pagos": []
     },
@@ -52,6 +51,8 @@
       "descripcion": "Alamo – SUV Intermedia – 7 días (retiro y devolución MCO)",
       "moneda": "USD",
       "total": 420,
+      "fechaInicio": "2026-12-20",
+      "fechaFin": "2026-12-27",
       "fechaLimite": "2026-11-01",
       "pagos": [
         { "fecha": "2026-03-01", "monto": 420, "concepto": "Pago total" }
@@ -64,6 +65,8 @@
       "descripcion": "Assist Card Total – Médica, equipaje, cancelación 24/7",
       "moneda": "USD",
       "total": 380,
+      "fechaInicio": "2026-12-20",
+      "fechaFin": "2026-12-27",
       "fechaLimite": "2026-09-01",
       "pagos": [
         { "fecha": "2026-02-10", "monto": 380, "concepto": "Pago total" }
