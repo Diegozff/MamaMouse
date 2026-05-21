@@ -1,0 +1,95 @@
+/**
+ * Mama Mouse – Production Server
+ * Sirve la app React + API endpoints en un solo proceso Node.js
+ * Uso: npm start  (después de npm run build)
+ */
+
+import express        from 'express'
+import { writeFile, access } from 'node:fs/promises'
+import path           from 'node:path'
+import { fileURLToPath } from 'node:url'
+import dotenv         from 'dotenv'
+
+// Cargar variables de entorno
+dotenv.config()
+
+const __dirname   = path.dirname(fileURLToPath(import.meta.url))
+const PORT        = process.env.PORT || 3000
+const DIST_DIR    = path.join(__dirname, 'dist')
+const PUBLIC_DIR  = path.join(__dirname, 'public')
+const BOOKINGS_DIR = path.join(__dirname, 'public', 'bookings')
+
+// ── Notificaciones ────────────────────────────────────────────────────────────
+const { notifyBookingCreated, notifyBookingSummary } = await import('./server/notifier.mjs')
+
+// ── App Express ───────────────────────────────────────────────────────────────
+const app = express()
+app.use(express.json())
+
+// Helper: detectar si un archivo existe
+async function fileExists(p) {
+  try { await access(p); return true } catch { return false }
+}
+
+// ── API: Guardar reserva ──────────────────────────────────────────────────────
+app.post('/api/booking', async (req, res) => {
+  try {
+    const { id, data } = req.body
+    if (!id || !data) return res.status(400).json({ ok: false, error: 'Faltan id o data' })
+
+    const filePath = path.join(BOOKINGS_DIR, `${id}.json`)
+    const isNew    = !(await fileExists(filePath))
+
+    await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
+    console.log(`[API] Reserva guardada: ${id}`)
+
+    // Notificación automática en nueva reserva
+    let notifResult = null
+    if (isNew && (data.email || data.telefono)) {
+      console.log(`[API] Nueva reserva – enviando bienvenida a ${data.email || data.telefono}`)
+      notifResult = await notifyBookingCreated(data).catch(e => ({ error: e.message }))
+    }
+
+    res.json({ ok: true, isNew, notifResult })
+  } catch (e) {
+    console.error('[API] Error saving booking:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// ── API: Enviar notificación manual ──────────────────────────────────────────
+app.post('/api/notify/summary', async (req, res) => {
+  try {
+    const { booking } = req.body
+    if (!booking) return res.status(400).json({ ok: false, error: 'Falta booking' })
+    if (!booking.email && !booking.telefono) {
+      return res.status(400).json({ ok: false, error: 'La reserva no tiene email ni teléfono' })
+    }
+    const results = await notifyBookingSummary(booking)
+    console.log(`[API] Notificación manual enviada: ${booking.id}`)
+    res.json({ ok: true, results })
+  } catch (e) {
+    console.error('[API] Error notificación:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// ── Archivos estáticos ────────────────────────────────────────────────────────
+// La app buildeada de React
+app.use(express.static(DIST_DIR))
+// Archivos públicos (bookings JSON, guías PDF, logos, etc.)
+app.use(express.static(PUBLIC_DIR))
+
+// ── SPA Fallback: todas las rutas sirven index.html ───────────────────────────
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(DIST_DIR, 'index.html'))
+})
+
+// ── Arrancar servidor ─────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`\n🐭 Mama Mouse Server corriendo`)
+  console.log(`   Local:    http://localhost:${PORT}`)
+  console.log(`   Dominio:  ${process.env.APP_URL || 'https://www.mamamouse.com.ar'}`)
+  console.log(`   Admin:    ${process.env.APP_URL || 'http://localhost:' + PORT}/?admin`)
+  console.log(`   Env:      ${process.env.NODE_ENV || 'development'}\n`)
+})
