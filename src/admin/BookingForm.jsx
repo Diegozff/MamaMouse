@@ -279,6 +279,14 @@ export default function BookingForm({ initialData, onSave, saving }) {
             <input className="admin-input" value={d.titular}
               onChange={e => setA('titular', e.target.value)} placeholder="Ej: Familia García" />
           </Field>
+          <Field label="Email del titular">
+            <input className="admin-input" type="email" value={d.email || ''}
+              onChange={e => setA('email', e.target.value)} placeholder="reservas@email.com" />
+          </Field>
+          <Field label="WhatsApp / Teléfono">
+            <input className="admin-input" value={d.telefono || ''}
+              onChange={e => setA('telefono', e.target.value)} placeholder="+5491112345678" />
+          </Field>
         </div>
         <Field label="Destinos">
           <DestinosField destinos={d.destinos || []} onChange={v => setA('destinos', v)} />

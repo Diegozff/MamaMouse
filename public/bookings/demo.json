@@ -1,6 +1,8 @@
 {
   "id": "demo",
   "titular": "Familia García",
+  "email": "garcia@ejemplo.com",
+  "telefono": "+5491112345678",
   "destinos": ["Disney World", "Universal Studios"],
   "items": [
     {

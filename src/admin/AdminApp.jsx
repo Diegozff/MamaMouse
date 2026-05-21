@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import AdminLogin from './AdminLogin'
+import AdminLogin  from './AdminLogin'
 import BookingForm from './BookingForm'
 
 const NAV_SECTIONS = [
@@ -29,6 +29,7 @@ export default function AdminApp() {
   const [booking,     setBooking]     = useState(null)
   const [saveStatus,  setSaveStatus]  = useState('idle')
   const [activeNav,   setActiveNav]   = useState('sec-general')
+  const [notifStatus, setNotifStatus] = useState('idle') // idle | sending | ok | error | no_contact
 
   const mainRef = useRef(null)
 
@@ -82,6 +83,28 @@ export default function AdminApp() {
     } catch {
       setSaveStatus('error')
       setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }
+
+  // Enviar notificación manual (resumen de reserva)
+  const sendNotification = async (currentBooking) => {
+    if (!currentBooking?.email && !currentBooking?.telefono) {
+      setNotifStatus('no_contact')
+      setTimeout(() => setNotifStatus('idle'), 4000)
+      return
+    }
+    setNotifStatus('sending')
+    try {
+      const r = await fetch('/api/notify/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking: { ...currentBooking, id: bookingId } }),
+      })
+      if (r.ok) { setNotifStatus('ok'); setTimeout(() => setNotifStatus('idle'), 4000) }
+      else throw new Error()
+    } catch {
+      setNotifStatus('error')
+      setTimeout(() => setNotifStatus('idle'), 4000)
     }
   }
 
@@ -208,6 +231,36 @@ export default function AdminApp() {
             ))}
           </nav>
 
+          {/* notifications */}
+          <div className="asb-notify-section">
+            <div className="asb-nav-title">Notificaciones</div>
+
+            <button
+              className={`asb-notify-btn ${notifStatus === 'sending' ? 'sending' : ''}`}
+              onClick={() => sendNotification(booking)}
+              disabled={notifStatus === 'sending'}
+              title={!booking?.email && !booking?.telefono ? 'Agregá email o teléfono en la sección General' : ''}
+            >
+              <span>📣</span>
+              <span>{notifStatus === 'sending' ? 'Enviando…' : 'Notificar viajero'}</span>
+            </button>
+
+            {/* status feedback */}
+            {notifStatus === 'ok' && (
+              <div className="asb-notif-badge asb-notif-ok">✅ Notificación enviada</div>
+            )}
+            {notifStatus === 'error' && (
+              <div className="asb-notif-badge asb-notif-err">❌ Error al enviar</div>
+            )}
+            {notifStatus === 'no_contact' && (
+              <div className="asb-notif-badge asb-notif-warn">⚠️ Sin email ni teléfono</div>
+            )}
+
+            <div className="asb-notif-hint">
+              Envía un resumen de la reserva y el estado de pagos por email y WhatsApp.
+            </div>
+          </div>
+
           {/* footer actions */}
           <div className="asb-footer">
             <button
@@ -225,6 +278,7 @@ export default function AdminApp() {
             initialData={booking}
             onSave={saveBooking}
             saving={saveStatus === 'saving'}
+            onNotify={sendNotification}
           />
         </main>
 
