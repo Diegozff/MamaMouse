@@ -150,7 +150,9 @@ function PaqueteDetails({ item }) {
 function ItemCard({ item }) {
   const totalPaid = item.pagos.reduce((s, p) => s + Number(p.monto), 0)
   const saldo     = item.total - totalPaid
-  const pct       = item.total > 0 ? Math.min(100, Math.round((totalPaid / item.total) * 100)) : 0
+  // Si hay saldo a pagar en destino, el % se calcula solo sobre lo que se paga a la agencia
+  const baseCalc  = item.total - (item.saldoEnHotel || 0)
+  const pct       = baseCalc > 0 ? Math.min(100, Math.round((totalPaid / baseCalc) * 100)) : 0
 
   const estado = saldo <= 0
     ? { label: '✅ Pagado',   cls: 'item-estado-ok'      }
@@ -230,9 +232,10 @@ export default function PaymentStatus({ items = [] }) {
   // Group totals by currency for the summary hero
   const byCur = {}
   for (const it of items) {
-    if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0 }
-    byCur[it.moneda].total += it.total
-    byCur[it.moneda].paid  += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+    if (!byCur[it.moneda]) byCur[it.moneda] = { total: 0, paid: 0, enDestino: 0 }
+    byCur[it.moneda].total     += it.total
+    byCur[it.moneda].paid      += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+    byCur[it.moneda].enDestino += it.saldoEnHotel || 0
   }
 
   return (
@@ -243,9 +246,10 @@ export default function PaymentStatus({ items = [] }) {
       </div>
 
       {/* Global hero card per currency */}
-      {Object.entries(byCur).map(([cur, { total, paid }]) => {
-        const saldo = total - paid
-        const pct   = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0
+      {Object.entries(byCur).map(([cur, { total, paid, enDestino }]) => {
+        const baseTotal = total - enDestino   // lo que se paga a la agencia
+        const saldo     = baseTotal - paid
+        const pct       = baseTotal > 0 ? Math.min(100, Math.round((paid / baseTotal) * 100)) : 0
         return (
           <div key={cur} className="payment-total-card">
             <div className="payment-total-left">
@@ -253,9 +257,14 @@ export default function PaymentStatus({ items = [] }) {
               <div className="payment-total-amount">${total.toLocaleString('es-AR')} {cur}</div>
               <div className="payment-total-sub">
                 {saldo > 0
-                  ? `Saldo pendiente: $${saldo.toLocaleString('es-AR')} ${cur}`
-                  : '✅ ¡Todo pagado!'}
+                  ? `Saldo a la agencia: $${saldo.toLocaleString('es-AR')} ${cur}`
+                  : '✅ ¡Todo pagado a la agencia!'}
               </div>
+              {enDestino > 0 && (
+                <div className="payment-total-sub" style={{ color: '#b7770d', marginTop: 2 }}>
+                  🏨 En destino: ${enDestino.toLocaleString('es-AR')} {cur}
+                </div>
+              )}
             </div>
             <div className="payment-total-right">
               <div className="payment-total-pct">{pct}%</div>
