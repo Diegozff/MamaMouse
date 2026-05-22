@@ -34,11 +34,13 @@ export default function App() {
   return <BookingView id={urlId} />
 }
 
-/* ── Splash → WelcomePage (cuando no hay ?id) ─────────────────────────── */
+/* ── WelcomeFlow: logo2 fijo como página de inicio ───────────────────── */
 function WelcomeFlow() {
-  const [ready, setReady] = useState(false)
-  if (!ready) return <SplashScreen onDone={() => setReady(true)} />
-  return <WelcomePage />
+  return (
+    <div className="splash">
+      <img src="/logo2.jpeg" alt="Mama Mouse" className="splash-logo" />
+    </div>
+  )
 }
 
 /* ── Vista de reserva (solo se monta cuando hay ?id) ──────────────────── */
