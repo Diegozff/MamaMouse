@@ -217,6 +217,14 @@ function PaqueteFields({ item, setField }) {
       </div>
 
       <div className="af-hotel-block">
+        <div className="af-hotel-block-title">🎁 Servicios incluidos</div>
+        <DynamicList label="Extras contratados" items={item.extras || []}
+          onChange={v => setField('extras', v)} placeholder="Ej: Transporte gratuito a los parques..." />
+        <DynamicList label="Gratis / Cortesía" items={item.gratis || []}
+          onChange={v => setField('gratis', v)} placeholder="Ej: Express pass ilimitados..." />
+      </div>
+
+      <div className="af-hotel-block">
         <div className="af-hotel-block-title">💳 Estado de Pago</div>
         <label className="af-hotel-toggle">
           <input type="checkbox" checked={!!item.pagadoTotal}

@@ -128,6 +128,18 @@ function PaqueteDetails({ item }) {
           <div className="hotel-service-item" style={{ whiteSpace: 'pre-line' }}>{item.ticketsDesc}</div>
         </div>
       )}
+      {item.extras?.length > 0 && (
+        <div className="hotel-service-block">
+          <div className="hotel-service-title">✨ Extras</div>
+          {item.extras.map((e, i) => <div key={i} className="hotel-service-item">• {e}</div>)}
+        </div>
+      )}
+      {item.gratis?.length > 0 && (
+        <div className="hotel-service-block hotel-service-block-free">
+          <div className="hotel-service-title">🎁 Gratis / Cortesía</div>
+          {item.gratis.map((g, i) => <div key={i} className="hotel-service-item">• {g}</div>)}
+        </div>
+      )}
       {item.pagadoTotal && (
         <div className="hotel-pago-badge hotel-pago-total">✅ Paquete abonado por completo</div>
       )}

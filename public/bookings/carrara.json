@@ -1,0 +1,92 @@
+{
+  "id": "carrara",
+  "titular": "Familia Carrara",
+  "usuario": "carrara",
+  "password": "viaje2026",
+  "email": "",
+  "telefono": "",
+  "destinos": ["Disney World", "Universal Studios"],
+  "items": [
+    {
+      "id": "hotel-disney",
+      "tipo": "Hoteles",
+      "icono": "🏨",
+      "descripcion": "Disney's Art Of Animation Resort – Habitación La Sirenita",
+      "moneda": "USD",
+      "total": 1376.03,
+      "fechaInicio": "2026-07-06",
+      "fechaFin": "2026-07-11",
+      "fechaLimite": "2026-07-06",
+      "nroReserva": "615820928372",
+      "hotel": "Disney's Art Of Animation Resort",
+      "direccion": "1850 Animation Way, Orlando, FL",
+      "huespedes": "2 adultos + 1 menor de 7 años",
+      "promos": ["Ahorro en habitación"],
+      "extras": ["Transporte gratuito a los parques / Disney Springs", "Entrada Temprana"],
+      "gratis": ["Entradas para parque acuático (Blizzard Beach o Typhoon Lagoon) válidas para el día del check in"],
+      "saldoEnHotel": 1107.33,
+      "pagadoTotal": false,
+      "pagos": [
+        { "fecha": "2026-04-27", "monto": 268.70, "concepto": "Pago parcial" }
+      ]
+    },
+    {
+      "id": "tickets-disney",
+      "tipo": "Tickets Disney",
+      "icono": "🏰",
+      "descripcion": "PROMO TICKETS MÁGICOS — 4 días, un parque por día (Magic Kingdom, Hollywood Studios, Animal Kingdom y EPCOT). 2 adultos + 1 menor de 7 años. Memory Maker incluido (fotos).",
+      "moneda": "USD",
+      "total": 1489.35,
+      "fechaInicio": "2026-07-07",
+      "fechaFin": "2026-07-13",
+      "fechaLimite": "2026-07-07",
+      "nroReserva": "VJCK90393939",
+      "validezDesde": "2026-07-07",
+      "validezHasta": "2026-07-13",
+      "pagadoTotal": true,
+      "pagos": [
+        { "fecha": "2026-04-27", "monto": 1489.35, "concepto": "Abonado completo" }
+      ]
+    },
+    {
+      "id": "paquete-universal",
+      "tipo": "Paquete Universal",
+      "icono": "🌟",
+      "descripcion": "Hard Rock Hotel + Tickets Universal — 3 noches",
+      "moneda": "USD",
+      "total": 3971.11,
+      "fechaInicio": "2026-07-11",
+      "fechaFin": "2026-07-14",
+      "fechaLimite": "",
+      "nroReserva": "16Q514U2",
+      "huespedes": "2 adultos + 1 menor de 7 años",
+      "hotel": "Hard Rock Hotel",
+      "checkIn": "2026-07-11",
+      "checkOut": "2026-07-14",
+      "ticketsDesc": "1 día, 2 parques park to park (Universal Studios + Islands of Adventure) + 1 día Epic Universe. Válidas del 11 al 15 de julio 2026.\nExpress pass para Epic Universe, válidos para el 13 de julio 2026.",
+      "extras": ["Transporte gratuito a los parques / Citywalk", "Entrada Temprana"],
+      "gratis": ["Express pass ilimitados para Universal Studios e Islands of Adventure, válidos del día del check in al día del check out"],
+      "pagadoTotal": false,
+      "pagos": []
+    }
+  ],
+  "promos": [],
+  "regalos": [],
+  "tips": [
+    "📱 App My Disney Experience: Ya pueden descargar la app y vincular su reserva con el número proporcionado. Si prefieren que lo haga yo, solo avísenme.",
+    "🍽️ Reservas de Experiencias/Restaurantes: Se pueden realizar 60 días antes del check-in.",
+    "⚡ Lightning Lanes (Fila Rápida): Se pueden comprar 7 días antes del check-in.",
+    "💬 Si necesitan asistencia con reservas de restaurantes o experiencias, por favor infórmenme con 1-2 días de antelación."
+  ],
+  "itinerario": [
+    { "dia": 1, "fecha": "2026-07-06", "plan": "Llegada ✈️ — Check-in Disney's Art Of Animation Resort" },
+    { "dia": 2, "fecha": "2026-07-07", "plan": "Magic Kingdom 🏰" },
+    { "dia": 3, "fecha": "2026-07-08", "plan": "Hollywood Studios 🎬" },
+    { "dia": 4, "fecha": "2026-07-09", "plan": "Animal Kingdom 🦁" },
+    { "dia": 5, "fecha": "2026-07-10", "plan": "EPCOT 🌍" },
+    { "dia": 6, "fecha": "2026-07-11", "plan": "Check-out Disney Resort 🏨 — Check-in Hard Rock Hotel Universal 🎸" },
+    { "dia": 7, "fecha": "2026-07-12", "plan": "Universal Studios + Islands of Adventure 🎢" },
+    { "dia": 8, "fecha": "2026-07-13", "plan": "Epic Universe ✨ — Express Pass incluido" },
+    { "dia": 9, "fecha": "2026-07-14", "plan": "Check-out Hard Rock Hotel — Regreso 🏠" }
+  ]
+}
