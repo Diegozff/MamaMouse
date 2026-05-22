@@ -6,12 +6,10 @@ import BottomTabs from './components/BottomTabs'
 import Overview from './components/Overview'
 import PaymentStatus from './components/PaymentStatus'
 import Itinerary from './components/Itinerary'
-import TravelGuide from './components/TravelGuide'
 import GuidesLibrary from './components/GuidesLibrary'
 import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
 import WelcomePage from './components/WelcomePage'
-import { TABS } from './tabs'
 
 function getEstado(items = []) {
   let total = 0, paid = 0
@@ -25,14 +23,23 @@ function getEstado(items = []) {
   return { label: '🔄 Pago Parcial', cls: 'estado-parcial' }
 }
 
-const isAdmin = new URLSearchParams(window.location.search).has('admin')
+const params  = new URLSearchParams(window.location.search)
+const isAdmin = params.has('admin')
+const urlId   = params.get('id')
 
+/* ── Componente principal ─────────────────────────────────────────────── */
 export default function App() {
-  if (isAdmin) return <AdminApp />
-  const [booking,     setBooking]     = useState(null)
-  const [status,      setStatus]      = useState('loading')
-  const [tab,         setTab]         = useState('overview')
-  const [showSplash,  setShowSplash]  = useState(true)
+  if (isAdmin)  return <AdminApp />
+  if (!urlId)   return <WelcomePage />
+  return <BookingView id={urlId} />
+}
+
+/* ── Vista de reserva (solo se monta cuando hay ?id) ──────────────────── */
+function BookingView({ id }) {
+  const [booking,    setBooking]    = useState(null)
+  const [status,     setStatus]     = useState('loading')
+  const [tab,        setTab]        = useState('overview')
+  const [showSplash, setShowSplash] = useState(true)
   const contentRef = useRef(null)
 
   const handleSplashDone = useCallback(() => setShowSplash(false), [])
@@ -42,17 +49,14 @@ export default function App() {
   }, [tab])
 
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get('id')
-    if (!id) { setStatus('welcome'); return }
     fetch(`/bookings/${id}.json`)
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(d  => { setBooking(d); setStatus('ok') })
       .catch(() => setStatus('error'))
-  }, [])
+  }, [id])
 
-  if (showSplash && status !== 'welcome') return <SplashScreen onDone={handleSplashDone} />
+  if (showSplash) return <SplashScreen onDone={handleSplashDone} />
 
-  if (status === 'welcome') return <WelcomePage />
   if (status === 'loading') return <div className="loading"><div className="loading-spinner"/></div>
   if (status === 'error') return (
     <div className="not-found">
