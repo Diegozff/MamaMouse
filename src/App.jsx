@@ -29,9 +29,16 @@ const urlId   = params.get('id')
 
 /* ── Componente principal ─────────────────────────────────────────────── */
 export default function App() {
-  if (isAdmin)  return <AdminApp />
-  if (!urlId)   return <WelcomePage />
+  if (isAdmin) return <AdminApp />
+  if (!urlId)  return <WelcomeFlow />
   return <BookingView id={urlId} />
+}
+
+/* ── Splash → WelcomePage (cuando no hay ?id) ─────────────────────────── */
+function WelcomeFlow() {
+  const [ready, setReady] = useState(false)
+  if (!ready) return <SplashScreen onDone={() => setReady(true)} />
+  return <WelcomePage />
 }
 
 /* ── Vista de reserva (solo se monta cuando hay ?id) ──────────────────── */
