@@ -5,7 +5,7 @@
  */
 
 import express        from 'express'
-import { writeFile, access } from 'node:fs/promises'
+import { writeFile, readFile, readdir, access } from 'node:fs/promises'
 import path           from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
@@ -30,6 +30,33 @@ app.use(express.json())
 async function fileExists(p) {
   try { await access(p); return true } catch { return false }
 }
+
+// ── API: Login viajero ────────────────────────────────────────────────────────
+app.post('/api/login', async (req, res) => {
+  try {
+    const { usuario, password } = req.body
+    if (!usuario || !password) return res.status(400).json({ ok: false, error: 'Faltan credenciales' })
+
+    const files = await readdir(BOOKINGS_DIR)
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue
+      try {
+        const raw  = await readFile(path.join(BOOKINGS_DIR, file), 'utf-8')
+        const data = JSON.parse(raw)
+        if (data.usuario === usuario.trim() && data.password === password) {
+          const id = file.replace('.json', '')
+          console.log(`[API] Login exitoso: ${usuario} → ${id}`)
+          return res.json({ ok: true, id })
+        }
+      } catch { /* archivo corrupto, skip */ }
+    }
+    console.log(`[API] Login fallido: ${usuario}`)
+    res.status(401).json({ ok: false, error: 'Usuario o contraseña incorrectos' })
+  } catch (e) {
+    console.error('[API] Error login:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
 
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {

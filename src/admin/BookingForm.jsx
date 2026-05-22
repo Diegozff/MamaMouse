@@ -288,6 +288,25 @@ export default function BookingForm({ initialData, onSave, saving }) {
               onChange={e => setA('telefono', e.target.value)} placeholder="+5491112345678" />
           </Field>
         </div>
+
+        <div className="af-login-section">
+          <div className="af-login-header">🔐 Acceso del viajero</div>
+          <div className="af-grid-2">
+            <Field label="Usuario">
+              <input className="admin-input" value={d.usuario || ''}
+                onChange={e => setA('usuario', e.target.value)}
+                placeholder="ej: familia-garcia"
+                autoCapitalize="none" autoCorrect="off" />
+            </Field>
+            <Field label="Contraseña">
+              <input className="admin-input" value={d.password || ''}
+                onChange={e => setA('password', e.target.value)}
+                placeholder="ej: disney2026" />
+            </Field>
+          </div>
+          <p className="af-login-hint">El viajero usará estos datos para ingresar a su reserva en www.mamamouse.com.ar</p>
+        </div>
+
         <Field label="Destinos">
           <DestinosField destinos={d.destinos || []} onChange={v => setA('destinos', v)} />
         </Field>
