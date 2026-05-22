@@ -66,8 +66,11 @@
       "ticketsDesc": "1 día, 2 parques park to park (Universal Studios + Islands of Adventure) + 1 día Epic Universe. Válidas del 11 al 15 de julio 2026.\nExpress pass para Epic Universe, válidos para el 13 de julio 2026.",
       "extras": ["Transporte gratuito a los parques / Citywalk", "Entrada Temprana"],
       "gratis": ["Express pass ilimitados para Universal Studios e Islands of Adventure, válidos del día del check in al día del check out"],
-      "pagadoTotal": false,
-      "pagos": []
+      "pagadoTotal": true,
+      "pagos": [
+        { "fecha": "2026-04-27", "monto": 150, "concepto": "Pago parcial" },
+        { "fecha": "2026-05-22", "monto": 3821.11, "concepto": "Saldo — Abonado completo" }
+      ]
     }
   ],
   "promos": [],
