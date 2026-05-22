@@ -1689,6 +1689,11 @@ select.admin-input { cursor: pointer; }
 }
 .af-pdf-upload-btn:hover { background: var(--gradient-soft); }
 .af-pdf-upload-btn.uploading { opacity: 0.6; cursor: not-allowed; }
+.af-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
 
 /* ══════════════════════════════════
    TRAVELER – HOTEL DETAILS CARD

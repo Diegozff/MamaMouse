@@ -130,10 +130,12 @@ function DestinosField({ destinos, onChange }) {
   )
 }
 
-const HOTEL_TIPOS  = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
-const TICKET_TIPOS = ['Tickets Disney', 'Tickets Universal', 'Otros Tickets']
-const isHotel  = tipo => HOTEL_TIPOS.includes(tipo)
-const isTicket = tipo => TICKET_TIPOS.includes(tipo)
+const HOTEL_TIPOS   = ['Hoteles']
+const TICKET_TIPOS  = ['Tickets Disney', 'Tickets Universal', 'Otros Tickets']
+const PAQUETE_TIPOS = ['Paquete Disney', 'Paquete Universal']
+const isHotel   = tipo => HOTEL_TIPOS.includes(tipo)
+const isTicket  = tipo => TICKET_TIPOS.includes(tipo)
+const isPaquete = tipo => PAQUETE_TIPOS.includes(tipo)
 
 /* ── Ticket-specific fields ── */
 function TicketFields({ item, setField }) {
@@ -161,6 +163,68 @@ function TicketFields({ item, setField }) {
         <span>Marcar como <strong>Abonado por completo</strong> ✅</span>
       </label>
     </div>
+  )
+}
+
+/* ── Paquete-specific fields (Hotel + Tickets) ── */
+function PaqueteFields({ item, setField }) {
+  return (
+    <>
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">📦 Datos del Paquete</div>
+        <div className="af-grid-2">
+          <Field label="N° de Reserva">
+            <input className="admin-input" value={item.nroReserva || ''}
+              onChange={e => setField('nroReserva', e.target.value)}
+              placeholder="Ej: PKG-123456" />
+          </Field>
+          <Field label="Huéspedes">
+            <input className="admin-input" type="number" min="1"
+              value={item.huespedes || ''}
+              onChange={e => setField('huespedes', e.target.value)}
+              placeholder="Cantidad de personas" />
+          </Field>
+        </div>
+      </div>
+
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">🏨 Hotel incluido</div>
+        <div className="af-grid-2">
+          <Field label="Nombre del Hotel">
+            <input className="admin-input" value={item.hotel || ''}
+              onChange={e => setField('hotel', e.target.value)}
+              placeholder="Ej: Disney's All-Star Sports" />
+          </Field>
+          <Field label="Check-in">
+            <input className="admin-input" type="date" value={item.checkIn || item.fechaInicio || ''}
+              onChange={e => setField('checkIn', e.target.value)} />
+          </Field>
+          <Field label="Check-out">
+            <input className="admin-input" type="date" value={item.checkOut || item.fechaFin || ''}
+              onChange={e => setField('checkOut', e.target.value)} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">🎢 Tickets de Parque incluidos</div>
+        <Field label="Descripción de los tickets">
+          <textarea className="admin-input af-textarea"
+            value={item.ticketsDesc || ''}
+            onChange={e => setField('ticketsDesc', e.target.value)}
+            placeholder="Ej: 5 días Park Hopper — Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom + Universal 2 días..." />
+        </Field>
+      </div>
+
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">💳 Estado de Pago</div>
+        <label className="af-hotel-toggle">
+          <input type="checkbox" checked={!!item.pagadoTotal}
+            onChange={e => setField('pagadoTotal', e.target.checked)} />
+          <span>Marcar paquete como <strong>Pago Total</strong> ✅</span>
+        </label>
+      </div>
+    </>
   )
 }
 
@@ -338,6 +402,11 @@ function ItemEditor({ item, onChange, onRemove, bookingId }) {
                 onChange={e => setField('fechaLimite', e.target.value)} />
             </Field>
           </div>
+
+          {/* Campos específicos de paquete */}
+          {isPaquete(item.tipo) && (
+            <PaqueteFields item={item} setField={setField} />
+          )}
 
           {/* Campos específicos de tickets */}
           {isTicket(item.tipo) && (
