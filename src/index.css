@@ -1630,6 +1630,114 @@ select.admin-input { cursor: pointer; }
 .af-custom-dest-row .admin-input { flex: 1; min-width: 200px; }
 
 /* ══════════════════════════════════
+   ADMIN – HOTEL FIELDS
+══════════════════════════════════ */
+.af-hotel-block {
+  margin-top: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, #f0f8ff, #f8f0ff);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.af-hotel-block-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+.af-hotel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.af-hotel-toggle input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--purple);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.af-pdf-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.af-pdf-link {
+  color: var(--purple);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+}
+.af-pdf-link:hover { text-decoration: underline; }
+.af-pdf-upload-btn {
+  display: inline-block;
+  padding: 9px 18px;
+  border-radius: 50px;
+  border: 2px dashed var(--purple);
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: background 0.15s;
+}
+.af-pdf-upload-btn:hover { background: var(--gradient-soft); }
+.af-pdf-upload-btn.uploading { opacity: 0.6; cursor: not-allowed; }
+
+/* ══════════════════════════════════
+   TRAVELER – HOTEL DETAILS CARD
+══════════════════════════════════ */
+.hotel-details {
+  margin: 10px 0;
+  padding: 14px;
+  background: linear-gradient(135deg, #f0f8ff, #f8f0ff);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hotel-info-grid { display: flex; flex-direction: column; gap: 6px; }
+.hotel-info-row { display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+.hotel-info-label { font-weight: 700; color: var(--text-muted); min-width: 90px; flex-shrink: 0; }
+.hotel-info-val { color: var(--text-dark); font-weight: 600; }
+.hotel-service-block { display: flex; flex-direction: column; gap: 4px; }
+.hotel-service-title { font-size: 12px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+.hotel-service-item { font-size: 13px; color: var(--text-dark); padding-left: 4px; }
+.hotel-service-block-free .hotel-service-title { color: #27ae60; }
+.hotel-service-block-free .hotel-service-item { color: #1e8449; font-weight: 600; }
+.hotel-pago-badge {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.hotel-pago-total { background: #eafaf1; color: #1e8449; }
+.hotel-pago-saldo { background: #fef9e7; color: #b7770d; }
+.hotel-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--gradient);
+  color: white;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  align-self: flex-start;
+  transition: opacity 0.15s;
+}
+.hotel-pdf-btn:hover { opacity: 0.9; }
+
+/* ══════════════════════════════════
    LOGIN PAGE (viajeros)
 ══════════════════════════════════ */
 .login-page {

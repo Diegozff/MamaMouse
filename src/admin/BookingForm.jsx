@@ -130,8 +130,113 @@ function DestinosField({ destinos, onChange }) {
   )
 }
 
+const HOTEL_TIPOS = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
+const isHotel = tipo => HOTEL_TIPOS.includes(tipo)
+
+/* ── Hotel-specific fields ── */
+function HotelFields({ item, setField, bookingId }) {
+  const [uploading, setUploading] = useState(false)
+
+  const handlePdf = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const buf = await file.arrayBuffer()
+      const r = await fetch(`/api/upload-pdf/${encodeURIComponent(bookingId)}/${encodeURIComponent(item.id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/pdf' },
+        body: buf,
+      })
+      const data = await r.json()
+      if (data.ok) setField('pdfUrl', data.url)
+    } catch (err) { console.error(err) }
+    setUploading(false)
+  }
+
+  return (
+    <>
+      {/* Datos del hotel */}
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">🏨 Datos del Hotel</div>
+        <div className="af-grid-2">
+          <Field label="N° de Reserva">
+            <input className="admin-input" value={item.nroReserva || ''}
+              onChange={e => setField('nroReserva', e.target.value)}
+              placeholder="Ej: RES-12345" />
+          </Field>
+          <Field label="Nombre del Hotel">
+            <input className="admin-input" value={item.hotel || ''}
+              onChange={e => setField('hotel', e.target.value)}
+              placeholder="Ej: Disney's Grand Floridian" />
+          </Field>
+          <Field label="Dirección">
+            <input className="admin-input" value={item.direccion || ''}
+              onChange={e => setField('direccion', e.target.value)}
+              placeholder="Ej: 4401 Floridian Way, Orlando" />
+          </Field>
+          <Field label="Huéspedes">
+            <input className="admin-input" type="number" min="1"
+              value={item.huespedes || ''}
+              onChange={e => setField('huespedes', e.target.value)}
+              placeholder="Cantidad de personas" />
+          </Field>
+        </div>
+      </div>
+
+      {/* Servicios */}
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">🎁 Servicios incluidos</div>
+        <DynamicList label="Promos aplicadas" items={item.promos || []}
+          onChange={v => setField('promos', v)} placeholder="Ej: 10% Early Bird..." />
+        <DynamicList label="Extras contratados" items={item.extras || []}
+          onChange={v => setField('extras', v)} placeholder="Ej: Desayuno buffet..." />
+        <DynamicList label="Gratis / Cortesía" items={item.gratis || []}
+          onChange={v => setField('gratis', v)} placeholder="Ej: Traslado desde aeropuerto..." />
+      </div>
+
+      {/* Pago en hotel */}
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">💳 Pago en el Hotel</div>
+        <label className="af-hotel-toggle">
+          <input type="checkbox" checked={!!item.pagadoTotal}
+            onChange={e => setField('pagadoTotal', e.target.checked)} />
+          <span>Marcar como <strong>Pago Total</strong> — sin saldo pendiente en destino</span>
+        </label>
+        {!item.pagadoTotal && (
+          <Field label="Saldo a pagar en el hotel">
+            <input className="admin-input" type="number" min="0"
+              value={item.saldoEnHotel ?? 0}
+              onChange={e => setField('saldoEnHotel', Number(e.target.value))} />
+          </Field>
+        )}
+      </div>
+
+      {/* PDF */}
+      <div className="af-hotel-block">
+        <div className="af-hotel-block-title">📄 Voucher PDF</div>
+        {item.pdfUrl ? (
+          <div className="af-pdf-row">
+            <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="af-pdf-link">
+              📄 Ver PDF adjunto
+            </a>
+            <button className="af-remove-btn" title="Quitar PDF"
+              onClick={() => setField('pdfUrl', '')}>✕</button>
+          </div>
+        ) : (
+          <label className={`af-pdf-upload-btn ${uploading ? 'uploading' : ''}`}>
+            {uploading ? '⏳ Subiendo…' : '📎 Adjuntar PDF'}
+            <input type="file" accept="application/pdf" style={{ display: 'none' }}
+              onChange={handlePdf} disabled={uploading} />
+          </label>
+        )}
+      </div>
+    </>
+  )
+}
+
 /* ── Item Editor ── */
-function ItemEditor({ item, onChange, onRemove }) {
+function ItemEditor({ item, onChange, onRemove, bookingId }) {
   const [open, setOpen] = useState(true)
   const setField = (key, val) => onChange({ ...item, [key]: val })
 
@@ -202,6 +307,11 @@ function ItemEditor({ item, onChange, onRemove }) {
                 onChange={e => setField('fechaLimite', e.target.value)} />
             </Field>
           </div>
+
+          {/* Campos específicos de hotel */}
+          {isHotel(item.tipo) && (
+            <HotelFields item={item} setField={setField} bookingId={bookingId} />
+          )}
 
           <div className="af-payment-summary">
             <span>Abonado: <strong>${totalPaid.toLocaleString('es-AR')} {item.moneda}</strong></span>
@@ -326,7 +436,8 @@ export default function BookingForm({ initialData, onSave, saving }) {
         {items.map((item, i) => (
           <ItemEditor key={item.id || i} item={item}
             onChange={updated => updateItem(i, updated)}
-            onRemove={() => removeItem(i)} />
+            onRemove={() => removeItem(i)}
+            bookingId={d.id} />
         ))}
         <button className="admin-btn admin-btn-ghost af-add-item-btn" onClick={addItem}>
           + Agregar ítem contratado

@@ -21,6 +21,59 @@ function DeadlineBadge({ fechaLimite, saldo }) {
   return <span className={`deadline-badge ${cls}`}>{label}</span>
 }
 
+const HOTEL_TIPOS = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
+const isHotel = tipo => HOTEL_TIPOS.includes(tipo)
+
+function HotelDetails({ item }) {
+  const hasList = (arr) => arr && arr.length > 0
+  return (
+    <div className="hotel-details">
+      {/* Info principal */}
+      {(item.hotel || item.nroReserva || item.direccion || item.huespedes) && (
+        <div className="hotel-info-grid">
+          {item.hotel      && <div className="hotel-info-row"><span className="hotel-info-label">🏨 Hotel</span><span className="hotel-info-val">{item.hotel}</span></div>}
+          {item.nroReserva && <div className="hotel-info-row"><span className="hotel-info-label">🔖 N° Reserva</span><span className="hotel-info-val">{item.nroReserva}</span></div>}
+          {item.direccion  && <div className="hotel-info-row"><span className="hotel-info-label">📍 Dirección</span><span className="hotel-info-val">{item.direccion}</span></div>}
+          {item.huespedes  && <div className="hotel-info-row"><span className="hotel-info-label">👥 Huéspedes</span><span className="hotel-info-val">{item.huespedes} personas</span></div>}
+        </div>
+      )}
+      {/* Servicios */}
+      {hasList(item.promos) && (
+        <div className="hotel-service-block">
+          <div className="hotel-service-title">🎟️ Promos</div>
+          {item.promos.map((p, i) => <div key={i} className="hotel-service-item">• {p}</div>)}
+        </div>
+      )}
+      {hasList(item.extras) && (
+        <div className="hotel-service-block">
+          <div className="hotel-service-title">✨ Extras</div>
+          {item.extras.map((e, i) => <div key={i} className="hotel-service-item">• {e}</div>)}
+        </div>
+      )}
+      {hasList(item.gratis) && (
+        <div className="hotel-service-block hotel-service-block-free">
+          <div className="hotel-service-title">🎁 Gratis / Cortesía</div>
+          {item.gratis.map((g, i) => <div key={i} className="hotel-service-item">• {g}</div>)}
+        </div>
+      )}
+      {/* Saldo en hotel */}
+      {item.pagadoTotal ? (
+        <div className="hotel-pago-badge hotel-pago-total">✅ Pago total — sin saldo en destino</div>
+      ) : item.saldoEnHotel > 0 ? (
+        <div className="hotel-pago-badge hotel-pago-saldo">
+          🏨 Saldo a pagar en el hotel: <strong>{money(item.saldoEnHotel, item.moneda)}</strong>
+        </div>
+      ) : null}
+      {/* PDF */}
+      {item.pdfUrl && (
+        <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="hotel-pdf-btn">
+          📄 Descargar voucher PDF
+        </a>
+      )}
+    </div>
+  )
+}
+
 function ItemCard({ item }) {
   const totalPaid = item.pagos.reduce((s, p) => s + Number(p.monto), 0)
   const saldo     = item.total - totalPaid
@@ -43,6 +96,9 @@ function ItemCard({ item }) {
         </div>
         <span className={`item-estado-badge ${estado.cls}`}>{estado.label}</span>
       </div>
+
+      {/* hotel details */}
+      {isHotel(item.tipo) && <HotelDetails item={item} />}
 
       {/* progress bar */}
       <div className="item-progress-wrap">

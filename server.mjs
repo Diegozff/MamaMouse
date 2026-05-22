@@ -5,7 +5,7 @@
  */
 
 import express        from 'express'
-import { writeFile, readFile, readdir, access } from 'node:fs/promises'
+import { writeFile, readFile, readdir, access, mkdir } from 'node:fs/promises'
 import path           from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
@@ -18,6 +18,10 @@ const PORT        = process.env.PORT || 3000
 const DIST_DIR    = path.join(__dirname, 'dist')
 const PUBLIC_DIR  = path.join(__dirname, 'public')
 const BOOKINGS_DIR = path.join(__dirname, 'public', 'bookings')
+const PDFS_DIR     = path.join(__dirname, 'public', 'bookings', 'pdfs')
+
+// Asegurar que exista el directorio de PDFs
+await mkdir(PDFS_DIR, { recursive: true })
 
 // ── Notificaciones ────────────────────────────────────────────────────────────
 const { notifyBookingCreated, notifyBookingSummary } = await import('./server/notifier.mjs')
@@ -57,6 +61,23 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ ok: false, error: e.message })
   }
 })
+
+// ── API: Upload PDF ───────────────────────────────────────────────────────────
+app.post('/api/upload-pdf/:bookingId/:itemId',
+  express.raw({ type: ['application/pdf', 'application/octet-stream'], limit: '20mb' }),
+  async (req, res) => {
+    try {
+      const { bookingId, itemId } = req.params
+      const filename = `${bookingId}-${itemId}.pdf`
+      await writeFile(path.join(PDFS_DIR, filename), req.body)
+      console.log(`[API] PDF guardado: ${filename}`)
+      res.json({ ok: true, url: `/bookings/pdfs/${filename}` })
+    } catch (e) {
+      console.error('[API] Error PDF upload:', e.message)
+      res.status(500).json({ ok: false, error: e.message })
+    }
+  }
+)
 
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {
