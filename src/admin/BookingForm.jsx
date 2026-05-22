@@ -130,8 +130,39 @@ function DestinosField({ destinos, onChange }) {
   )
 }
 
-const HOTEL_TIPOS = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
-const isHotel = tipo => HOTEL_TIPOS.includes(tipo)
+const HOTEL_TIPOS  = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
+const TICKET_TIPOS = ['Tickets Disney', 'Tickets Universal', 'Otros Tickets']
+const isHotel  = tipo => HOTEL_TIPOS.includes(tipo)
+const isTicket = tipo => TICKET_TIPOS.includes(tipo)
+
+/* ── Ticket-specific fields ── */
+function TicketFields({ item, setField }) {
+  return (
+    <div className="af-hotel-block">
+      <div className="af-hotel-block-title">🎟️ Datos de los Tickets</div>
+      <div className="af-grid-2">
+        <Field label="N° de Reserva">
+          <input className="admin-input" value={item.nroReserva || ''}
+            onChange={e => setField('nroReserva', e.target.value)}
+            placeholder="Ej: TKT-987654" />
+        </Field>
+        <Field label="Validez — Desde">
+          <input className="admin-input" type="date" value={item.validezDesde || ''}
+            onChange={e => setField('validezDesde', e.target.value)} />
+        </Field>
+        <Field label="Validez — Hasta">
+          <input className="admin-input" type="date" value={item.validezHasta || ''}
+            onChange={e => setField('validezHasta', e.target.value)} />
+        </Field>
+      </div>
+      <label className="af-hotel-toggle" style={{ marginTop: 10 }}>
+        <input type="checkbox" checked={!!item.pagadoTotal}
+          onChange={e => setField('pagadoTotal', e.target.checked)} />
+        <span>Marcar como <strong>Abonado por completo</strong> ✅</span>
+      </label>
+    </div>
+  )
+}
 
 /* ── Hotel-specific fields ── */
 function HotelFields({ item, setField, bookingId }) {
@@ -307,6 +338,11 @@ function ItemEditor({ item, onChange, onRemove, bookingId }) {
                 onChange={e => setField('fechaLimite', e.target.value)} />
             </Field>
           </div>
+
+          {/* Campos específicos de tickets */}
+          {isTicket(item.tipo) && (
+            <TicketFields item={item} setField={setField} />
+          )}
 
           {/* Campos específicos de hotel */}
           {isHotel(item.tipo) && (

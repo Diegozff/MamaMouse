@@ -21,8 +21,10 @@ function DeadlineBadge({ fechaLimite, saldo }) {
   return <span className={`deadline-badge ${cls}`}>{label}</span>
 }
 
-const HOTEL_TIPOS = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
-const isHotel = tipo => HOTEL_TIPOS.includes(tipo)
+const HOTEL_TIPOS  = ['Hoteles', 'Paquete Universal', 'Paquete Disney']
+const TICKET_TIPOS = ['Tickets Disney', 'Tickets Universal', 'Otros Tickets']
+const isHotel  = tipo => HOTEL_TIPOS.includes(tipo)
+const isTicket = tipo => TICKET_TIPOS.includes(tipo)
 
 function HotelDetails({ item }) {
   const hasList = (arr) => arr && arr.length > 0
@@ -74,6 +76,32 @@ function HotelDetails({ item }) {
   )
 }
 
+function TicketDetails({ item }) {
+  return (
+    <div className="hotel-details">
+      {item.nroReserva && (
+        <div className="hotel-info-row">
+          <span className="hotel-info-label">🔖 N° Reserva</span>
+          <span className="hotel-info-val">{item.nroReserva}</span>
+        </div>
+      )}
+      {(item.validezDesde || item.validezHasta) && (
+        <div className="hotel-info-row">
+          <span className="hotel-info-label">📅 Validez</span>
+          <span className="hotel-info-val">
+            {item.validezDesde ? fmtFull(item.validezDesde) : '—'}
+            {' al '}
+            {item.validezHasta ? fmtFull(item.validezHasta) : '—'}
+          </span>
+        </div>
+      )}
+      {item.pagadoTotal && (
+        <div className="hotel-pago-badge hotel-pago-total">✅ Abonado por completo</div>
+      )}
+    </div>
+  )
+}
+
 function ItemCard({ item }) {
   const totalPaid = item.pagos.reduce((s, p) => s + Number(p.monto), 0)
   const saldo     = item.total - totalPaid
@@ -96,6 +124,9 @@ function ItemCard({ item }) {
         </div>
         <span className={`item-estado-badge ${estado.cls}`}>{estado.label}</span>
       </div>
+
+      {/* ticket details */}
+      {isTicket(item.tipo) && <TicketDetails item={item} />}
 
       {/* hotel details */}
       {isHotel(item.tipo) && <HotelDetails item={item} />}
