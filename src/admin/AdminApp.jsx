@@ -30,6 +30,7 @@ export default function AdminApp() {
   const [saveStatus,  setSaveStatus]  = useState('idle')
   const [activeNav,   setActiveNav]   = useState('sec-general')
   const [notifStatus, setNotifStatus] = useState('idle') // idle | sending | ok | error | no_contact
+  const [copyStatus,  setCopyStatus]  = useState('idle') // idle | copied
 
   const mainRef = useRef(null)
 
@@ -106,6 +107,15 @@ export default function AdminApp() {
       setNotifStatus('error')
       setTimeout(() => setNotifStatus('idle'), 4000)
     }
+  }
+
+  const copyLink = () => {
+    const base = process.env.APP_URL || window.location.origin
+    const link = `${window.location.origin}/?id=${bookingId}`
+    navigator.clipboard.writeText(link).then(() => {
+      setCopyStatus('copied')
+      setTimeout(() => setCopyStatus('idle'), 2500)
+    })
   }
 
   // Scroll-to-section using the admin-main scroll container
@@ -230,6 +240,21 @@ export default function AdminApp() {
               </button>
             ))}
           </nav>
+
+          {/* link de la reserva */}
+          <div className="asb-notify-section">
+            <div className="asb-nav-title">Link del viajero</div>
+            <button
+              className="asb-notify-btn"
+              onClick={copyLink}
+            >
+              <span>{copyStatus === 'copied' ? '✅' : '🔗'}</span>
+              <span>{copyStatus === 'copied' ? '¡Link copiado!' : 'Copiar link'}</span>
+            </button>
+            <div className="asb-notif-hint">
+              Enviá este link a la familia para que vean su reserva.
+            </div>
+          </div>
 
           {/* notifications */}
           <div className="asb-notify-section">

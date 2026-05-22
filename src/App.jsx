@@ -10,6 +10,7 @@ import TravelGuide from './components/TravelGuide'
 import GuidesLibrary from './components/GuidesLibrary'
 import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
+import WelcomePage from './components/WelcomePage'
 import { TABS } from './tabs'
 
 function getEstado(items = []) {
@@ -41,15 +42,17 @@ export default function App() {
   }, [tab])
 
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get('id') || 'demo'
+    const id = new URLSearchParams(window.location.search).get('id')
+    if (!id) { setStatus('welcome'); return }
     fetch(`/bookings/${id}.json`)
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(d  => { setBooking(d); setStatus('ok') })
       .catch(() => setStatus('error'))
   }, [])
 
-  if (showSplash) return <SplashScreen onDone={handleSplashDone} />
+  if (showSplash && status !== 'welcome') return <SplashScreen onDone={handleSplashDone} />
 
+  if (status === 'welcome') return <WelcomePage />
   if (status === 'loading') return <div className="loading"><div className="loading-spinner"/></div>
   if (status === 'error') return (
     <div className="not-found">
