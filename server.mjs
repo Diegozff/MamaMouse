@@ -113,6 +113,51 @@ app.post('/api/cotizar', async (req, res) => {
   }
 })
 
+// ── API: Reseñas de viajeros ──────────────────────────────────────────────────
+const RESENAS_FILE = path.join(PUBLIC_DIR, 'resenas.json')
+
+app.get('/api/resenas', async (req, res) => {
+  try {
+    let resenas = []
+    try { resenas = JSON.parse(await readFile(RESENAS_FILE, 'utf-8')) } catch {}
+    res.json({ ok: true, resenas: resenas.filter(r => r.publicada !== false) })
+  } catch (e) {
+    console.error('[API] Error leyendo reseñas:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+app.post('/api/resena', async (req, res) => {
+  try {
+    const { nombre, origen, destino, anio, titulo, historia, avatar } = req.body
+    if (!nombre?.trim() || !titulo?.trim() || !historia?.trim()) {
+      return res.status(400).json({ ok: false, error: 'Faltan campos obligatorios' })
+    }
+    let resenas = []
+    try { resenas = JSON.parse(await readFile(RESENAS_FILE, 'utf-8')) } catch {}
+    const nueva = {
+      id: Date.now().toString(),
+      nombre: nombre.trim(),
+      origen: origen?.trim() || '',
+      destino: [destino?.trim(), anio?.trim()].filter(Boolean).join(' · '),
+      titulo: titulo.trim(),
+      historia: historia.trim(),
+      avatar: avatar || '⭐',
+      emoji: '⭐',
+      highlights: [],
+      fecha: new Date().toISOString(),
+      publicada: true,
+    }
+    resenas.push(nueva)
+    await writeFile(RESENAS_FILE, JSON.stringify(resenas, null, 2), 'utf-8')
+    console.log(`[API] Nueva reseña de ${nombre}`)
+    res.json({ ok: true })
+  } catch (e) {
+    console.error('[API] Error guardando reseña:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {
   try {

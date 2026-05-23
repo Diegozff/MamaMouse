@@ -177,6 +177,7 @@ function Navbar({ onLoginClick }) {
           <button onClick={() => scroll('guias')}>Guías</button>
           <button onClick={() => scroll('novedades')}>Novedades</button>
           <button onClick={() => scroll('historias')}>Historias</button>
+          <button onClick={() => scroll('resena')}>Reseñas</button>
           <button onClick={() => scroll('cotizar')}>Cotizar</button>
           <button className="lp-nav-reserva-btn" onClick={() => { setMenuOpen(false); onLoginClick() }}>
             🔑 Mi Reserva
@@ -507,6 +508,28 @@ function Novedades({ onCotizarClick }) {
 
 /* ─── HISTORIAS ──────────────────────────────────────────────────────────── */
 function Historias({ onCotizarClick }) {
+  const [resenas, setResenas] = useState([])
+
+  useEffect(() => {
+    fetch('/api/resenas')
+      .then(r => r.json())
+      .then(data => { if (data.ok) setResenas(data.resenas) })
+      .catch(() => {})
+  }, [])
+
+  const todas = [
+    ...HISTORIAS,
+    ...resenas.map(r => ({
+      avatar: r.avatar, nombre: r.nombre, origen: r.origen,
+      destino: r.destino, emoji: r.emoji || '⭐',
+      titulo: r.titulo, historia: r.historia,
+      highlights: r.highlights || [],
+      esResena: true,
+    })),
+  ]
+
+  const scrollToResena = () => document.getElementById('resena')?.scrollIntoView({ behavior: 'smooth' })
+
   return (
     <section id="historias" className="lp-section">
       <div className="lp-container">
@@ -516,33 +539,164 @@ function Historias({ onCotizarClick }) {
           <p className="lp-section-sub">Cada historia es única. Estas son las de algunas de las familias que confiaron en Mama Mouse para el viaje de su vida.</p>
         </div>
         <div className="lp-historias-list">
-          {HISTORIAS.map((h, i) => (
-            <div key={i} className={`lp-historia-card ${i % 2 === 1 ? 'lp-historia-alt' : ''}`}>
+          {todas.map((h, i) => (
+            <div key={i} className={`lp-historia-card ${i % 2 === 1 ? 'lp-historia-alt' : ''} ${h.esResena ? 'lp-historia-resena' : ''}`}>
               <div className="lp-historia-avatar-col">
                 <div className="lp-historia-avatar">{h.avatar}</div>
                 <div className="lp-historia-destino-badge">{h.emoji} {h.destino}</div>
+                {h.esResena && <span className="lp-resena-badge">⭐ Reseña verificada</span>}
               </div>
               <div className="lp-historia-content">
                 <div className="lp-historia-meta">
                   <strong>{h.nombre}</strong>
-                  <span>· {h.origen}</span>
+                  {h.origen && <span>· {h.origen}</span>}
                 </div>
                 <h3 className="lp-historia-titulo">"{h.titulo}"</h3>
                 <p className="lp-historia-texto">{h.historia}</p>
-                <div className="lp-historia-highlights">
-                  {h.highlights.map((hl, j) => (
-                    <span key={j} className="lp-historia-highlight">✨ {hl}</span>
-                  ))}
-                </div>
+                {h.highlights?.length > 0 && (
+                  <div className="lp-historia-highlights">
+                    {h.highlights.map((hl, j) => (
+                      <span key={j} className="lp-historia-highlight">✨ {hl}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
-        <div className="lp-proceso-cta">
+        <div className="lp-historias-cta-row">
           <button className="lp-btn-primary" onClick={onCotizarClick}>
             Quiero escribir mi propia historia →
           </button>
+          <button className="lp-btn-secondary" onClick={scrollToResena}>
+            ⭐ Dejar mi reseña
+          </button>
         </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─── DEJAR RESEÑA ───────────────────────────────────────────────────────── */
+const AVATARES_OPT = [
+  { emoji: '👨‍👩‍👧', label: 'Familia con 1 hijo' },
+  { emoji: '👨‍👩‍👦‍👦', label: 'Familia con 2 hijos' },
+  { emoji: '👨‍👩‍👧‍👦', label: 'Familia con hijos' },
+  { emoji: '👫', label: 'Pareja' },
+  { emoji: '👩‍👦', label: 'Mamá e hijo' },
+  { emoji: '👴👵', label: 'Abuelos' },
+  { emoji: '🧑‍🤝‍🧑', label: 'Amigos' },
+  { emoji: '🙋', label: 'Solo/a' },
+]
+
+function DejarResena() {
+  const [form, setForm] = useState({ nombre: '', origen: '', destino: '', anio: '', titulo: '', historia: '', avatar: '👨‍👩‍👧' })
+  const [status, setStatus] = useState('idle')
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setStatus('sending')
+    try {
+      const r = await fetch('/api/resena', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      setStatus(r.ok ? 'ok' : 'error')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  if (status === 'ok') return (
+    <section id="resena" className="lp-section lp-section-gradient">
+      <div className="lp-container">
+        <div className="lp-cotizar-success lp-resena-success">
+          <div className="lp-success-icon">🌟</div>
+          <h2 style={{ color: 'white' }}>¡Gracias por compartir tu historia!</h2>
+          <p style={{ color: 'rgba(255,255,255,0.85)' }}>
+            Tu reseña ya está publicada en <strong>Historias Reales</strong>.<br />
+            ¡Inspirás a otras familias a animarse a vivir su viaje soñado!
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+
+  return (
+    <section id="resena" className="lp-section lp-section-gradient">
+      <div className="lp-container">
+        <div className="lp-section-header lp-section-header-light">
+          <div className="lp-section-badge lp-badge-light">Dejá tu reseña</div>
+          <h2 className="lp-section-title lp-title-light">¿Ya viajaste con Mama Mouse?<br />¡Contanos tu historia!</h2>
+          <p className="lp-section-sub lp-sub-light">Tu experiencia puede inspirar a cientos de familias a animarse a vivir su propio viaje mágico. Se publica de forma inmediata en Historias Reales.</p>
+        </div>
+
+        <form className="lp-form lp-resena-form" onSubmit={handleSubmit}>
+
+          {/* Selección de avatar */}
+          <div className="lp-resena-avatar-section">
+            <p className="lp-resena-avatar-label">¿Cómo viajaste?</p>
+            <div className="lp-resena-avatares">
+              {AVATARES_OPT.map(a => (
+                <button
+                  key={a.emoji} type="button"
+                  className={`lp-resena-avatar-btn ${form.avatar === a.emoji ? 'lp-resena-avatar-active' : ''}`}
+                  onClick={() => set('avatar', a.emoji)}
+                  title={a.label}
+                >
+                  <span>{a.emoji}</span>
+                  <span>{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="lp-form-grid">
+            <div className="lp-form-field">
+              <label>Tu nombre *</label>
+              <input required value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="Ej: Familia García" />
+            </div>
+            <div className="lp-form-field">
+              <label>Ciudad de origen</label>
+              <input value={form.origen} onChange={e => set('origen', e.target.value)} placeholder="Ej: Rosario, Santa Fe" />
+            </div>
+            <div className="lp-form-field">
+              <label>Destino visitado *</label>
+              <select required value={form.destino} onChange={e => set('destino', e.target.value)}>
+                <option value="">— Seleccioná —</option>
+                {DESTINOS_OPT.filter(d => d !== 'Otros').map(d => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="lp-form-field">
+              <label>Año del viaje</label>
+              <input value={form.anio} onChange={e => set('anio', e.target.value)} placeholder="Ej: Diciembre 2025" />
+            </div>
+            <div className="lp-form-field lp-form-full">
+              <label>Título de tu historia *</label>
+              <input required value={form.titulo} onChange={e => set('titulo', e.target.value)} placeholder="Ej: El viaje que siempre soñamos" />
+            </div>
+            <div className="lp-form-field lp-form-full">
+              <label>Contanos tu experiencia *</label>
+              <textarea
+                required
+                value={form.historia}
+                onChange={e => set('historia', e.target.value)}
+                placeholder="Contanos cómo fue tu viaje, qué fue lo que más disfrutaron, cómo los ayudó Mama Mouse..."
+                style={{ minHeight: 140 }}
+              />
+            </div>
+          </div>
+
+          {status === 'error' && <div className="lp-form-error">❌ Hubo un error al enviar. Intentá de nuevo o escribinos por WhatsApp.</div>}
+
+          <div className="lp-form-footer">
+            <button type="submit" className="lp-btn-primary lp-btn-white lp-btn-submit" disabled={status === 'sending'}>
+              {status === 'sending' ? '⏳ Publicando…' : '🌟 Publicar mi reseña'}
+            </button>
+          </div>
+        </form>
       </div>
     </section>
   )
@@ -842,6 +996,7 @@ export default function LandingPage({ onLoginClick }) {
       <Guias onCotizarClick={scrollToCotizar} />
       <Novedades onCotizarClick={scrollToCotizar} />
       <Historias onCotizarClick={scrollToCotizar} />
+      <DejarResena />
       <Proceso onCotizarClick={scrollToCotizar} />
       <Cotizar />
       <SeccionViajeros onLoginClick={onLoginClick} />
