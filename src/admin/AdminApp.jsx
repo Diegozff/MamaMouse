@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import AdminLogin  from './AdminLogin'
-import BookingForm from './BookingForm'
+import AdminLogin      from './AdminLogin'
+import BookingForm     from './BookingForm'
+import ImportBooking   from './ImportBooking'
 
 const NAV_SECTIONS = [
   { id: 'sec-general',    icon: '👤', label: 'General'    },
@@ -32,6 +33,7 @@ export default function AdminApp() {
   const [activeNav,   setActiveNav]   = useState('sec-general')
   const [notifStatus, setNotifStatus] = useState('idle') // idle | sending | ok | error | no_contact
   const [copyStatus,  setCopyStatus]  = useState('idle') // idle | copied
+  const [showImport,  setShowImport]  = useState(false)
 
   const mainRef = useRef(null)
 
@@ -69,6 +71,12 @@ export default function AdminApp() {
   const newBooking = () => {
     const id = inputId.trim().toLowerCase().replace(/\s+/g, '-') || 'nuevo-viajero'
     setBooking(emptyBooking(id))
+    setBookingId(id)
+  }
+
+  const handleImported = (id, data) => {
+    setShowImport(false)
+    setBooking(data)
     setBookingId(id)
   }
 
@@ -181,8 +189,25 @@ export default function AdminApp() {
                 <button className="admin-btn admin-btn-secondary" onClick={newBooking}>+ Nueva reserva</button>
               </div>
             </div>
+
+            {/* Importar por email */}
+            <div className="admin-import-card" onClick={() => setShowImport(true)}>
+              <div className="admin-import-icon">📧</div>
+              <div className="admin-import-info">
+                <div className="admin-import-title">Importar Reserva por Email</div>
+                <div className="admin-import-sub">Pegá el email con los datos y el agente crea la reserva automáticamente</div>
+              </div>
+              <div className="admin-import-arrow">→</div>
+            </div>
           </div>
         </div>
+
+        {showImport && (
+          <ImportBooking
+            onImported={handleImported}
+            onCancel={() => setShowImport(false)}
+          />
+        )}
       </div>
     )
   }

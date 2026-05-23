@@ -211,6 +211,104 @@ app.post('/api/resena', async (req, res) => {
   }
 })
 
+// ── API: Importar reserva desde email (Claude AI) ────────────────────────────
+app.post('/api/import-booking', async (req, res) => {
+  try {
+    const { emailText } = req.body
+    if (!emailText?.trim()) return res.status(400).json({ ok: false, error: 'Falta el texto del email' })
+
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) return res.status(500).json({ ok: false, error: 'ANTHROPIC_API_KEY no configurado en Railway Variables' })
+
+    const systemPrompt = `Sos un asistente especializado en parsear emails de reservas de viajes para la agencia Mama Mouse (agencia argentina especializada en Disney y Universal).
+
+Extraé la información del email y devolvé un JSON válido con esta estructura exacta:
+{
+  "titular": "Nombre completo del titular",
+  "id": "apellido-en-minusculas",
+  "usuario": "Apellido",
+  "password": "Apellido2026",
+  "email": "",
+  "telefono": "",
+  "destinos": [],
+  "items": [
+    {
+      "id": "id-corto-unico",
+      "tipo": "Tipo de servicio",
+      "icono": "emoji",
+      "descripcion": "Descripción detallada. Incluí número de reserva si existe.",
+      "moneda": "USD",
+      "total": 0,
+      "fechaInicio": "YYYY-MM-DD",
+      "fechaFin": "YYYY-MM-DD",
+      "fechaLimite": "",
+      "pagos": [
+        { "fecha": "YYYY-MM-DD", "monto": 0, "concepto": "descripción" }
+      ]
+    }
+  ],
+  "promos": [],
+  "regalos": [],
+  "vouchers": [],
+  "itinerario": [],
+  "tips": []
+}
+
+TIPOS DE SERVICIO Y SUS ICONOS:
+- Aéreos → ✈️
+- Hoteles → 🏨
+- Hotel Disney → 🏰
+- Tickets Disney → 🎟️
+- Tickets Universal → 🎢
+- Paquete Universal → 🎢
+- Paquete Disney → ✨
+- Asistencia al Viajero → 🛡️
+- Renta de Auto → 🚗
+
+REGLAS DE ORO:
+1. id = apellido del titular en minúsculas, sin espacios ni tildes (ej: "garcia", "beltrando")
+2. usuario = Apellido con mayúscula inicial (ej: "Garcia")
+3. password = Apellido2026 (ej: "Garcia2026")
+4. Si dice "ABONADO COMPLETO" y hay un saldo en destino, el saldo va como pago con concepto "Saldo a abonar en destino al check-in"
+5. Si dice "ABONADO COMPLETO" sin saldo, los pagos deben sumar el total exacto
+6. Fechas siempre en YYYY-MM-DD. Si no tiene año, usá 2026
+7. Los destinos son los parques/lugares visitados (ej: "Walt Disney World", "Universal Orlando")
+8. Incluí toda la info relevante en la descripción del item (número de reserva, habitación, extras, etc.)
+9. Devolvé SOLO el JSON puro, sin explicaciones ni markdown`
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: emailText.trim() }],
+      }),
+    })
+
+    const aiData = await r.json()
+    if (!r.ok) throw new Error(aiData.error?.message || JSON.stringify(aiData))
+
+    const rawText = aiData.content?.[0]?.text || ''
+    // Extraer JSON del texto (por si el modelo agrega algún texto extra)
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) throw new Error('El modelo no devolvió un JSON válido')
+
+    const booking = JSON.parse(jsonMatch[0])
+    console.log(`[API] Reserva parseada: ${booking.titular} → id: ${booking.id}`)
+    res.json({ ok: true, booking })
+
+  } catch (e) {
+    console.error('[API] Error import-booking:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {
   try {
