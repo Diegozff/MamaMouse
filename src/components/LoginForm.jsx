@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm({ onLogin, onBack }) {
   const [usuario,  setUsuario]  = useState('')
   const [password, setPassword] = useState('')
   const [status,   setStatus]   = useState('idle') // idle | loading | error
@@ -31,6 +31,9 @@ export default function LoginForm({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-card">
+        {onBack && (
+          <button className="login-back-btn" onClick={onBack}>← Volver</button>
+        )}
         <img src="/logo2.jpeg" alt="Mama Mouse" className="login-logo" />
 
         <h2 className="login-title">Accedé a tu reserva</h2>

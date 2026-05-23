@@ -10,6 +10,7 @@ import GuidesLibrary from './components/GuidesLibrary'
 import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
 import LoginForm from './components/LoginForm'
+import LandingPage from './components/LandingPage'
 
 function getEstado(items = []) {
   let total = 0, paid = 0
@@ -38,11 +39,13 @@ export default function App() {
   return <BookingView id={bookingId} onLogout={() => { sessionStorage.removeItem('mm_booking_id'); setLoggedId(null) }} />
 }
 
-/* ── LoginFlow: splash + login ────────────────────────────────────────── */
+/* ── LoginFlow: splash → landing → login ─────────────────────────────── */
 function LoginFlow({ onLogin }) {
   const [splashDone, setSplashDone] = useState(false)
+  const [showLogin,  setShowLogin]  = useState(false)
   if (!splashDone) return <SplashScreen onDone={() => setSplashDone(true)} />
-  return <LoginForm onLogin={onLogin} />
+  if (showLogin) return <LoginForm onLogin={onLogin} onBack={() => setShowLogin(false)} />
+  return <LandingPage onLoginClick={() => setShowLogin(true)} />
 }
 
 /* ── Vista de reserva ─────────────────────────────────────────────────── */

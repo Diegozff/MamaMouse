@@ -79,6 +79,40 @@ app.post('/api/upload-pdf/:bookingId/:itemId',
   }
 )
 
+// ── API: Formulario de cotización ────────────────────────────────────────────
+app.post('/api/cotizar', async (req, res) => {
+  try {
+    const { nombre, email, telefono, destino, fechas, adultos, ninos, mensaje } = req.body
+    console.log(`[API] Cotización de ${nombre} (${email} / ${telefono}) → ${destino}`)
+
+    // Guardar en archivo de leads (opcional, no crítico)
+    try {
+      const leadsPath = path.join(__dirname, 'public', 'leads.json')
+      let leads = []
+      try { leads = JSON.parse(await readFile(leadsPath, 'utf-8')) } catch {}
+      leads.push({ nombre, email, telefono, destino, fechas, adultos, ninos, mensaje, fecha: new Date().toISOString() })
+      await writeFile(leadsPath, JSON.stringify(leads, null, 2), 'utf-8')
+    } catch (e) { console.warn('[API] No se pudo guardar lead:', e.message) }
+
+    // Notificar por WhatsApp si está configurado
+    const WA_TOKEN = process.env.TWILIO_ACCOUNT_SID
+    if (WA_TOKEN && notifyBookingCreated) {
+      const leadFake = {
+        titular: nombre, email, telefono,
+        destinos: [destino || 'Disney / Universal'],
+        usuario: '', password: '',
+        items: []
+      }
+      notifyBookingCreated(leadFake).catch(e => console.warn('[API] Notif cotizar:', e.message))
+    }
+
+    res.json({ ok: true })
+  } catch (e) {
+    console.error('[API] Error cotizar:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {
   try {
