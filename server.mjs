@@ -245,6 +245,29 @@ app.post('/api/notify/summary', async (req, res) => {
   }
 })
 
+// ── API: Test de email ────────────────────────────────────────────────────────
+app.get('/api/test-email', async (req, res) => {
+  const cfg = {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user: process.env.SMTP_USER,
+    passSet: !!process.env.SMTP_PASS,
+  }
+  console.log('[API] Test email – config:', cfg)
+  try {
+    await mailer.sendMail({
+      from:    process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>',
+      to:      'carolina@fasttravelvacation.com',
+      subject: '🐭 Test email – Mama Mouse',
+      text:    'Este es un email de prueba enviado desde el servidor de Mama Mouse.',
+    })
+    res.json({ ok: true, msg: 'Email enviado correctamente', cfg })
+  } catch (e) {
+    console.error('[API] Test email error:', e.message)
+    res.status(500).json({ ok: false, error: e.message, cfg })
+  }
+})
+
 // ── Archivos estáticos ────────────────────────────────────────────────────────
 // La app buildeada de React
 app.use(express.static(DIST_DIR))
@@ -262,5 +285,7 @@ app.listen(PORT, () => {
   console.log(`   Local:    http://localhost:${PORT}`)
   console.log(`   Dominio:  ${process.env.APP_URL || 'https://www.mamamouse.com.ar'}`)
   console.log(`   Admin:    ${process.env.APP_URL || 'http://localhost:' + PORT}/?admin`)
-  console.log(`   Env:      ${process.env.NODE_ENV || 'development'}\n`)
+  console.log(`   Env:      ${process.env.NODE_ENV || 'development'}`)
+  console.log(`   SMTP:     ${process.env.SMTP_USER || '⚠️  NO CONFIGURADO'} → ${process.env.SMTP_HOST || '?'}:${process.env.SMTP_PORT || '?'}`)
+  console.log(`   Email cotizaciones → carolina@fasttravelvacation.com\n`)
 })
