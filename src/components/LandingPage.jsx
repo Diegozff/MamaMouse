@@ -70,7 +70,7 @@ const TESTIMONIOS = [
 
 const NOVEDADES = [
   {
-    emoji: '🌌', tag: 'Universal Orlando', fecha: 'Mayo 2026',
+    emoji: '', tag: 'Universal Orlando', fecha: 'Mayo 2026',
     titulo: 'Epic Universe ya abrió sus puertas',
     desc: 'El nuevo parque de Universal Orlando es una realidad: mundos de Harry Potter, Nintendo, Monster-verse y más. Mama Mouse ya tiene paquetes con acceso desde el día 1.',
     destacado: true,
