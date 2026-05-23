@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 
 /* ─── DATA ─────────────────────────────────────────────────────────────── */
 const BENEFICIOS = [
-  { icon: '🎯', title: 'Monitoreo de Ofertas', desc: 'Si Disney lanza una promo después de tu reserva, la aplicamos automáticamente. Tu precio siempre es el mejor disponible.' },
+  { icon: '🎯', title: 'Monitoreo de Ofertas', desc: 'Si Disney o Universal lanzan una promo después de tu reserva, la aplicamos automáticamente. Tu precio siempre es el mejor disponible.' },
   { icon: '⚡', title: 'Estrategia de Filas', desc: 'Lightning Lane, Genie+, Virtual Queue y Universal Express Pass. Aprovechás cada minuto sin perder tiempo en colas.' },
   { icon: '🍽️', title: 'Experiencias Reservadas', desc: 'Character Dining, restaurantes temáticos y shows exclusivos reservados con la anticipación exacta que cada uno requiere.' },
   { icon: '💬', title: 'Asesoría Sin Costo Extra', desc: 'Tu agente de confianza antes, durante y después del viaje. Sin costos adicionales. Sin sorpresas.' },
@@ -36,10 +36,12 @@ const DESTINOS_PRINCIPALES = [
 ]
 
 const OTROS_DESTINOS = [
+  { emoji: '🗽', name: 'Estados Unidos', location: 'Nueva York · Las Vegas · Los Ángeles · Miami', logo: null, desc: 'Más allá de los parques, organizamos viajes por todo Estados Unidos: ciudades icónicas, road trips y experiencias únicas a medida.' },
+  { emoji: '🌍', name: 'Europa', location: 'París · Roma · Londres · Barcelona', logo: null, desc: 'Circuitos y viajes a medida por Europa. Combinamos Disneyland París con escapadas a las ciudades más fascinantes del continente.' },
   { emoji: '🗼', name: 'Disneyland París', location: 'Paris, Francia', logo: '/disneyland paris.png', desc: 'La magia Disney en el corazón de Europa. Perfecto para combinar con una escapada parisina.' },
   { emoji: '🌴', name: 'Miami & Caribe', location: 'Florida · Caribe', logo: null, desc: 'Playas increíbles, shopping y el punto de partida ideal para cruceros y extensiones de viaje.' },
   { emoji: '🌊', name: 'Cruceros Disney', location: 'Caribe · Europa · Alaska', logo: '/disney cruise line.png', desc: 'Navegá con Mickey y toda la familia. Shows en vivo, personajes, restaurantes temáticos y puertos únicos.' },
-  { emoji: '🚢', name: 'Cruceros MSC', location: 'Mediterráneo · Caribe · Alaska', logo: '/msc.png', desc: 'Los cruceros más modernos del mundo con itinerarios únicos. Una opción premium para familias y parejas.' },
+  { emoji: '🚢', name: 'Cruceros MSC', location: 'Mediterráneo · Caribe · Alaska · Sudamérica', logo: '/msc.png', desc: 'Los cruceros más modernos del mundo con itinerarios únicos incluyendo Sudamérica. Una opción premium para familias y parejas.' },
   { emoji: '🚢', name: 'Royal Caribbean', location: 'Caribe · Europa · Alaska · Asia', logo: '/roayal cariebean.png', desc: 'La flota de cruceros más grande del mundo. Barcos innovadores, destinos únicos y entretenimiento sin igual.' },
   { emoji: '🦈', name: 'SeaWorld Orlando', location: 'Orlando, Florida', logo: '/sea world.png', desc: 'Aventuras acuáticas, shows de animales y atracciones increíbles. El complemento perfecto para tu viaje a Orlando.' },
 ]
@@ -49,7 +51,7 @@ const GUIAS = [
   { emoji: '⚡', titulo: 'Lightning Lane & Filas', subtitulo: 'Genie+ · LL Individual · Estrategia', desc: 'La guía definitiva para no hacer colas: qué comprar, cuándo activarlo y cuál es la estrategia que usan los expertos.', tag: 'Pro Tips' },
   { emoji: '🍽️', titulo: 'Dónde comer en Disney', subtitulo: 'Character Dining · Restaurantes · Snacks', desc: 'Los mejores restaurantes, cuándo reservar, el Character Dining que vale la pena y los snacks icónicos que no podés perderte.', tag: 'Gastronomía' },
   { emoji: '🏨', titulo: 'Hoteles Disney vs. Off-site', subtitulo: 'Ventajas · Precios · Experiencia', desc: 'Qué beneficios te da quedarte dentro de Disney, cuándo conviene elegir hotel externo y cómo elegir el que mejor se adapta a tu familia.', tag: 'Alojamiento' },
-  { emoji: '💰', titulo: 'Presupuesto Real para Disney', subtitulo: 'Costos · Consejos · Ahorro', desc: 'Cuánto cuesta realmente un viaje a Disney desde Argentina: tickets, hotel, comida, transporte y cómo optimizar cada peso.', tag: 'Presupuesto' },
+  { emoji: '💰', titulo: 'Presupuesto Real para Disney', subtitulo: 'Costos · Consejos · Ahorro', desc: 'Cuánto cuesta realmente un viaje a Disney: tickets, hotel, comida, transporte y cómo optimizar cada peso.', tag: 'Presupuesto' },
   { emoji: '👶', titulo: 'Disney con Bebés y Niños', subtitulo: 'Edades · Atracciones · Logística', desc: 'Qué puede disfrutar cada edad, las atracciones aptas para los más pequeños y los trucos para que todos lleguen al final del día con energía.', tag: 'Familias' },
 ]
 
@@ -80,9 +82,9 @@ const NOVEDADES = [
     destacado: false,
   },
   {
-    emoji: '🎢', tag: 'Hollywood Studios', fecha: 'Mar 2026',
-    titulo: 'Tiana\'s Bayou Adventure supera todas las expectativas',
-    desc: 'La nueva atracción de Magic Kingdom ya es la más popular del parque. Te contamos la mejor estrategia para vivirla sin horas de espera.',
+    emoji: '🎸', tag: 'Hollywood Studios', fecha: '26 May 2026',
+    titulo: 'Rock\'n\'Roller Coaster starring The Muppets abre el 26 de mayo',
+    desc: 'La renovación del clásico de Hollywood Studios ya tiene fecha: el 26 de mayo abre sus puertas con los Muppets como protagonistas. Una atracción completamente reimaginada que promete ser un hit absoluto.',
     destacado: false,
   },
   {
@@ -92,9 +94,9 @@ const NOVEDADES = [
     destacado: false,
   },
   {
-    emoji: '🚢', tag: 'Disney Cruise Line', fecha: 'Feb 2026',
-    titulo: 'Disney Treasure: el nuevo crucero temático que viene en 2026',
-    desc: 'El quinto crucero de Disney llega con mundos de Star Wars, Marvel y el Caribe. Itinerarios exclusivos y cabinas únicas. Consultá disponibilidad.',
+    emoji: '⚓', tag: 'Disney Cruise Line', fecha: 'Nov 2025',
+    titulo: 'Disney Destiny: el barco más nuevo de la flota ya navega',
+    desc: 'El Disney Destiny inauguró en noviembre de 2025 con una temática única centrada en la dualidad entre héroes y villanos de Disney, Pixar y Marvel. Shows exclusivos, cabinas innovadoras e itinerarios por el Caribe. Consultá disponibilidad con Mama Mouse.',
     destacado: false,
   },
   {
@@ -217,7 +219,7 @@ function Hero({ onCotizarClick, onLoginClick }) {
           <div className="lp-hero-divider" />
           <div className="lp-hero-stat"><strong>100%</strong><span>asesoría gratuita</span></div>
           <div className="lp-hero-divider" />
-          <div className="lp-hero-stat"><strong>10 años</strong><span>de experiencia</span></div>
+          <div className="lp-hero-stat"><strong>30 años</strong><span>de experiencia</span></div>
         </div>
       </div>
       <div className="lp-hero-scroll"><span>↓</span></div>
@@ -264,7 +266,7 @@ function SobreMamaMouse({ onCotizarClick }) {
             <div className="lp-section-badge">Quién soy</div>
             <h2 className="lp-section-title lp-sobre-title">Soy Mama Mouse,<br />tu agente de viajes mágicos</h2>
             <p className="lp-sobre-desc">
-              Con más de <strong>10 años de experiencia</strong> viajando y organizando viajes a Disney y Universal, me convertí en la agente de confianza de cientos de familias argentinas que querían vivir la magia sin el estrés de planificarlo todo solas.
+              Con más de <strong>30 años de experiencia</strong> viajando y organizando viajes a Disney y Universal, me convertí en la agente de confianza de cientos de familias argentinas que querían vivir la magia sin el estrés de planificarlo todo solas.
             </p>
             <p className="lp-sobre-desc">
               Empecé como viajera apasionada, aprendí cada rincón de los parques, y hoy pongo ese conocimiento al servicio de tu familia. Mi trabajo es que <em>cada peso que invertís valga el doble</em> en sonrisas, momentos y recuerdos.
@@ -275,7 +277,7 @@ function SobreMamaMouse({ onCotizarClick }) {
                 <span>familias viajaron</span>
               </div>
               <div className="lp-sobre-stat">
-                <strong>10 años</strong>
+                <strong>30 años</strong>
                 <span>de experiencia</span>
               </div>
               <div className="lp-sobre-stat">
@@ -381,7 +383,7 @@ function Destinos({ onCotizarClick }) {
         <div className="lp-section-header">
           <div className="lp-section-badge">Destinos principales</div>
           <h2 className="lp-section-title">Disney y Universal,<br />la especialidad de Mama Mouse</h2>
-          <p className="lp-section-sub">Más de 10 años visitando y planificando estos destinos. Cada rincón, cada promo, cada estrategia: los conocemos como nadie.</p>
+          <p className="lp-section-sub">Más de 30 años visitando y planificando estos destinos. Cada rincón, cada promo, cada estrategia: los conocemos como nadie.</p>
         </div>
         <div className="lp-destinos-grid">
           {DESTINOS_PRINCIPALES.map((d, i) => (
