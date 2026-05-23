@@ -265,7 +265,7 @@ function SobreMamaMouse({ onCotizarClick }) {
           </div>
           <div className="lp-sobre-content">
             <div className="lp-section-badge">Quién soy</div>
-            <h2 className="lp-section-title lp-sobre-title">Soy Mama Mouse,<br />tu agente de viajes mágicos</h2>
+            <h2 className="lp-section-title lp-sobre-title">Carolina Pozzi<br /><span className="lp-sobre-alias">(Mama Mouse)</span></h2>
             <p className="lp-sobre-desc">
               Con más de <strong>30 años de experiencia</strong> viajando y organizando viajes a Disney y Universal, me convertí en la agente de confianza de cientos de familias argentinas que querían vivir la magia sin el estrés de planificarlo todo solas.
             </p>
