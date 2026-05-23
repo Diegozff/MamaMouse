@@ -8,7 +8,7 @@ const BENEFICIOS = [
   { icon: '💬', title: 'Asesoría Sin Costo Extra', desc: 'Tu agente de confianza antes, durante y después del viaje. Sin costos adicionales. Sin sorpresas.' },
 ]
 
-const DESTINOS = [
+const DESTINOS_PRINCIPALES = [
   {
     emoji: '🏰', grad: 'lp-card-disney',
     name: 'Walt Disney World',
@@ -32,6 +32,22 @@ const DESTINOS = [
   },
 ]
 
+const OTROS_DESTINOS = [
+  { emoji: '🗼', name: 'Disneyland París', location: 'Paris, Francia', desc: 'La magia Disney en el corazón de Europa. Perfecto para combinar con una escapada parisina.' },
+  { emoji: '🌴', name: 'Miami & Caribe', location: 'Florida · Caribe', desc: 'Playas increíbles, shopping y el punto de partida ideal para cruceros y extensiones de viaje.' },
+  { emoji: '🌊', name: 'Cruceros Disney', location: 'Caribe · Europa · Alaska', desc: 'Navegá con Mickey y toda la familia. Shows en vivo, personajes, restaurantes temáticos y puertos únicos.' },
+  { emoji: '🏖️', name: 'Cancún & Riviera Maya', location: 'México', desc: 'Playas paradisíacas, parques acuáticos y cultura maya. El complemento perfecto después de Orlando.' },
+]
+
+const GUIAS = [
+  { emoji: '🗺️', titulo: 'Cuándo ir a Disney', subtitulo: 'Temporadas · Precios · Afluencia', desc: 'Las fechas que hacen la diferencia: temporadas bajas, precios especiales, parques sin multitudes y eventos únicos del año.', tag: 'Planificación' },
+  { emoji: '⚡', titulo: 'Lightning Lane & Filas', subtitulo: 'Genie+ · LL Individual · Estrategia', desc: 'La guía definitiva para no hacer colas: qué comprar, cuándo activarlo y cuál es la estrategia que usan los expertos.', tag: 'Pro Tips' },
+  { emoji: '🍽️', titulo: 'Dónde comer en Disney', subtitulo: 'Character Dining · Restaurantes · Snacks', desc: 'Los mejores restaurantes, cuándo reservar, el Character Dining que vale la pena y los snacks icónicos que no podés perderte.', tag: 'Gastronomía' },
+  { emoji: '🏨', titulo: 'Hoteles Disney vs. Off-site', subtitulo: 'Ventajas · Precios · Experiencia', desc: 'Qué beneficios te da quedarte dentro de Disney, cuándo conviene elegir hotel externo y cómo elegir el que mejor se adapta a tu familia.', tag: 'Alojamiento' },
+  { emoji: '💰', titulo: 'Presupuesto Real para Disney', subtitulo: 'Costos · Consejos · Ahorro', desc: 'Cuánto cuesta realmente un viaje a Disney desde Argentina: tickets, hotel, comida, transporte y cómo optimizar cada peso.', tag: 'Presupuesto' },
+  { emoji: '👶', titulo: 'Disney con Bebés y Niños', subtitulo: 'Edades · Atracciones · Logística', desc: 'Qué puede disfrutar cada edad, las atracciones aptas para los más pequeños y los trucos para que todos lleguen al final del día con energía.', tag: 'Familias' },
+]
+
 const PASOS = [
   { num: '01', icon: '📋', title: 'Contame tu sueño', desc: 'Completás el formulario con fechas, destino y preferencias. Es gratis y sin compromiso.' },
   { num: '02', icon: '✨', title: 'Tu plan a medida', desc: 'Diseño un itinerario personalizado con presupuesto detallado, hotel, tickets y experiencias.' },
@@ -45,7 +61,7 @@ const TESTIMONIOS = [
   { nombre: 'Familia Sánchez', origen: 'Buenos Aires', avatar: '👨‍👩‍👦‍👦', texto: 'Los consejos sobre Lightning Lane y los restaurantes fueron clave. Aprovechamos cada minuto en los parques sin hacer largas filas. ¡Volvemos el año que viene!', destino: 'Universal Orlando' },
 ]
 
-const DESTINOS_OPT = ['Walt Disney World', 'Universal Orlando', 'Disneyland', 'Disney Cruise Line', 'Disney + Universal', 'No sé aún / Consultame']
+const DESTINOS_OPT = ['Walt Disney World', 'Universal Orlando', 'Disneyland', 'Disney Cruise Line', 'Disney + Universal', 'Disneyland París', 'Miami & Extensión', 'Crucero Disney', 'Cancún / Riviera Maya', 'No sé aún / Consultame']
 
 /* ─── NAVBAR ────────────────────────────────────────────────────────────── */
 function Navbar({ onLoginClick }) {
@@ -72,9 +88,14 @@ function Navbar({ onLoginClick }) {
         </div>
 
         <div className={`lp-nav-links ${menuOpen ? 'lp-nav-open' : ''}`}>
+          {menuOpen && (
+            <button className="lp-nav-close" onClick={() => setMenuOpen(false)}>✕</button>
+          )}
           <button onClick={() => scroll('destinos')}>Destinos</button>
-          <button onClick={() => scroll('por-que')}>Por qué nosotros</button>
-          <button onClick={() => scroll('proceso')}>Proceso</button>
+          <button onClick={() => scroll('otros-destinos')}>Otros destinos</button>
+          <button onClick={() => scroll('agente-oficial')}>Agente oficial</button>
+          <button onClick={() => scroll('sobre-nosotros')}>Mama Mouse</button>
+          <button onClick={() => scroll('guias')}>Guías</button>
           <button onClick={() => scroll('cotizar')}>Cotizar</button>
           <button className="lp-nav-reserva-btn" onClick={() => { setMenuOpen(false); onLoginClick() }}>
             🔑 Mi Reserva
@@ -120,25 +141,110 @@ function Hero({ onCotizarClick, onLoginClick }) {
           <div className="lp-hero-stat"><strong>10 años</strong><span>de experiencia</span></div>
         </div>
       </div>
-      <div className="lp-hero-scroll">
-        <span>↓</span>
+      <div className="lp-hero-scroll"><span>↓</span></div>
+    </section>
+  )
+}
+
+/* ─── SOBRE MAMA MOUSE ──────────────────────────────────────────────────── */
+function SobreMamaMouse({ onCotizarClick }) {
+  return (
+    <section id="sobre-nosotros" className="lp-section">
+      <div className="lp-container">
+        <div className="lp-sobre-card">
+          <div className="lp-sobre-photo">
+            <div className="lp-sobre-photo-frame">
+              <img src="/logo2.jpeg" alt="Mama Mouse" className="lp-sobre-img" />
+              <div className="lp-sobre-badge-float">🌟 Agente Oficial</div>
+            </div>
+          </div>
+          <div className="lp-sobre-content">
+            <div className="lp-section-badge">Quién soy</div>
+            <h2 className="lp-section-title lp-sobre-title">Soy Mama Mouse,<br />tu agente de viajes mágicos</h2>
+            <p className="lp-sobre-desc">
+              Con más de <strong>10 años de experiencia</strong> viajando y organizando viajes a Disney y Universal, me convertí en la agente de confianza de cientos de familias argentinas que querían vivir la magia sin el estrés de planificarlo todo solas.
+            </p>
+            <p className="lp-sobre-desc">
+              Empecé como viajera apasionada, aprendí cada rincón de los parques, y hoy pongo ese conocimiento al servicio de tu familia. Mi trabajo es que <em>cada peso que invertís valga el doble</em> en sonrisas, momentos y recuerdos.
+            </p>
+            <div className="lp-sobre-stats">
+              <div className="lp-sobre-stat">
+                <strong>+500</strong>
+                <span>familias viajaron</span>
+              </div>
+              <div className="lp-sobre-stat">
+                <strong>10 años</strong>
+                <span>de experiencia</span>
+              </div>
+              <div className="lp-sobre-stat">
+                <strong>100%</strong>
+                <span>asesoría gratuita</span>
+              </div>
+            </div>
+            <div className="lp-sobre-certs">
+              <span className="lp-cert-badge">🏆 Disney Authorized Retailer</span>
+              <span className="lp-cert-badge">🌟 Universal Travel Partner</span>
+              <span className="lp-cert-badge">✈️ IATA Certified</span>
+            </div>
+            <blockquote className="lp-sobre-quote">
+              "No vendo viajes... <em>hago que el tuyo sea la mejor experiencia de tu vida.</em>"
+            </blockquote>
+            <button className="lp-btn-primary" onClick={onCotizarClick}>
+              Cotizar con Mama Mouse →
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   )
 }
 
-/* ─── POR QUÉ ───────────────────────────────────────────────────────────── */
-function PorQue() {
+/* ─── POR QUÉ UN AGENTE OFICIAL ─────────────────────────────────────────── */
+function AgenteOficial() {
   return (
-    <section id="por-que" className="lp-section lp-section-light">
+    <section id="agente-oficial" className="lp-section lp-section-light">
       <div className="lp-container">
         <div className="lp-section-header">
-          <div className="lp-section-badge">¿Por qué elegirnos?</div>
-          <h2 className="lp-section-title">La diferencia de trabajar con<br />una Agente Oficial</h2>
-          <p className="lp-section-sub">No somos un simple buscador de vuelos. Somos tu equipo de expertos con acceso directo a las mejores tarifas, herramientas y estrategias de los parques.</p>
+          <div className="lp-section-badge">¿Por qué un Agente Oficial?</div>
+          <h2 className="lp-section-title">No es lo mismo reservar solo<br />que hacerlo con un Agente Oficial</h2>
+          <p className="lp-section-sub">Un Agente Oficial tiene acceso a herramientas, tarifas y beneficios que no están disponibles para el público general. Y no te cobra más por eso.</p>
         </div>
 
-        <div className="lp-seal-row">
+        <div className="lp-agente-vs">
+          <div className="lp-vs-col lp-vs-solo">
+            <div className="lp-vs-header">
+              <span className="lp-vs-icon">😰</span>
+              <h3>Reservando solo</h3>
+            </div>
+            <ul className="lp-vs-list lp-vs-list-no">
+              <li>❌ Precio de lista, sin descuentos aplicados</li>
+              <li>❌ Sin saber si hay promos activas</li>
+              <li>❌ Ninguna estrategia de filas ni Lightning Lane</li>
+              <li>❌ Restaurantes ya sin lugar cuando querés reservar</li>
+              <li>❌ Sin saber qué conviene según tu familia</li>
+              <li>❌ Sin soporte si algo sale mal en el viaje</li>
+              <li>❌ Miles de horas investigando grupos de Facebook</li>
+            </ul>
+          </div>
+          <div className="lp-vs-divider">VS</div>
+          <div className="lp-vs-col lp-vs-agente">
+            <div className="lp-vs-header">
+              <span className="lp-vs-icon">🌟</span>
+              <h3>Con Mama Mouse</h3>
+            </div>
+            <ul className="lp-vs-list lp-vs-list-yes">
+              <li>✅ Promos aplicadas automáticamente</li>
+              <li>✅ Monitoreo continuo de precios y ofertas</li>
+              <li>✅ Estrategia de filas personalizada para tu familia</li>
+              <li>✅ Restaurantes reservados con la anticipación exacta</li>
+              <li>✅ Plan 100% adaptado a tus necesidades y presupuesto</li>
+              <li>✅ Soporte antes, durante y después del viaje</li>
+              <li>✅ Sin costo adicional por la asesoría</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="lp-seal-row" style={{ marginTop: 48 }}>
           <div className="lp-seal">
             <span className="lp-seal-icon">🏆</span>
             <div>
@@ -148,7 +254,7 @@ function PorQue() {
           </div>
         </div>
 
-        <div className="lp-benefits-grid">
+        <div className="lp-benefits-grid" style={{ marginTop: 48 }}>
           {BENEFICIOS.map((b, i) => (
             <div key={i} className="lp-benefit-card">
               <div className="lp-benefit-icon">{b.icon}</div>
@@ -162,18 +268,18 @@ function PorQue() {
   )
 }
 
-/* ─── DESTINOS ──────────────────────────────────────────────────────────── */
+/* ─── DESTINOS PRINCIPALES ──────────────────────────────────────────────── */
 function Destinos({ onCotizarClick }) {
   return (
     <section id="destinos" className="lp-section">
       <div className="lp-container">
         <div className="lp-section-header">
-          <div className="lp-section-badge">Destinos</div>
-          <h2 className="lp-section-title">¿A dónde querés ir?</h2>
-          <p className="lp-section-sub">Especializados en los destinos más mágicos del mundo. Cada viaje diseñado a tu medida.</p>
+          <div className="lp-section-badge">Destinos principales</div>
+          <h2 className="lp-section-title">Disney y Universal,<br />la especialidad de Mama Mouse</h2>
+          <p className="lp-section-sub">Más de 10 años visitando y planificando estos destinos. Cada rincón, cada promo, cada estrategia: los conocemos como nadie.</p>
         </div>
         <div className="lp-destinos-grid">
-          {DESTINOS.map((d, i) => (
+          {DESTINOS_PRINCIPALES.map((d, i) => (
             <div key={i} className={`lp-destino-card ${d.grad}`}>
               <div className="lp-destino-emoji">{d.emoji}</div>
               <div className="lp-destino-location">{d.location}</div>
@@ -193,29 +299,93 @@ function Destinos({ onCotizarClick }) {
   )
 }
 
+/* ─── OTROS DESTINOS ────────────────────────────────────────────────────── */
+function OtrosDestinos({ onCotizarClick }) {
+  return (
+    <section id="otros-destinos" className="lp-section lp-section-light">
+      <div className="lp-container">
+        <div className="lp-section-header">
+          <div className="lp-section-badge">Otros destinos</div>
+          <h2 className="lp-section-title">La magia no termina<br />en Orlando</h2>
+          <p className="lp-section-sub">Más allá de Walt Disney World y Universal, Mama Mouse organiza experiencias únicas en estos destinos que también enamorarán a tu familia.</p>
+        </div>
+        <div className="lp-otros-grid">
+          {OTROS_DESTINOS.map((d, i) => (
+            <div key={i} className="lp-otro-card">
+              <div className="lp-otro-emoji">{d.emoji}</div>
+              <div className="lp-otro-info">
+                <div className="lp-otro-location">{d.location}</div>
+                <h3 className="lp-otro-name">{d.name}</h3>
+                <p className="lp-otro-desc">{d.desc}</p>
+              </div>
+              <button className="lp-otro-cta" onClick={onCotizarClick}>Consultar →</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─── GUÍAS ─────────────────────────────────────────────────────────────── */
+function Guias({ onCotizarClick }) {
+  return (
+    <section id="guias" className="lp-section lp-section-gradient">
+      <div className="lp-container">
+        <div className="lp-section-header lp-section-header-light">
+          <div className="lp-section-badge lp-badge-light">Guías de viaje</div>
+          <h2 className="lp-section-title lp-title-light">Todo lo que necesitás saber<br />antes de viajar</h2>
+          <p className="lp-section-sub lp-sub-light">Guías pensadas para familias argentinas que viajan por primera (o décima) vez a Disney y Universal.</p>
+        </div>
+        <div className="lp-guias-grid">
+          {GUIAS.map((g, i) => (
+            <div key={i} className="lp-guia-card">
+              <div className="lp-guia-top">
+                <span className="lp-guia-tag">{g.tag}</span>
+                <div className="lp-guia-emoji">{g.emoji}</div>
+              </div>
+              <h3 className="lp-guia-titulo">{g.titulo}</h3>
+              <div className="lp-guia-subtitulo">{g.subtitulo}</div>
+              <p className="lp-guia-desc">{g.desc}</p>
+              <button className="lp-guia-cta" onClick={onCotizarClick}>
+                Consultame sobre esto →
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="lp-guias-cta">
+          <p>¿Querés una guía personalizada para tu viaje?</p>
+          <button className="lp-btn-primary lp-btn-white" onClick={onCotizarClick}>
+            ✨ Pedí tu guía personalizada gratis
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─── PROCESO ───────────────────────────────────────────────────────────── */
 function Proceso({ onCotizarClick }) {
   return (
-    <section id="proceso" className="lp-section lp-section-gradient">
+    <section id="proceso" className="lp-section">
       <div className="lp-container">
-        <div className="lp-section-header lp-section-header-light">
-          <div className="lp-section-badge lp-badge-light">Proceso</div>
-          <h2 className="lp-section-title lp-title-light">¿Cómo planeamos tu viaje?</h2>
-          <p className="lp-section-sub lp-sub-light">Simple, transparente y sin sorpresas.</p>
+        <div className="lp-section-header">
+          <div className="lp-section-badge">Proceso</div>
+          <h2 className="lp-section-title">¿Cómo planeamos tu viaje?</h2>
+          <p className="lp-section-sub">Simple, transparente y sin sorpresas.</p>
         </div>
         <div className="lp-pasos-grid">
           {PASOS.map((p, i) => (
-            <div key={i} className="lp-paso-card">
+            <div key={i} className="lp-paso-card lp-paso-card-light">
               <div className="lp-paso-num">{p.num}</div>
               <div className="lp-paso-icon">{p.icon}</div>
-              <h3 className="lp-paso-title">{p.title}</h3>
-              <p className="lp-paso-desc">{p.desc}</p>
-              {i < PASOS.length - 1 && <div className="lp-paso-arrow">→</div>}
+              <h3 className="lp-paso-title lp-paso-title-dark">{p.title}</h3>
+              <p className="lp-paso-desc lp-paso-desc-dark">{p.desc}</p>
             </div>
           ))}
         </div>
         <div className="lp-proceso-cta">
-          <button className="lp-btn-primary lp-btn-white" onClick={onCotizarClick}>
+          <button className="lp-btn-primary" onClick={onCotizarClick}>
             Empezar ahora — es gratis ✨
           </button>
         </div>
@@ -227,7 +397,7 @@ function Proceso({ onCotizarClick }) {
 /* ─── FORMULARIO DE COTIZACIÓN ──────────────────────────────────────────── */
 function Cotizar() {
   const [form, setForm]     = useState({ nombre: '', email: '', telefono: '', destino: '', fechas: '', adultos: '2', ninos: '0', mensaje: '' })
-  const [status, setStatus] = useState('idle') // idle | sending | ok | error
+  const [status, setStatus] = useState('idle')
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -435,12 +605,15 @@ function Footer() {
               <h4>Destinos</h4>
               <a href="#destinos">Walt Disney World</a>
               <a href="#destinos">Universal Orlando</a>
-              <a href="#destinos">Disneyland</a>
-              <a href="#destinos">Disney Cruise Line</a>
+              <a href="#otros-destinos">Disneyland París</a>
+              <a href="#otros-destinos">Cruceros Disney</a>
+              <a href="#otros-destinos">Cancún & Caribe</a>
             </div>
             <div className="lp-footer-col">
               <h4>Nosotros</h4>
-              <a href="#por-que">Por qué elegirnos</a>
+              <a href="#sobre-nosotros">Sobre Mama Mouse</a>
+              <a href="#agente-oficial">Por qué un agente oficial</a>
+              <a href="#guias">Guías de viaje</a>
               <a href="#proceso">Proceso de trabajo</a>
               <a href="#cotizar">Cotizar gratis</a>
             </div>
@@ -462,15 +635,17 @@ function Footer() {
 
 /* ─── MAIN LANDING PAGE ─────────────────────────────────────────────────── */
 export default function LandingPage({ onLoginClick }) {
-  const cotizarRef = useRef(null)
   const scrollToCotizar = () => document.getElementById('cotizar')?.scrollIntoView({ behavior: 'smooth' })
 
   return (
     <div className="lp-root">
       <Navbar onLoginClick={onLoginClick} />
       <Hero onCotizarClick={scrollToCotizar} onLoginClick={onLoginClick} />
-      <PorQue />
+      <SobreMamaMouse onCotizarClick={scrollToCotizar} />
+      <AgenteOficial />
       <Destinos onCotizarClick={scrollToCotizar} />
+      <OtrosDestinos onCotizarClick={scrollToCotizar} />
+      <Guias onCotizarClick={scrollToCotizar} />
       <Proceso onCotizarClick={scrollToCotizar} />
       <Cotizar />
       <Testimonios />
