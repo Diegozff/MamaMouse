@@ -2096,13 +2096,16 @@ select.admin-input { cursor: pointer; }
   cursor: pointer;
   text-decoration: none;
 }
-/* Logo integrado — sin caja cuadrada */
+/* Logo integrado — sin caja cuadrada, tamaño generoso */
 .lp-nav-logo {
-  width: 46px;
-  height: 46px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
   border-radius: 0;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.15));
+}
+.lp-nav-solid .lp-nav-logo {
+  filter: drop-shadow(0 2px 8px rgba(155,126,200,0.35));
 }
 /* Texto de marca — blanco en hero, degradado con colores del logo al scrollear */
 .lp-nav-brand-text {
@@ -3308,4 +3311,199 @@ select.admin-input { cursor: pointer; }
   font-weight: 700;
   color: rgba(255,255,255,0.8);
   margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   NOVEDADES
+══════════════════════════════════════════════════════════════════════ */
+.lp-novedades-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+/* Primera card ocupa toda la primera fila si es destacada */
+.lp-novedad-destacada {
+  grid-column: 1 / -1;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.lp-novedad-destacada .lp-novedad-emoji {
+  font-size: 64px !important;
+  grid-row: 2;
+  grid-column: 2;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-novedad-destacada .lp-novedad-top    { grid-column: 1; grid-row: 1; }
+.lp-novedad-destacada .lp-novedad-titulo { grid-column: 1; grid-row: 2; font-size: 24px !important; }
+.lp-novedad-destacada .lp-novedad-desc   { grid-column: 1; grid-row: 3; font-size: 16px !important; }
+.lp-novedad-destacada .lp-otro-cta       { grid-column: 1; grid-row: 4; }
+
+.lp-novedad-card {
+  background: white;
+  border: 1.5px solid rgba(155,126,200,0.15);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 16px rgba(155,126,200,0.07);
+}
+.lp-novedad-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(155,126,200,0.15); }
+.lp-novedad-destacada {
+  background: linear-gradient(145deg, #f8f0ff, #f0f5ff);
+  border: 2px solid rgba(232,96,154,0.25);
+  box-shadow: 0 8px 36px rgba(155,126,200,0.14);
+}
+.lp-novedad-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.lp-novedad-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(232,96,154,0.12), rgba(155,126,200,0.12));
+  border: 1px solid rgba(155,126,200,0.25);
+  color: #9B7EC8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.lp-novedad-fecha {
+  font-size: 12px;
+  color: #b0a0c0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.lp-novedad-emoji { font-size: 36px; line-height: 1; }
+.lp-novedad-titulo {
+  font-size: 17px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+  line-height: 1.3;
+}
+.lp-novedad-desc {
+  font-size: 14px;
+  color: #6a6a8a;
+  line-height: 1.65;
+  font-weight: 600;
+  flex: 1;
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .lp-novedades-grid { grid-template-columns: 1fr 1fr; }
+  .lp-novedad-destacada { grid-column: 1 / -1; grid-template-columns: 1fr; }
+  .lp-novedad-destacada .lp-novedad-emoji { grid-column: 1; grid-row: 5; justify-content: flex-start; }
+}
+@media (max-width: 600px) {
+  .lp-novedades-grid { grid-template-columns: 1fr; }
+  .lp-novedad-destacada { grid-column: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HISTORIAS
+══════════════════════════════════════════════════════════════════════ */
+.lp-historias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 52px;
+}
+.lp-historia-card {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+  background: white;
+  border: 1.5px solid rgba(155,126,200,0.13);
+  border-radius: 28px;
+  padding: 40px 44px;
+  box-shadow: 0 4px 24px rgba(155,126,200,0.08);
+  transition: box-shadow 0.2s;
+}
+.lp-historia-card:hover { box-shadow: 0 10px 40px rgba(155,126,200,0.16); }
+.lp-historia-alt {
+  background: linear-gradient(145deg, #faf5ff, #f5f0ff);
+}
+.lp-historia-avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.lp-historia-avatar {
+  font-size: 64px;
+  line-height: 1;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #f0e8ff, #e8f4ff);
+  box-shadow: 0 6px 20px rgba(155,126,200,0.18);
+}
+.lp-historia-destino-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7B5EA8;
+  background: rgba(155,126,200,0.1);
+  border: 1px solid rgba(155,126,200,0.2);
+  border-radius: 50px;
+  padding: 6px 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+.lp-historia-content { display: flex; flex-direction: column; gap: 14px; }
+.lp-historia-meta {
+  font-size: 14px;
+  color: #9a8ab0;
+  font-weight: 600;
+}
+.lp-historia-meta strong {
+  color: #1a1a2e;
+  font-weight: 900;
+  font-size: 15px;
+}
+.lp-historia-titulo {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+  line-height: 1.3;
+  font-style: italic;
+}
+.lp-historia-texto {
+  font-size: 15px;
+  color: #5a4a6a;
+  line-height: 1.8;
+  font-weight: 600;
+  margin: 0;
+}
+.lp-historia-highlights {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lp-historia-highlight {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(232,96,154,0.1), rgba(155,126,200,0.1));
+  border: 1px solid rgba(155,126,200,0.2);
+  color: #7B5EA8;
+}
+@media (max-width: 760px) {
+  .lp-historia-card { grid-template-columns: 1fr; gap: 24px; padding: 28px 24px; }
+  .lp-historia-avatar-col { flex-direction: row; align-items: center; text-align: left; }
+  .lp-historia-avatar { width: 70px; height: 70px; font-size: 40px; flex-shrink: 0; }
 }

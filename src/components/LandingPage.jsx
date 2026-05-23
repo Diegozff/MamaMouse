@@ -61,6 +61,69 @@ const TESTIMONIOS = [
   { nombre: 'Familia Sánchez', origen: 'Buenos Aires', avatar: '👨‍👩‍👦‍👦', texto: 'Los consejos sobre Lightning Lane y los restaurantes fueron clave. Aprovechamos cada minuto en los parques sin hacer largas filas. ¡Volvemos el año que viene!', destino: 'Universal Orlando' },
 ]
 
+const NOVEDADES = [
+  {
+    emoji: '🌌', tag: 'Universal Orlando', fecha: 'Mayo 2026',
+    titulo: 'Epic Universe ya abrió sus puertas',
+    desc: 'El nuevo parque de Universal Orlando es una realidad: mundos de Harry Potter, Nintendo, Monster-verse y más. Mama Mouse ya tiene paquetes con acceso desde el día 1.',
+    destacado: true,
+  },
+  {
+    emoji: '🎉', tag: 'Disney World', fecha: 'Abr 2026',
+    titulo: 'Disney lanza promo 50% off en hoteles de verano',
+    desc: 'Disney activó una promoción de descuento en resorts seleccionados para viajes entre junio y agosto 2026. Si ya tenés reserva, revisamos si aplica automáticamente.',
+    destacado: false,
+  },
+  {
+    emoji: '🎢', tag: 'Hollywood Studios', fecha: 'Mar 2026',
+    titulo: 'Tiana\'s Bayou Adventure supera todas las expectativas',
+    desc: 'La nueva atracción de Magic Kingdom ya es la más popular del parque. Te contamos la mejor estrategia para vivirla sin horas de espera.',
+    destacado: false,
+  },
+  {
+    emoji: '⚡', tag: 'Tips Disney', fecha: 'Mar 2026',
+    titulo: 'Lightning Lane Multi Pass: cómo aprovecharlo al máximo',
+    desc: 'Disney cambió el sistema de filas rápidas. Te explicamos cómo funciona el nuevo Lightning Lane y cuál es la estrategia ganadora para cada parque.',
+    destacado: false,
+  },
+  {
+    emoji: '🚢', tag: 'Disney Cruise Line', fecha: 'Feb 2026',
+    titulo: 'Disney Treasure: el nuevo crucero temático que viene en 2026',
+    desc: 'El quinto crucero de Disney llega con mundos de Star Wars, Marvel y el Caribe. Itinerarios exclusivos y cabinas únicas. Consultá disponibilidad.',
+    destacado: false,
+  },
+  {
+    emoji: '🌍', tag: 'Disneyland París', fecha: 'Ene 2026',
+    titulo: 'Temporada de Festival Disney con shows exclusivos',
+    desc: 'Disneyland París celebra su temporada especial con shows únicos, decoraciones increíbles y paquetes combinados con estadía en París.',
+    destacado: false,
+  },
+]
+
+const HISTORIAS = [
+  {
+    avatar: '👨‍👩‍👧‍👦', nombre: 'Familia Pereyra', origen: 'Rosario, Santa Fe',
+    destino: 'Walt Disney World · Julio 2025', emoji: '🏰',
+    titulo: 'El viaje que pensamos que nunca íbamos a poder hacer',
+    historia: 'Llevábamos 5 años soñando con llevar a nuestros hijos a Disney. Siempre nos parecía imposible, demasiado caro, demasiado complicado. Cuando hablamos con Mama Mouse, todo cambió. Nos explicó exactamente qué podíamos pagar, cómo distribuir los pagos y qué estrategias usar para que no nos faltara nada. Viajamos 5: mis dos nenes de 6 y 9, mi marido y yo, y la abuela. La cara de mis hijos cuando vieron a Mickey por primera vez... eso no tiene precio.',
+    highlights: ['Magic Kingdom en 1 día completo', 'Character Dining con Minnie', 'Blizzard Beach de bonus'],
+  },
+  {
+    avatar: '👩‍👦', nombre: 'Rocío y Valentín', origen: 'Buenos Aires, CABA',
+    destino: 'Universal Orlando · Epic Universe · Junio 2025', emoji: '🎢',
+    titulo: 'Mamá e hijo, primera vez solos, aventura total',
+    historia: 'Mi hijo tiene 14 años y desde que abrió Epic Universe no hablaba de otra cosa. Le prometí que íbamos a ir, aunque no tenía idea de cómo organizarlo. Mama Mouse armó todo: el hotel Hard Rock con Express Pass incluido, los días en cada parque, los restaurantes. Val se volvió experto en Harry Potter y me hizo recorrer cada rincón de Hogsmeade. Fueron los 8 días más épicos de nuestras vidas.',
+    highlights: ['3 días en Epic Universe', 'Express Pass incluido', 'Tour nocturno por Hogsmeade'],
+  },
+  {
+    avatar: '👴👵', nombre: 'Norma & Roberto', origen: 'Mendoza',
+    destino: 'Disney Cruise Line · Caribe · Marzo 2025', emoji: '🚢',
+    titulo: 'Nunca fuimos de crucero... y resultó ser lo mejor del mundo',
+    historia: 'Mis nietos llevan años diciéndonos que vayamos a Disney. Este año cumplí 70 y Roberto 72, y decidimos que era el momento. Mama Mouse nos recomendó el crucero Disney como alternativa más tranquila que los parques. Fue una revelación: shows increíbles cada noche, la comida excelente, y ver el Caribe desde la cubierta con nuestros nietos. Una semana que vamos a contar por el resto de nuestras vidas.',
+    highlights: ['7 noches Caribe con Disney', 'Cena con personajes todos los días', 'Parada en Castaway Cay'],
+  },
+]
+
 const DESTINOS_OPT = ['Walt Disney World', 'Universal Orlando', 'Disneyland', 'Disney Cruise Line', 'Disney + Universal', 'Disneyland París', 'Miami & Extensión', 'Crucero Disney', 'Cancún / Riviera Maya', 'No sé aún / Consultame']
 
 /* ─── NAVBAR ────────────────────────────────────────────────────────────── */
@@ -96,6 +159,8 @@ function Navbar({ onLoginClick }) {
           <button onClick={() => scroll('agente-oficial')}>Agente oficial</button>
           <button onClick={() => scroll('sobre-nosotros')}>Mama Mouse</button>
           <button onClick={() => scroll('guias')}>Guías</button>
+          <button onClick={() => scroll('novedades')}>Novedades</button>
+          <button onClick={() => scroll('historias')}>Historias</button>
           <button onClick={() => scroll('cotizar')}>Cotizar</button>
           <button className="lp-nav-reserva-btn" onClick={() => { setMenuOpen(false); onLoginClick() }}>
             🔑 Mi Reserva
@@ -364,6 +429,78 @@ function Guias({ onCotizarClick }) {
   )
 }
 
+/* ─── NOVEDADES ─────────────────────────────────────────────────────────── */
+function Novedades({ onCotizarClick }) {
+  return (
+    <section id="novedades" className="lp-section lp-section-light">
+      <div className="lp-container">
+        <div className="lp-section-header">
+          <div className="lp-section-badge">Novedades</div>
+          <h2 className="lp-section-title">Lo último de Disney y Universal</h2>
+          <p className="lp-section-sub">Mama Mouse sigue de cerca cada novedad para que tu viaje incluya lo mejor de cada momento.</p>
+        </div>
+        <div className="lp-novedades-grid">
+          {NOVEDADES.map((n, i) => (
+            <div key={i} className={`lp-novedad-card ${n.destacado ? 'lp-novedad-destacada' : ''}`}>
+              <div className="lp-novedad-top">
+                <span className="lp-novedad-tag">{n.tag}</span>
+                <span className="lp-novedad-fecha">{n.fecha}</span>
+              </div>
+              <div className="lp-novedad-emoji">{n.emoji}</div>
+              <h3 className="lp-novedad-titulo">{n.titulo}</h3>
+              <p className="lp-novedad-desc">{n.desc}</p>
+              <button className="lp-otro-cta" onClick={onCotizarClick}>Consultame sobre esto →</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─── HISTORIAS ──────────────────────────────────────────────────────────── */
+function Historias({ onCotizarClick }) {
+  return (
+    <section id="historias" className="lp-section">
+      <div className="lp-container">
+        <div className="lp-section-header">
+          <div className="lp-section-badge">Historias reales</div>
+          <h2 className="lp-section-title">Familias que ya vivieron<br />su viaje mágico</h2>
+          <p className="lp-section-sub">Cada historia es única. Estas son las de algunas de las familias que confiaron en Mama Mouse para el viaje de su vida.</p>
+        </div>
+        <div className="lp-historias-list">
+          {HISTORIAS.map((h, i) => (
+            <div key={i} className={`lp-historia-card ${i % 2 === 1 ? 'lp-historia-alt' : ''}`}>
+              <div className="lp-historia-avatar-col">
+                <div className="lp-historia-avatar">{h.avatar}</div>
+                <div className="lp-historia-destino-badge">{h.emoji} {h.destino}</div>
+              </div>
+              <div className="lp-historia-content">
+                <div className="lp-historia-meta">
+                  <strong>{h.nombre}</strong>
+                  <span>· {h.origen}</span>
+                </div>
+                <h3 className="lp-historia-titulo">"{h.titulo}"</h3>
+                <p className="lp-historia-texto">{h.historia}</p>
+                <div className="lp-historia-highlights">
+                  {h.highlights.map((hl, j) => (
+                    <span key={j} className="lp-historia-highlight">✨ {hl}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="lp-proceso-cta">
+          <button className="lp-btn-primary" onClick={onCotizarClick}>
+            Quiero escribir mi propia historia →
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─── PROCESO ───────────────────────────────────────────────────────────── */
 function Proceso({ onCotizarClick }) {
   return (
@@ -614,7 +751,8 @@ function Footer() {
               <a href="#sobre-nosotros">Sobre Mama Mouse</a>
               <a href="#agente-oficial">Por qué un agente oficial</a>
               <a href="#guias">Guías de viaje</a>
-              <a href="#proceso">Proceso de trabajo</a>
+              <a href="#novedades">Novedades</a>
+              <a href="#historias">Historias reales</a>
               <a href="#cotizar">Cotizar gratis</a>
             </div>
           </div>
@@ -646,6 +784,8 @@ export default function LandingPage({ onLoginClick }) {
       <Destinos onCotizarClick={scrollToCotizar} />
       <OtrosDestinos onCotizarClick={scrollToCotizar} />
       <Guias onCotizarClick={scrollToCotizar} />
+      <Novedades onCotizarClick={scrollToCotizar} />
+      <Historias onCotizarClick={scrollToCotizar} />
       <Proceso onCotizarClick={scrollToCotizar} />
       <Cotizar />
       <Testimonios />
