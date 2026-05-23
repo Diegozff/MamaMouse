@@ -2067,9 +2067,11 @@ select.admin-input { cursor: pointer; }
 
 /* ── NAVBAR ────────────────────────────────────────────────────────── */
 .lp-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
+  position: sticky;
+  top: 0;
+  left: 0; right: 0;
   z-index: 100;
+  width: 100%;
   padding: 10px 0;
   transition: background 0.35s, box-shadow 0.35s, padding 0.35s;
   background: transparent;
@@ -2955,10 +2957,12 @@ select.admin-input { cursor: pointer; }
   .lp-nav-links {
     display: none;
     flex-direction: column;
-    position: fixed;
-    inset: 0;
+    /* Cubre el viewport entero usando el contenedor .lp-root como referencia */
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    min-height: 100dvh;
     background: linear-gradient(145deg, rgba(92,10,70,0.98), rgba(45,58,158,0.98));
-    z-index: 999;
+    z-index: 9999;
     align-items: center;
     justify-content: center;
     gap: 16px;

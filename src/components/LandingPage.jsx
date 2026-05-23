@@ -132,9 +132,12 @@ function Navbar({ onLoginClick }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
+    // El scroll ocurre dentro de .lp-root (overflow-y:auto), no en window
+    const root = document.querySelector('.lp-root')
+    if (!root) return
+    const onScroll = () => setScrolled(root.scrollTop > 40)
+    root.addEventListener('scroll', onScroll, { passive: true })
+    return () => root.removeEventListener('scroll', onScroll)
   }, [])
 
   const scroll = (id) => {
