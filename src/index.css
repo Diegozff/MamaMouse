@@ -2068,6 +2068,54 @@ select.admin-input { cursor: pointer; }
   padding: 0 24px;
 }
 
+/* ── LOGOS STRIP ────────────────────────────────────────────────────── */
+.lp-logos-strip {
+  background: #fafafa;
+  border-top: 1px solid #f0e8f5;
+  border-bottom: 1px solid #f0e8f5;
+  padding: 24px 0;
+}
+.lp-logos-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b8a8cc;
+  margin-bottom: 18px;
+}
+.lp-logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px 36px;
+}
+.lp-logos-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.82;
+  filter: grayscale(15%);
+  transition: opacity 0.2s, filter 0.2s;
+}
+.lp-logos-img:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+/* El AVP badge es más grande por ser la certificación principal */
+.lp-logos-avp {
+  height: 60px;
+  opacity: 1;
+  filter: none;
+}
+.lp-logos-divider {
+  width: 1px;
+  height: 44px;
+  background: #e0d4ee;
+  flex-shrink: 0;
+}
+
 /* ── NAVBAR ────────────────────────────────────────────────────────── */
 .lp-nav {
   position: sticky;
@@ -2490,7 +2538,48 @@ select.admin-input { cursor: pointer; }
 }
 .lp-sub-light { color: rgba(255,255,255,0.72) !important; }
 
-/* ── POR QUÉ – Seal ─────────────────────────────────────────────────── */
+/* ── POR QUÉ – AVP Badge ────────────────────────────────────────────── */
+.lp-avp-row {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0 48px;
+}
+.lp-avp-badge {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: white;
+  border: 2px solid rgba(155,126,200,0.2);
+  border-radius: 20px;
+  padding: 24px 36px;
+  box-shadow: 0 6px 30px rgba(155,126,200,0.12);
+  max-width: 680px;
+}
+.lp-avp-img {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.lp-avp-caption {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #5a4a6a;
+}
+.lp-avp-caption strong {
+  color: #3a2a4a;
+}
+@media (max-width: 600px) {
+  .lp-avp-badge {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px 24px;
+    gap: 16px;
+  }
+  .lp-avp-img { height: 70px; }
+}
+
+/* ── POR QUÉ – Seal (legacy, kept for reference) ────────────────────── */
 .lp-seal-row {
   display: flex;
   justify-content: center;
@@ -2552,6 +2641,15 @@ select.admin-input { cursor: pointer; }
 .lp-card-disney  { background: linear-gradient(145deg, #1a0a3e, #3d1a7a, #1d3a8a); }
 .lp-card-universal { background: linear-gradient(145deg, #0f2a1a, #1a5c32, #2d3a0a); }
 .lp-card-cruise  { background: linear-gradient(145deg, #1a2a4a, #0f3878, #2a1a5a); }
+/* Logo oficial de cada destino principal (reemplaza al emoji) */
+.lp-destino-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+  margin-bottom: 4px;
+}
 .lp-destino-emoji { font-size: 48px; line-height: 1; }
 .lp-destino-location { font-size: 12px; font-weight: 700; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
 .lp-destino-name { font-size: 24px; font-weight: 900; margin: 0; line-height: 1.2; }
@@ -3344,7 +3442,14 @@ select.admin-input { cursor: pointer; }
   box-shadow: 0 2px 16px rgba(155,126,200,0.07);
 }
 .lp-otro-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(155,126,200,0.16); }
+.lp-otro-left { display: flex; align-items: center; justify-content: center; min-width: 100px; }
 .lp-otro-emoji { font-size: 40px; line-height: 1; }
+/* Logo oficial de cada "otro destino" */
+.lp-otro-logo {
+  height: 38px;
+  width: 100px;
+  object-fit: contain;
+}
 .lp-otro-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .lp-otro-location { font-size: 11px; font-weight: 800; color: #9B7EC8; text-transform: uppercase; letter-spacing: 0.08em; }
 .lp-otro-name { font-size: 19px; font-weight: 900; color: #1a1a2e; margin: 0; line-height: 1.2; }

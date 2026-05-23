@@ -13,6 +13,7 @@ const DESTINOS_PRINCIPALES = [
     emoji: '🏰', grad: 'lp-card-disney',
     name: 'Walt Disney World',
     location: 'Orlando, Florida',
+    logo: '/walt disney world.png',
     desc: '4 parques temáticos, 2 parques acuáticos y la magia más grande del mundo. La experiencia Disney definitiva.',
     tags: ['Magic Kingdom', 'EPCOT', 'Hollywood Studios', 'Animal Kingdom'],
   },
@@ -20,6 +21,7 @@ const DESTINOS_PRINCIPALES = [
     emoji: '🎢', grad: 'lp-card-universal',
     name: 'Universal Orlando',
     location: 'Orlando, Florida',
+    logo: '/universal.png',
     desc: 'Harry Potter, Minions y el revolucionario Epic Universe. Adrenalina, tecnología y entretenimiento sin límites.',
     tags: ['Islands of Adventure', 'Universal Studios', 'Epic Universe'],
   },
@@ -27,16 +29,17 @@ const DESTINOS_PRINCIPALES = [
     emoji: '🚢', grad: 'lp-card-cruise',
     name: 'Disneyland & Cruceros',
     location: 'California · Alta Mar',
+    logo: '/disneyland.png',
     desc: 'El parque original de Walt Disney en California y la experiencia única de navegar con la magia Disney.',
     tags: ['Disneyland', 'California Adventure', 'Disney Cruise Line'],
   },
 ]
 
 const OTROS_DESTINOS = [
-  { emoji: '🗼', name: 'Disneyland París', location: 'Paris, Francia', desc: 'La magia Disney en el corazón de Europa. Perfecto para combinar con una escapada parisina.' },
-  { emoji: '🌴', name: 'Miami & Caribe', location: 'Florida · Caribe', desc: 'Playas increíbles, shopping y el punto de partida ideal para cruceros y extensiones de viaje.' },
-  { emoji: '🌊', name: 'Cruceros Disney', location: 'Caribe · Europa · Alaska', desc: 'Navegá con Mickey y toda la familia. Shows en vivo, personajes, restaurantes temáticos y puertos únicos.' },
-  { emoji: '🏖️', name: 'Cancún & Riviera Maya', location: 'México', desc: 'Playas paradisíacas, parques acuáticos y cultura maya. El complemento perfecto después de Orlando.' },
+  { emoji: '🗼', name: 'Disneyland París', location: 'Paris, Francia', logo: '/disneyland paris.png', desc: 'La magia Disney en el corazón de Europa. Perfecto para combinar con una escapada parisina.' },
+  { emoji: '🌴', name: 'Miami & Caribe', location: 'Florida · Caribe', logo: null, desc: 'Playas increíbles, shopping y el punto de partida ideal para cruceros y extensiones de viaje.' },
+  { emoji: '🌊', name: 'Cruceros Disney', location: 'Caribe · Europa · Alaska', logo: '/disney cruise line.png', desc: 'Navegá con Mickey y toda la familia. Shows en vivo, personajes, restaurantes temáticos y puertos únicos.' },
+  { emoji: '🚢', name: 'Cruceros MSC', location: 'Mediterráneo · Caribe · Alaska', logo: '/msc.png', desc: 'Los cruceros más modernos del mundo con itinerarios únicos. Una opción premium para familias y parejas.' },
 ]
 
 const GUIAS = [
@@ -220,6 +223,27 @@ function Hero({ onCotizarClick, onLoginClick }) {
   )
 }
 
+/* ─── LOGOS STRIP ────────────────────────────────────────────────────────── */
+function LogosStrip() {
+  return (
+    <div className="lp-logos-strip">
+      <div className="lp-container">
+        <p className="lp-logos-label">Certificaciones y destinos oficiales</p>
+        <div className="lp-logos-row">
+          <img src="/authorized vacation planner.png" alt="Authorized Disney Vacation Planner" className="lp-logos-img lp-logos-avp" />
+          <div className="lp-logos-divider" />
+          <img src="/walt disney world.png"   alt="Walt Disney World"    className="lp-logos-img" />
+          <img src="/universal.png"           alt="Universal Orlando"    className="lp-logos-img" />
+          <img src="/disney cruise line.png"  alt="Disney Cruise Line"  className="lp-logos-img" />
+          <img src="/disneyland paris.png"    alt="Disneyland París"    className="lp-logos-img" />
+          <img src="/disneyland.png"          alt="Disneyland Resort"   className="lp-logos-img" />
+          <img src="/msc.png"                 alt="MSC Cruises"         className="lp-logos-img" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── SOBRE MAMA MOUSE ──────────────────────────────────────────────────── */
 function SobreMamaMouse({ onCotizarClick }) {
   return (
@@ -322,13 +346,12 @@ function AgenteOficial() {
           </div>
         </div>
 
-        <div className="lp-seal-row" style={{ marginTop: 48 }}>
-          <div className="lp-seal">
-            <span className="lp-seal-icon">🏆</span>
-            <div>
-              <div className="lp-seal-title">Agente Oficial Certificada</div>
-              <div className="lp-seal-sub">Disney · Universal · IATA</div>
-            </div>
+        <div className="lp-avp-row">
+          <div className="lp-avp-badge">
+            <img src="/authorized vacation planner.png" alt="Authorized Disney Vacation Planner" className="lp-avp-img" />
+            <p className="lp-avp-caption">
+              Mama Mouse es <strong>Agente Oficial Autorizada por Disney</strong> — una distinción exclusiva que solo tienen agencias seleccionadas, que garantiza acceso a tarifas, herramientas y soporte directo con Disney.
+            </p>
           </div>
         </div>
 
@@ -359,7 +382,7 @@ function Destinos({ onCotizarClick }) {
         <div className="lp-destinos-grid">
           {DESTINOS_PRINCIPALES.map((d, i) => (
             <div key={i} className={`lp-destino-card ${d.grad}`}>
-              <div className="lp-destino-emoji">{d.emoji}</div>
+              {d.logo && <img src={d.logo} alt={d.name} className="lp-destino-logo" />}
               <div className="lp-destino-location">{d.location}</div>
               <h3 className="lp-destino-name">{d.name}</h3>
               <p className="lp-destino-desc">{d.desc}</p>
@@ -390,7 +413,12 @@ function OtrosDestinos({ onCotizarClick }) {
         <div className="lp-otros-grid">
           {OTROS_DESTINOS.map((d, i) => (
             <div key={i} className="lp-otro-card">
-              <div className="lp-otro-emoji">{d.emoji}</div>
+              <div className="lp-otro-left">
+                {d.logo
+                  ? <img src={d.logo} alt={d.name} className="lp-otro-logo" />
+                  : <div className="lp-otro-emoji">{d.emoji}</div>
+                }
+              </div>
               <div className="lp-otro-info">
                 <div className="lp-otro-location">{d.location}</div>
                 <h3 className="lp-otro-name">{d.name}</h3>
@@ -796,6 +824,7 @@ export default function LandingPage({ onLoginClick }) {
     <div className="lp-root">
       <Navbar onLoginClick={onLoginClick} />
       <Hero onCotizarClick={scrollToCotizar} onLoginClick={onLoginClick} />
+      <LogosStrip />
       <SobreMamaMouse onCotizarClick={scrollToCotizar} />
       <AgenteOficial />
       <Destinos onCotizarClick={scrollToCotizar} />
