@@ -9,22 +9,25 @@ import { writeFile, readFile, readdir, access, mkdir } from 'node:fs/promises'
 import path           from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
-import nodemailer     from 'nodemailer'
-
 // Cargar variables de entorno
 dotenv.config()
 
-// ── Transporter de email ──────────────────────────────────────────────────────
-const mailer = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST || 'smtp.gmail.com',
-  port:   Number(process.env.SMTP_PORT || 465),
-  secure: process.env.SMTP_PORT === '587' ? false : true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: { rejectUnauthorized: false },
-})
+// ── Envío de email vía Resend API (HTTPS, funciona en Railway) ────────────────
+async function sendEmail({ to, subject, html, text }) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error('RESEND_API_KEY no configurado en las variables de entorno')
+
+  const from = process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>'
+
+  const r = await fetch('https://api.resend.com/emails', {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to: Array.isArray(to) ? to : [to], subject, html, text }),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.message || JSON.stringify(data))
+  return data
+}
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
 const PORT        = process.env.PORT || 3000
@@ -131,8 +134,7 @@ app.post('/api/cotizar', async (req, res) => {
   <p style="font-size:12px;color:#aaa;">Enviado desde el formulario de cotización de mamamouse.com.ar</p>
 </div>`
 
-    mailer.sendMail({
-      from:    process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>',
+    sendEmail({
       to:      'carolina@fasttravelvacation.com',
       subject: `🐭 Nueva consulta: ${nombre} → ${destino || 'sin destino'}`,
       html:    htmlBody,
@@ -249,22 +251,17 @@ app.post('/api/notify/summary', async (req, res) => {
 // ── API: Test de email ────────────────────────────────────────────────────────
 app.get('/api/test-email', async (req, res) => {
   res.setHeader('Content-Type', 'application/json')
-  const cfg = {
-    host:    process.env.SMTP_HOST    || '(no seteado)',
-    port:    process.env.SMTP_PORT    || '(no seteado)',
-    user:    process.env.SMTP_USER    || '(no seteado)',
-    passSet: !!process.env.SMTP_PASS,
-  }
+  const cfg = { resendKeySet: !!process.env.RESEND_API_KEY }
   console.log('[API] Test email – config:', cfg)
   try {
-    const info = await mailer.sendMail({
-      from:    process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>',
+    const info = await sendEmail({
       to:      'carolina@fasttravelvacation.com',
       subject: '🐭 Test email – Mama Mouse',
       text:    'Este es un email de prueba enviado desde el servidor de Mama Mouse.',
+      html:    '<h2>🐭 Test Mama Mouse</h2><p>Email de prueba enviado correctamente.</p>',
     })
-    console.log('[API] Test email OK:', info.messageId)
-    return res.json({ ok: true, msg: 'Email enviado a carolina@fasttravelvacation.com', messageId: info.messageId, cfg })
+    console.log('[API] Test email OK:', JSON.stringify(info))
+    return res.json({ ok: true, msg: 'Email enviado a carolina@fasttravelvacation.com', info, cfg })
   } catch (e) {
     console.error('[API] Test email ERROR:', e.message)
     return res.status(500).json({ ok: false, error: e.message, cfg })
