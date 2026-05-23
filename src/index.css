@@ -2070,14 +2070,14 @@ select.admin-input { cursor: pointer; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  padding: 14px 0;
+  padding: 10px 0;
   transition: background 0.35s, box-shadow 0.35s, padding 0.35s;
   background: transparent;
 }
 .lp-nav-solid {
   background: rgba(255,255,255,0.97);
   box-shadow: 0 2px 24px rgba(155,126,200,0.14);
-  padding: 8px 0;
+  padding: 6px 0;
   backdrop-filter: blur(16px);
 }
 .lp-nav-inner {
@@ -2096,30 +2096,44 @@ select.admin-input { cursor: pointer; }
   cursor: pointer;
   text-decoration: none;
 }
-/* Logo integrado — sin caja cuadrada, tamaño generoso */
+/* Logo — circular con borde degradado, tamaño prominente */
 .lp-nav-logo {
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-  border-radius: 0;
-  filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.15));
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, #E8609A, #9B7EC8, #7DC4E0) border-box;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.2),
+    0 6px 24px rgba(0,0,0,0.35),
+    0 0 20px rgba(232,96,154,0.3);
+  flex-shrink: 0;
 }
 .lp-nav-solid .lp-nav-logo {
-  filter: drop-shadow(0 2px 8px rgba(155,126,200,0.35));
+  box-shadow:
+    0 4px 18px rgba(155,126,200,0.3),
+    0 0 0 1px rgba(155,126,200,0.15);
 }
-/* Texto de marca — blanco en hero, degradado con colores del logo al scrollear */
+/* Texto de marca — fuente Fredoka como el logo, blanco sobre hero */
 .lp-nav-brand-text {
-  font-size: 17px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
+  font-family: 'Fredoka One', 'Fredoka', 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   color: white;
-  transition: color 0.3s;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  transition: all 0.3s;
+  line-height: 1;
 }
 .lp-nav-solid .lp-nav-brand-text {
-  background: linear-gradient(135deg, #E8609A, #9B7EC8);
+  background: linear-gradient(135deg, #E8609A 0%, #9B7EC8 60%, #7DC4E0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-shadow: none;
 }
 .lp-nav-links {
   display: flex;
@@ -2131,13 +2145,14 @@ select.admin-input { cursor: pointer; }
   background: none;
   border: none;
   font-family: 'Nunito', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: rgba(255,255,255,0.88);
   cursor: pointer;
-  padding: 8px 14px;
+  padding: 7px 10px;
   border-radius: 50px;
   transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .lp-nav-links button:hover {
   background: rgba(255,255,255,0.15);
@@ -2154,7 +2169,7 @@ select.admin-input { cursor: pointer; }
 .lp-nav-reserva-btn {
   background: linear-gradient(135deg, #E8609A, #9B7EC8) !important;
   color: white !important;
-  padding: 9px 22px !important;
+  padding: 9px 16px !important;
   border-radius: 50px !important;
   font-size: 13px !important;
   box-shadow: 0 4px 18px rgba(232,96,154,0.4);
