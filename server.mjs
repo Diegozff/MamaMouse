@@ -69,7 +69,7 @@ app.post('/api/login', async (req, res) => {
       try {
         const raw  = await readFile(path.join(BOOKINGS_DIR, file), 'utf-8')
         const data = JSON.parse(raw)
-        if (data.usuario === usuario.trim() && data.password === password) {
+        if (data.usuario?.toLowerCase() === usuario.trim().toLowerCase() && data.password === password) {
           const id = file.replace('.json', '')
           console.log(`[API] Login exitoso: ${usuario} → ${id}`)
           return res.json({ ok: true, id })
