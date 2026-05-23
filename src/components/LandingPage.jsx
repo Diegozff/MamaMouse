@@ -720,36 +720,6 @@ function Cotizar() {
   )
 }
 
-/* ─── TESTIMONIOS ───────────────────────────────────────────────────────── */
-function Testimonios() {
-  return (
-    <section className="lp-section">
-      <div className="lp-container">
-        <div className="lp-section-header">
-          <div className="lp-section-badge">Testimonios</div>
-          <h2 className="lp-section-title">Familias que ya vivieron la magia</h2>
-          <p className="lp-section-sub">Más de 500 familias confiaron en Mama Mouse para el viaje de su vida.</p>
-        </div>
-        <div className="lp-testimonios-grid">
-          {TESTIMONIOS.map((t, i) => (
-            <div key={i} className="lp-testimonio-card">
-              <div className="lp-testimonio-stars">⭐⭐⭐⭐⭐</div>
-              <p className="lp-testimonio-texto">"{t.texto}"</p>
-              <div className="lp-testimonio-author">
-                <div className="lp-testimonio-avatar">{t.avatar}</div>
-                <div>
-                  <div className="lp-testimonio-nombre">{t.nombre}</div>
-                  <div className="lp-testimonio-meta">{t.origen} · {t.destino}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 /* ─── VIAJEROS (Login) ──────────────────────────────────────────────────── */
 function SeccionViajeros({ onLoginClick }) {
   return (
@@ -874,7 +844,6 @@ export default function LandingPage({ onLoginClick }) {
       <Historias onCotizarClick={scrollToCotizar} />
       <Proceso onCotizarClick={scrollToCotizar} />
       <Cotizar />
-      <Testimonios />
       <SeccionViajeros onLoginClick={onLoginClick} />
       <Footer />
 
