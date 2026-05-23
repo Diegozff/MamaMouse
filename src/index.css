@@ -2051,7 +2051,8 @@ select.admin-input { cursor: pointer; }
   position: fixed;
   inset: 0;
   overflow-y: auto;
-  background: #ffffff;
+  /* Sin fondo propio: cada sección tiene el suyo, así el hero sube detrás del nav */
+  background: transparent;
   z-index: 10;
   font-family: 'Nunito', sans-serif;
   color: #2d2d2d;
@@ -2120,7 +2121,11 @@ select.admin-input { cursor: pointer; }
   white-space: nowrap;
 }
 .lp-nav-solid .lp-nav-ft-label {
-  color: rgba(100,80,140,0.6);
+  color: rgba(80,60,120,0.65);
+}
+/* Hamburger lines — oscuras sobre fondo blanco */
+.lp-nav-solid .lp-hamburger span {
+  background: #4a3a5a !important;
 }
 .lp-nav-ft-logo {
   height: 22px;
@@ -2195,13 +2200,18 @@ select.admin-input { cursor: pointer; }
   background: rgba(255,255,255,0.15);
   color: white;
 }
-/* Links — oscuros sobre fondo blanco al scrollear */
+/* Links — oscuros y bien visibles sobre fondo blanco al scrollear */
 .lp-nav-solid .lp-nav-links button {
-  color: #4a3a5a;
+  color: #3a2a4a;
+  font-weight: 800;
 }
 .lp-nav-solid .lp-nav-links button:hover {
   background: rgba(155,126,200,0.1);
   color: #9B7EC8;
+}
+/* Brand text también oscuro en solid */
+.lp-nav-solid .lp-nav-brand-text {
+  font-size: 22px;
 }
 .lp-nav-reserva-btn {
   background: linear-gradient(135deg, #E8609A, #9B7EC8) !important;
@@ -2239,7 +2249,7 @@ select.admin-input { cursor: pointer; }
   transition: all 0.2s;
 }
 
-/* ── HERO — colores del logo: rosa → púrpura → azul ───────────────── */
+/* ── HERO — sube detrás del navbar con margen negativo ─────────────── */
 .lp-hero {
   min-height: 100dvh;
   position: relative;
@@ -2256,7 +2266,9 @@ select.admin-input { cursor: pointer; }
     #0f2a6a 100%
   );
   overflow: hidden;
-  padding-top: 80px;
+  /* El hero sube detrás del navbar (108px = altura del nav sticky) */
+  margin-top: -108px;
+  padding-top: calc(108px + 40px);
 }
 .lp-hero::before {
   content: '';
