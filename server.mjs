@@ -16,13 +16,14 @@ dotenv.config()
 
 // ── Transporter de email ──────────────────────────────────────────────────────
 const mailer = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-  port:   Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',
+  host:   process.env.SMTP_HOST || 'smtp.gmail.com',
+  port:   Number(process.env.SMTP_PORT || 465),
+  secure: process.env.SMTP_PORT === '587' ? false : true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  tls: { rejectUnauthorized: false },
 })
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
@@ -247,24 +248,26 @@ app.post('/api/notify/summary', async (req, res) => {
 
 // ── API: Test de email ────────────────────────────────────────────────────────
 app.get('/api/test-email', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json')
   const cfg = {
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    user: process.env.SMTP_USER,
+    host:    process.env.SMTP_HOST    || '(no seteado)',
+    port:    process.env.SMTP_PORT    || '(no seteado)',
+    user:    process.env.SMTP_USER    || '(no seteado)',
     passSet: !!process.env.SMTP_PASS,
   }
   console.log('[API] Test email – config:', cfg)
   try {
-    await mailer.sendMail({
+    const info = await mailer.sendMail({
       from:    process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>',
       to:      'carolina@fasttravelvacation.com',
       subject: '🐭 Test email – Mama Mouse',
       text:    'Este es un email de prueba enviado desde el servidor de Mama Mouse.',
     })
-    res.json({ ok: true, msg: 'Email enviado correctamente', cfg })
+    console.log('[API] Test email OK:', info.messageId)
+    return res.json({ ok: true, msg: 'Email enviado a carolina@fasttravelvacation.com', messageId: info.messageId, cfg })
   } catch (e) {
-    console.error('[API] Test email error:', e.message)
-    res.status(500).json({ ok: false, error: e.message, cfg })
+    console.error('[API] Test email ERROR:', e.message)
+    return res.status(500).json({ ok: false, error: e.message, cfg })
   }
 })
 
