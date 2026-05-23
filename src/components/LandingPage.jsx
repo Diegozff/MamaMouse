@@ -131,7 +131,7 @@ const HISTORIAS = [
   },
 ]
 
-const DESTINOS_OPT = ['Walt Disney World', 'Universal Orlando', 'Disneyland', 'Disney Cruise Line', 'Disney + Universal', 'Disneyland París', 'Miami & Extensión', 'Crucero Disney', 'Cancún / Riviera Maya', 'No sé aún / Consultame']
+const DESTINOS_OPT = ['Walt Disney World', 'Universal Orlando', 'Disneyland', 'Disney Cruise Line', 'Disney + Universal', 'Disneyland París', 'Miami & Extensión', 'Crucero Disney', 'Caribe', 'Otros']
 
 /* ─── NAVBAR ────────────────────────────────────────────────────────────── */
 function Navbar({ onLoginClick }) {
@@ -580,10 +580,24 @@ function Proceso({ onCotizarClick }) {
 
 /* ─── FORMULARIO DE COTIZACIÓN ──────────────────────────────────────────── */
 function Cotizar() {
-  const [form, setForm]     = useState({ nombre: '', email: '', telefono: '', destino: '', fechas: '', adultos: '2', ninos: '0', mensaje: '' })
+  const [form, setForm]     = useState({ nombre: '', email: '', telefono: '', destino: '', fechas: '', adultos: '2', ninos: '0', edadesNinos: [], mensaje: '' })
   const [status, setStatus] = useState('idle')
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k, v) => {
+    if (k === 'ninos') {
+      const n = Math.min(parseInt(v) || 0, 20)
+      setForm(f => ({
+        ...f,
+        ninos: String(n),
+        edadesNinos: Array.from({ length: n }, (_, i) => f.edadesNinos[i] ?? ''),
+      }))
+    } else {
+      setForm(f => ({ ...f, [k]: v }))
+    }
+  }
+  const setEdad = (i, v) => setForm(f => {
+    const arr = [...f.edadesNinos]; arr[i] = v; return { ...f, edadesNinos: arr }
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -664,6 +678,26 @@ function Cotizar() {
                 </div>
               </div>
             </div>
+
+            {parseInt(form.ninos) > 0 && (
+              <div className="lp-form-field lp-form-full">
+                <label>Edades de los niños</label>
+                <div className="lp-form-edades-row">
+                  {form.edadesNinos.map((edad, i) => (
+                    <div key={i} className="lp-form-edad-item">
+                      <span>Niño {i + 1}</span>
+                      <input
+                        type="number" min="0" max="17"
+                        placeholder="años"
+                        value={edad}
+                        onChange={e => setEdad(i, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="lp-form-field lp-form-full">
               <label>¿Algo más que quieras contarnos?</label>
               <textarea value={form.mensaje} onChange={e => set('mensaje', e.target.value)} placeholder="Primeras veces, celebraciones especiales, necesidades especiales, presupuesto aproximado..." />

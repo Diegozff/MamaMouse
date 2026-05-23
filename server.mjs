@@ -82,7 +82,7 @@ app.post('/api/upload-pdf/:bookingId/:itemId',
 // ── API: Formulario de cotización ────────────────────────────────────────────
 app.post('/api/cotizar', async (req, res) => {
   try {
-    const { nombre, email, telefono, destino, fechas, adultos, ninos, mensaje } = req.body
+    const { nombre, email, telefono, destino, fechas, adultos, ninos, edadesNinos, mensaje } = req.body
     console.log(`[API] Cotización de ${nombre} (${email} / ${telefono}) → ${destino}`)
 
     // Guardar en archivo de leads (opcional, no crítico)
@@ -90,7 +90,7 @@ app.post('/api/cotizar', async (req, res) => {
       const leadsPath = path.join(__dirname, 'public', 'leads.json')
       let leads = []
       try { leads = JSON.parse(await readFile(leadsPath, 'utf-8')) } catch {}
-      leads.push({ nombre, email, telefono, destino, fechas, adultos, ninos, mensaje, fecha: new Date().toISOString() })
+      leads.push({ nombre, email, telefono, destino, fechas, adultos, ninos, edadesNinos, mensaje, fecha: new Date().toISOString() })
       await writeFile(leadsPath, JSON.stringify(leads, null, 2), 'utf-8')
     } catch (e) { console.warn('[API] No se pudo guardar lead:', e.message) }
 
