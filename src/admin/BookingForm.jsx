@@ -61,16 +61,50 @@ function DynamicList({ label, items, onChange, placeholder = 'Agregar ítem...' 
   )
 }
 
-function ItineraryRow({ item, onChange, onRemove }) {
+/* ── Voucher row ── */
+function VoucherRow({ voucher, onChange, onRemove, bookingId }) {
+  const [uploading, setUploading] = useState(false)
+
+  const handlePdf = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const buf = await file.arrayBuffer()
+      const r = await fetch(
+        `/api/upload-pdf/${encodeURIComponent(bookingId)}/${encodeURIComponent(voucher.id)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: buf }
+      )
+      const data = await r.json()
+      if (data.ok) onChange({ ...voucher, url: data.url })
+    } catch (err) { console.error(err) }
+    setUploading(false)
+  }
+
   return (
-    <div className="af-itinerary-row">
-      <input className="admin-input af-day-num" type="number" placeholder="Día" value={item.dia}
-        onChange={e => onChange({ ...item, dia: Number(e.target.value) })} />
-      <input className="admin-input" type="date" value={item.fecha}
-        onChange={e => onChange({ ...item, fecha: e.target.value })} />
-      <input className="admin-input af-plan" placeholder="Plan del día" value={item.plan}
-        onChange={e => onChange({ ...item, plan: e.target.value })} />
-      <button className="af-remove-btn" onClick={onRemove}>✕</button>
+    <div className="af-voucher-row">
+      <input
+        className="admin-input af-voucher-nombre"
+        value={voucher.nombre}
+        placeholder="Ej: Voucher Hotel Disney, Recibo Aéreos…"
+        onChange={e => onChange({ ...voucher, nombre: e.target.value })}
+      />
+      {voucher.url ? (
+        <div className="af-pdf-row">
+          <a href={voucher.url} target="_blank" rel="noreferrer" className="af-pdf-link">
+            📄 Ver PDF
+          </a>
+          <button className="af-remove-btn" title="Quitar PDF"
+            onClick={() => onChange({ ...voucher, url: '' })}>✕</button>
+        </div>
+      ) : (
+        <label className={`af-pdf-upload-btn ${uploading ? 'uploading' : ''}`}>
+          {uploading ? '⏳ Subiendo…' : '📎 Subir PDF'}
+          <input type="file" accept="application/pdf" style={{ display: 'none' }}
+            onChange={handlePdf} disabled={uploading} />
+        </label>
+      )}
+      <button className="af-remove-btn af-voucher-remove" onClick={onRemove}>✕</button>
     </div>
   )
 }
@@ -480,9 +514,9 @@ export default function BookingForm({ initialData, onSave, saving }) {
   }
   const removeItem = i => setA('items', (d.items || []).filter((_, idx) => idx !== i))
 
-  const addDia    = () => setA('itinerario', [...d.itinerario, { dia: d.itinerario.length + 1, fecha: '', plan: '' }])
-  const updateDia = (i, item) => { const it = [...d.itinerario]; it[i] = item; setA('itinerario', it) }
-  const removeDia = i => setA('itinerario', d.itinerario.filter((_, idx) => idx !== i))
+  const addVoucher    = () => setA('vouchers', [...(d.vouchers || []), { id: uid(), nombre: '', url: '', icono: '📄' }])
+  const updateVoucher = (i, v) => { const vs = [...(d.vouchers || [])]; vs[i] = v; setA('vouchers', vs) }
+  const removeVoucher = i => setA('vouchers', (d.vouchers || []).filter((_, idx) => idx !== i))
 
   const items = d.items || []
   const byCur = {}
@@ -565,16 +599,23 @@ export default function BookingForm({ initialData, onSave, saving }) {
           onChange={v => setA('regalos', v)} placeholder="Ej: Kit de bienvenida Mama Mouse..." />
       </Section>
 
-      {/* ── ITINERARIO ── */}
-      <Section id="sec-itinerario" icon="🗺️" title="Itinerario Día a Día">
+      {/* ── VOUCHERS ── */}
+      <Section id="sec-vouchers" icon="📄" title="Bauchers y Recibos">
+        <p className="af-vouchers-hint">
+          Subí los PDFs de vouchers, recibos y confirmaciones. El viajero podrá descargarlos desde su reserva.
+        </p>
         <div className="af-dynamic">
-          {d.itinerario.map((item, i) => (
-            <ItineraryRow key={i} item={item}
-              onChange={v => updateDia(i, v)}
-              onRemove={() => removeDia(i)} />
+          {(d.vouchers || []).map((v, i) => (
+            <VoucherRow
+              key={v.id}
+              voucher={v}
+              onChange={updated => updateVoucher(i, updated)}
+              onRemove={() => removeVoucher(i)}
+              bookingId={d.id}
+            />
           ))}
-          <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addDia}>
-            + Agregar día
+          <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addVoucher}>
+            + Agregar baucher / recibo
           </button>
         </div>
       </Section>

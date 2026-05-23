@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar'
 import BottomTabs from './components/BottomTabs'
 import Overview from './components/Overview'
 import PaymentStatus from './components/PaymentStatus'
-import Itinerary from './components/Itinerary'
+import Vouchers from './components/Vouchers'
 import GuidesLibrary from './components/GuidesLibrary'
 import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
@@ -90,7 +90,7 @@ function BookingView({ id, onLogout }) {
         <main className="content-area" ref={contentRef}>
           {tab === 'overview'   && <Overview   booking={booking} onTabChange={setTab} />}
           {tab === 'pagos'      && <PaymentStatus items={booking.items} />}
-          {tab === 'itinerario' && <Itinerary  itinerario={booking.itinerario} />}
+          {tab === 'vouchers'   && <Vouchers   vouchers={booking.vouchers || []} />}
           {tab === 'guias'      && <GuidesLibrary />}
           {tab === 'beneficios' && <Benefits   booking={booking} />}
         </main>

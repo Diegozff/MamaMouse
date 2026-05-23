@@ -1,0 +1,134 @@
+{
+  "id": "beltrando",
+  "titular": "Matias Beltrando",
+  "usuario": "beltrando",
+  "password": "beltrando2026",
+  "email": "",
+  "telefono": "",
+  "destinos": ["Walt Disney World", "Universal Orlando"],
+  "items": [
+    {
+      "id": "aereos",
+      "tipo": "Aéreos",
+      "icono": "✈️",
+      "descripcion": "Vuelo Buenos Aires (EZE) ↔ Orlando (MCO) – 2 adultos + 2 menores (2 y 7 años)\nSalida: 2 de julio 2026 – 20:30 hs desde Ezeiza\nRegreso: 17 de julio 2026 – Llegada a Ezeiza 7:00 hs",
+      "moneda": "USD",
+      "total": 0,
+      "fechaInicio": "2026-07-02",
+      "fechaFin": "2026-07-17",
+      "fechaLimite": "2026-06-15",
+      "pagos": []
+    },
+    {
+      "id": "hotel-disney",
+      "tipo": "Hotel Disney",
+      "icono": "🏰",
+      "descripcion": "Disney's Art of Animation Resort – Habitación La Sirenita\nReserva N°: 618965606190\n2 adultos + 2 menores (2 y 7 años) · 7 noches (3 al 10 de julio 2026)\nPromo: Ahorro en habitación\nIncluye: Transporte gratuito a parques y Disney Springs · Entrada Temprana\nBonus: Entrada gratuita a parque acuático (Blizzard Beach o Typhoon Lagoon) válida el día del check-in\nSaldo USD 1,662.88 abonado directamente a Disney al momento del check-in",
+      "moneda": "USD",
+      "total": 1982.26,
+      "fechaInicio": "2026-07-03",
+      "fechaFin": "2026-07-10",
+      "fechaLimite": "2026-07-10",
+      "pagos": [
+        { "fecha": "2026-05-18", "monto": 319.38, "concepto": "Seña reserva hotel" },
+        { "fecha": "2026-07-03", "monto": 1662.88, "concepto": "Saldo abonado al check-in en destino" }
+      ]
+    },
+    {
+      "id": "entradas-disney",
+      "tipo": "Entradas Disney",
+      "icono": "🎟️",
+      "descripcion": "Promo Tickets Mágicos – 4 días, un parque por día\nReserva N°: XYFW90262626\n2 adultos + 1 menor de 7 años (menor de 2 años sin cargo)\nParques: Magic Kingdom · Hollywood Studios · Animal Kingdom · EPCOT\nVálidas del 4 al 10 de julio de 2026\nInclye: Memory Maker (fotos y videos ilimitados) de regalo",
+      "moneda": "USD",
+      "total": 1609.35,
+      "fechaInicio": "2026-07-04",
+      "fechaFin": "2026-07-10",
+      "fechaLimite": "2026-06-01",
+      "pagos": [
+        { "fecha": "2026-05-18", "monto": 1609.35, "concepto": "Pago total entradas Disney" }
+      ]
+    },
+    {
+      "id": "paquete-universal",
+      "tipo": "Paquete Universal",
+      "icono": "🎢",
+      "descripcion": "Hard Rock Hotel – Habitación Estándar\nReserva N°: 377714U2\n2 adultos + 2 menores (2 y 7 años) · 6 noches (10 al 16 de julio 2026)\nEntradas: 5 días Park-to-Park (3 días comprados + 2 días gratis)\nParques: Universal Studios Florida · Islands of Adventure · Epic Universe\nVálidas del 10 al 17 de julio de 2026\nIncluye: Express Pass ilimitados (Universal Studios + Islands of Adventure) · Transporte gratuito a parques y CityWalk · Entrada Temprana",
+      "moneda": "USD",
+      "total": 5570.09,
+      "fechaInicio": "2026-07-10",
+      "fechaFin": "2026-07-16",
+      "fechaLimite": "2026-06-01",
+      "pagos": [
+        { "fecha": "2026-05-18", "monto": 553.00, "concepto": "Seña paquete Universal" },
+        { "fecha": "2026-05-22", "monto": 5017.09, "concepto": "Saldo paquete Universal" }
+      ]
+    }
+  ],
+  "promos": [
+    "Promo Tickets Mágicos Disney: 4 días un parque por día con ahorro en habitación",
+    "Hard Rock Hotel: Express Pass ilimitados incluidos durante toda la estadía",
+    "Parque acuático Disney gratuito (válido el día del check-in)"
+  ],
+  "regalos": [
+    "Memory Maker Disney – Fotos y videos ilimitados en los 4 parques",
+    "Kit de bienvenida Mama Mouse 🐭",
+    "2 días extras de parques Universal de regalo (5 días por el precio de 3)"
+  ],
+  "vouchers": [],
+  "itinerario": [
+    { "dia": 1,  "fecha": "2026-07-02", "plan": "🛫 Salida desde Ezeiza a las 20:30 hs – ¡Que empiece la magia!" },
+    { "dia": 2,  "fecha": "2026-07-03", "plan": "🌴 Llegada a Orlando – Check-in en Disney's Art of Animation Resort – Tarde libre para conocer el hotel y Disney Springs · Parque acuático gratuito disponible hoy" },
+    { "dia": 3,  "fecha": "2026-07-04", "plan": "🏰 Magic Kingdom – 4 de julio en el parque más mágico del mundo – Festival de Fuegos Artificiales de Independencia (¡único!)" },
+    { "dia": 4,  "fecha": "2026-07-05", "plan": "🎬 Hollywood Studios – Rock 'n' Roller Coaster starring The Muppets · Star Wars: Galaxy's Edge · Toy Story Land" },
+    { "dia": 5,  "fecha": "2026-07-06", "plan": "🦁 Animal Kingdom – Avatar: Flight of Passage · Kilimanjaro Safaris · Pandora de noche" },
+    { "dia": 6,  "fecha": "2026-07-07", "plan": "🌎 EPCOT – World Showcase · Remy's Ratatouille Adventure · Guardians of the Galaxy: Cosmic Rewind" },
+    { "dia": 7,  "fecha": "2026-07-08", "plan": "💦 Día libre – Blizzard Beach o Typhoon Lagoon · Descanso en el hotel · Shopping en Disney Springs" },
+    { "dia": 8,  "fecha": "2026-07-09", "plan": "✨ Día libre Disney a elección – Repetir favoritos o explorar lo que quedó pendiente" },
+    { "dia": 9,  "fecha": "2026-07-10", "plan": "🎸 Check-out Disney → Check-in Hard Rock Hotel Universal · Tarde: primeros pasos por Universal Studios o CityWalk" },
+    { "dia": 10, "fecha": "2026-07-11", "plan": "🎬 Universal Studios Florida – Express Pass ilimitado · The Wizarding World of Harry Potter (Diagon Alley) · Minion Land · Nuevo Epic Universe" },
+    { "dia": 11, "fecha": "2026-07-12", "plan": "⚡ Islands of Adventure – The Wizarding World of Harry Potter (Hogsmeade) · Hagrid's Motorbike Adventure · Jurassic World" },
+    { "dia": 12, "fecha": "2026-07-13", "plan": "🌌 Epic Universe – ¡El parque más nuevo del mundo! · Ministry of Magic · Mundo de Harry Potter · Isle of Bali" },
+    { "dia": 13, "fecha": "2026-07-14", "plan": "🎢 Universal Studios Florida – Express Pass · Día libre para disfrutar sin apuros" },
+    { "dia": 14, "fecha": "2026-07-15", "plan": "🗺️ Islands of Adventure o Epic Universe a elección – Últimos días de parque" },
+    { "dia": 15, "fecha": "2026-07-16", "plan": "🛍️ Último día en Universal · CityWalk para compras · Preparativos y cierre del viaje" },
+    { "dia": 16, "fecha": "2026-07-17", "plan": "🛬 Llegada a Ezeiza 7:00 hs – ¡De regreso con miles de recuerdos mágicos!" }
+  ],
+  "tips": [
+    {
+      "categoria": "Disney World",
+      "icono": "🏰",
+      "items": [
+        "Descargá la app My Disney Experience y vinculá la reserva con el número 618965606190",
+        "Reservas de restaurantes y experiencias: se pueden realizar 60 días antes del check-in",
+        "Lightning Lanes (Fila Rápida): se pueden comprar 7 días antes del check-in",
+        "El 4 de julio en Magic Kingdom tiene fuegos artificiales especiales – ¡llegá temprano para el mejor lugar!",
+        "Memory Maker incluido: aprovechá a tomarte fotos con todos los personajes y en cada PhotoPass point",
+        "Llegá 30 minutos antes de la apertura del parque para aprovechar la Entrada Temprana",
+        "Si necesitás ayuda con reservas de restaurantes o experiencias, avisame con 1 o 2 días de anticipación"
+      ]
+    },
+    {
+      "categoria": "Universal Orlando",
+      "icono": "🎢",
+      "items": [
+        "Descargá la app de Universal Studios Florida – las entradas se vinculan al recibir los tickets físicos",
+        "El Express Pass ilimitado incluido (Universal Studios + Islands of Adventure) te permite saltear la fila en casi todas las atracciones",
+        "Epic Universe es el parque más nuevo del mundo – ¡recién inaugurado en mayo 2026!",
+        "El desayuno en Hogwarts Express (tren entre parques) es una experiencia única",
+        "La Butterbeer es imperdible – hay versión fría, caliente y helada",
+        "Early Park Admission: como huésped del Hard Rock Hotel podés entrar 1 hora antes al parque"
+      ]
+    },
+    {
+      "categoria": "Consejos Generales",
+      "icono": "💡",
+      "items": [
+        "Llevá protector solar, se usa muchísimo en Florida en julio",
+        "Llevá ropa liviana y un saquito para los shows y restaurantes (el aire acondicionado es muy frío)",
+        "Las tormentas de verano en Florida son frecuentes por la tarde – llevá poncho desechable",
+        "Hidratación constante: el calor de julio en Orlando es intenso",
+        "Cargá el celular completo cada noche – usarás apps todo el día"
+      ]
+    }
+  ]
+}

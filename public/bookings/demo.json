@@ -86,6 +86,7 @@
     "Guía Disney personalizada",
     "Tarjeta de cortesía The Earl of Sandwich"
   ],
+  "vouchers": [],
   "itinerario": [
     { "dia": 1, "fecha": "2026-12-20", "plan": "Llegada a Orlando – Check-in hotel – Descanso y bienvenida mágica" },
     { "dia": 2, "fecha": "2026-12-21", "plan": "Magic Kingdom – Desfile Festival of Fantasy – Fuegos artificiales navideños" },

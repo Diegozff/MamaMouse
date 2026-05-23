@@ -6,7 +6,7 @@ const NAV_SECTIONS = [
   { id: 'sec-general',    icon: '👤', label: 'General'    },
   { id: 'sec-items',      icon: '💳', label: 'Ítems'      },
   { id: 'sec-beneficios', icon: '🎁', label: 'Beneficios' },
-  { id: 'sec-itinerario', icon: '🗺️', label: 'Itinerario' },
+  { id: 'sec-vouchers',   icon: '📄', label: 'Bauchers'   },
 ]
 
 function emptyBooking(id = '') {
@@ -19,6 +19,7 @@ function emptyBooking(id = '') {
     regalos: [],
     tips: [],
     itinerario: [],
+    vouchers: [],
   }
 }
 
