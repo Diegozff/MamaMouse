@@ -292,7 +292,12 @@ REGLAS DE ORO:
     })
 
     const aiData = await r.json()
-    if (!r.ok) throw new Error(aiData.error?.message || JSON.stringify(aiData))
+    if (!r.ok) {
+      const msg = aiData.error?.message || aiData.message || JSON.stringify(aiData)
+      if (msg.includes('credit') || msg.includes('billing') || r.status === 529 || r.status === 402)
+        throw new Error('Sin créditos en Anthropic. Cargá fondos en platform.claude.com → Planes y Facturación.')
+      throw new Error(`Anthropic API: ${msg}`)
+    }
 
     const rawText = aiData.content?.[0]?.text || ''
     // Extraer JSON del texto (por si el modelo agrega algún texto extra)
