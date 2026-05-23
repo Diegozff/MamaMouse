@@ -12,21 +12,25 @@ import dotenv         from 'dotenv'
 // Cargar variables de entorno
 dotenv.config()
 
-// ── Envío de email vía Resend API (HTTPS, funciona en Railway) ────────────────
+// ── Transporter de email (Gmail) ──────────────────────────────────────────────
+import nodemailer from 'nodemailer'
+
+const mailer = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+})
+
 async function sendEmail({ to, subject, html, text }) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) throw new Error('RESEND_API_KEY no configurado en las variables de entorno')
-
-  const from = process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>'
-
-  const r = await fetch('https://api.resend.com/emails', {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to: Array.isArray(to) ? to : [to], subject, html, text }),
+  return mailer.sendMail({
+    from:    process.env.EMAIL_FROM || `Mama Mouse <${process.env.SMTP_USER}>`,
+    to,
+    subject,
+    html,
+    text,
   })
-  const data = await r.json()
-  if (!r.ok) throw new Error(data.message || JSON.stringify(data))
-  return data
 }
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
@@ -135,10 +139,10 @@ app.post('/api/cotizar', async (req, res) => {
 </div>`
 
     sendEmail({
-      to:      'carolina@fasttravelvacation.com',
+      to:      'dm.zumoffen@gmail.com',
       subject: `🐭 Nueva consulta: ${nombre} → ${destino || 'sin destino'}`,
       html:    htmlBody,
-    }).then(() => console.log(`[API] Email cotización enviado a carolina@fasttravelvacation.com`))
+    }).then(() => console.log(`[API] Email cotización enviado a dm.zumoffen@gmail.com`))
       .catch(e => console.warn('[API] Error enviando email cotización:', e.message))
 
     // Notificar por WhatsApp si está configurado
@@ -255,13 +259,13 @@ app.get('/api/test-email', async (req, res) => {
   console.log('[API] Test email – config:', cfg)
   try {
     const info = await sendEmail({
-      to:      'carolina@fasttravelvacation.com',
+      to:      'dm.zumoffen@gmail.com',
       subject: '🐭 Test email – Mama Mouse',
       text:    'Este es un email de prueba enviado desde el servidor de Mama Mouse.',
       html:    '<h2>🐭 Test Mama Mouse</h2><p>Email de prueba enviado correctamente.</p>',
     })
     console.log('[API] Test email OK:', JSON.stringify(info))
-    return res.json({ ok: true, msg: 'Email enviado a carolina@fasttravelvacation.com', info, cfg })
+    return res.json({ ok: true, msg: 'Email enviado a dm.zumoffen@gmail.com', info, cfg })
   } catch (e) {
     console.error('[API] Test email ERROR:', e.message)
     return res.status(500).json({ ok: false, error: e.message, cfg })
@@ -287,5 +291,5 @@ app.listen(PORT, () => {
   console.log(`   Admin:    ${process.env.APP_URL || 'http://localhost:' + PORT}/?admin`)
   console.log(`   Env:      ${process.env.NODE_ENV || 'development'}`)
   console.log(`   SMTP:     ${process.env.SMTP_USER || '⚠️  NO CONFIGURADO'} → ${process.env.SMTP_HOST || '?'}:${process.env.SMTP_PORT || '?'}`)
-  console.log(`   Email cotizaciones → carolina@fasttravelvacation.com\n`)
+  console.log(`   Email cotizaciones → dm.zumoffen@gmail.com\n`)
 })
