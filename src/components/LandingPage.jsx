@@ -150,7 +150,13 @@ function Navbar({ onLoginClick }) {
       <div className="lp-nav-inner">
         <div className="lp-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src="/logo.png" alt="Mama Mouse" className="lp-nav-logo" />
-          <span className="lp-nav-brand-text">MAMA MOUSE</span>
+          <div className="lp-nav-brand-texts">
+            <span className="lp-nav-brand-text">MAMA MOUSE</span>
+            <div className="lp-nav-fasttravel">
+              <span className="lp-nav-ft-label">respaldada por</span>
+              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-nav-ft-logo" />
+            </div>
+          </div>
         </div>
 
         <div className={`lp-nav-links ${menuOpen ? 'lp-nav-open' : ''}`}>
@@ -253,6 +259,10 @@ function SobreMamaMouse({ onCotizarClick }) {
               <span className="lp-cert-badge">🏆 Disney Authorized Retailer</span>
               <span className="lp-cert-badge">🌟 Universal Travel Partner</span>
               <span className="lp-cert-badge">✈️ IATA Certified</span>
+            </div>
+            <div className="lp-sobre-respaldo">
+              <span className="lp-sobre-respaldo-label">Respaldada por</span>
+              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-sobre-ft-logo" />
             </div>
             <blockquote className="lp-sobre-quote">
               "No vendo viajes... <em>hago que el tuyo sea la mejor experiencia de tu vida.</em>"
@@ -728,6 +738,10 @@ function Footer() {
           <div className="lp-footer-brand">
             <img src="/logo.png" alt="Mama Mouse" className="lp-footer-logo" />
             <p className="lp-footer-tagline">No vendo viajes...<br /><em>hago que el tuyo sea la mejor experiencia de tu vida.</em></p>
+            <div className="lp-footer-respaldo">
+              <span className="lp-footer-respaldo-label">Respaldada por</span>
+              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-footer-ft-logo" />
+            </div>
             <div className="lp-footer-social">
               <a href="https://wa.me/5493412143631" target="_blank" rel="noreferrer" className="lp-social-btn lp-social-wa">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.85L.057 23.998l6.304-1.654A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.879 9.879 0 01-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374A9.855 9.855 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106S21.894 6.58 21.894 12 17.42 21.894 12 21.894z"/></svg>

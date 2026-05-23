@@ -2094,9 +2094,44 @@ select.admin-input { cursor: pointer; }
 .lp-nav-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   text-decoration: none;
+}
+/* Columna de textos: nombre + Fast Travel debajo */
+.lp-nav-brand-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+/* Fast Travel en navbar */
+.lp-nav-fasttravel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.lp-nav-ft-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.lp-nav-solid .lp-nav-ft-label {
+  color: rgba(100,80,140,0.6);
+}
+.lp-nav-ft-logo {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1) opacity(0.75);
+  transition: filter 0.3s;
+}
+.lp-nav-solid .lp-nav-ft-logo {
+  filter: none;
+  opacity: 0.85;
 }
 /* Logo — circular con borde degradado, tamaño prominente */
 .lp-nav-logo {
@@ -2865,6 +2900,33 @@ select.admin-input { cursor: pointer; }
   max-width: 320px;
 }
 .lp-footer-tagline em { color: rgba(255,255,255,0.9); font-style: italic; }
+/* Fast Travel en footer */
+.lp-footer-respaldo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  width: fit-content;
+}
+.lp-footer-respaldo-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.lp-footer-ft-logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: brightness(1.1);
+}
 .lp-footer-social { display: flex; flex-direction: column; gap: 10px; }
 .lp-social-btn {
   display: inline-flex;
@@ -3125,6 +3187,31 @@ select.admin-input { cursor: pointer; }
   border: 1px solid rgba(155,126,200,0.25);
   color: #7B5EA8;
 }
+/* Fast Travel en sección Sobre */
+.lp-sobre-respaldo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(232,96,154,0.06), rgba(155,126,200,0.08));
+  border: 1px solid rgba(155,126,200,0.18);
+  border-radius: 14px;
+  width: fit-content;
+}
+.lp-sobre-respaldo-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9a8ab0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.lp-sobre-ft-logo {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+}
+
 .lp-sobre-quote {
   font-size: 17px;
   font-style: italic;
