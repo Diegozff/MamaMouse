@@ -293,10 +293,11 @@ REGLAS DE ORO:
 
     const aiData = await r.json()
     if (!r.ok) {
+      console.error('[API] Anthropic error completo:', JSON.stringify(aiData))
       const msg = aiData.error?.message || aiData.message || JSON.stringify(aiData)
       if (msg.includes('credit') || msg.includes('billing') || r.status === 529 || r.status === 402)
         throw new Error('Sin créditos en Anthropic. Cargá fondos en platform.claude.com → Planes y Facturación.')
-      throw new Error(`Anthropic API: ${msg}`)
+      throw new Error(`Anthropic API (${r.status}): ${msg}`)
     }
 
     const rawText = aiData.content?.[0]?.text || ''
@@ -354,6 +355,28 @@ app.post('/api/notify/summary', async (req, res) => {
   } catch (e) {
     console.error('[API] Error notificación:', e.message)
     res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// ── API: Test Anthropic ───────────────────────────────────────────────────────
+app.get('/api/test-anthropic', async (req, res) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return res.json({ ok: false, error: 'ANTHROPIC_API_KEY no configurado' })
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'Di hola' }],
+      }),
+    })
+    const data = await r.json()
+    console.log('[API] Test Anthropic:', JSON.stringify(data))
+    res.json({ ok: r.ok, status: r.status, data })
+  } catch (e) {
+    res.json({ ok: false, error: e.message })
   }
 })
 
