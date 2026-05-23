@@ -40,6 +40,8 @@ const OTROS_DESTINOS = [
   { emoji: '🌴', name: 'Miami & Caribe', location: 'Florida · Caribe', logo: null, desc: 'Playas increíbles, shopping y el punto de partida ideal para cruceros y extensiones de viaje.' },
   { emoji: '🌊', name: 'Cruceros Disney', location: 'Caribe · Europa · Alaska', logo: '/disney cruise line.png', desc: 'Navegá con Mickey y toda la familia. Shows en vivo, personajes, restaurantes temáticos y puertos únicos.' },
   { emoji: '🚢', name: 'Cruceros MSC', location: 'Mediterráneo · Caribe · Alaska', logo: '/msc.png', desc: 'Los cruceros más modernos del mundo con itinerarios únicos. Una opción premium para familias y parejas.' },
+  { emoji: '🚢', name: 'Royal Caribbean', location: 'Caribe · Europa · Alaska · Asia', logo: '/roayal cariebean.png', desc: 'La flota de cruceros más grande del mundo. Barcos innovadores, destinos únicos y entretenimiento sin igual.' },
+  { emoji: '🦈', name: 'SeaWorld Orlando', location: 'Orlando, Florida', logo: '/sea world.png', desc: 'Aventuras acuáticas, shows de animales y atracciones increíbles. El complemento perfecto para tu viaje a Orlando.' },
 ]
 
 const GUIAS = [
@@ -232,12 +234,14 @@ function LogosStrip() {
         <div className="lp-logos-row">
           <img src="/authorized vacation planner.png" alt="Authorized Disney Vacation Planner" className="lp-logos-img lp-logos-avp" />
           <div className="lp-logos-divider" />
-          <img src="/walt disney world.png"   alt="Walt Disney World"    className="lp-logos-img" />
-          <img src="/universal.png"           alt="Universal Orlando"    className="lp-logos-img" />
-          <img src="/disney cruise line.png"  alt="Disney Cruise Line"  className="lp-logos-img" />
-          <img src="/disneyland paris.png"    alt="Disneyland París"    className="lp-logos-img" />
-          <img src="/disneyland.png"          alt="Disneyland Resort"   className="lp-logos-img" />
-          <img src="/msc.png"                 alt="MSC Cruises"         className="lp-logos-img" />
+          <img src="/walt disney world.png"   alt="Walt Disney World"           className="lp-logos-img" />
+          <img src="/universal.png"           alt="Universal Parks & Resorts"   className="lp-logos-img" />
+          <img src="/disney cruise line.png"  alt="Disney Cruise Line"          className="lp-logos-img" />
+          <img src="/disneyland paris.png"    alt="Disneyland París"            className="lp-logos-img" />
+          <img src="/disneyland.png"          alt="Disneyland Resort"           className="lp-logos-img" />
+          <img src="/msc.png"                 alt="MSC Cruises"                 className="lp-logos-img" />
+          <img src="/roayal cariebean.png"    alt="Royal Caribbean"             className="lp-logos-img" />
+          <img src="/sea world.png"           alt="SeaWorld"                    className="lp-logos-img" />
         </div>
       </div>
     </div>
