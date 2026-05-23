@@ -2128,15 +2128,12 @@ select.admin-input { cursor: pointer; }
   background: #4a3a5a !important;
 }
 .lp-nav-ft-logo {
-  height: 22px;
+  height: 28px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1) opacity(0.75);
-  transition: filter 0.3s;
-}
-.lp-nav-solid .lp-nav-ft-logo {
+  border-radius: 6px;
+  opacity: 1;
   filter: none;
-  opacity: 0.85;
 }
 /* Logo — circular con borde degradado, tamaño prominente */
 .lp-nav-logo {
@@ -2933,11 +2930,12 @@ select.admin-input { cursor: pointer; }
   white-space: nowrap;
 }
 .lp-footer-ft-logo {
-  height: 28px;
+  height: 32px;
   width: auto;
   object-fit: contain;
-  opacity: 0.85;
-  filter: brightness(1.1);
+  border-radius: 6px;
+  opacity: 1;
+  filter: none;
 }
 .lp-footer-social { display: flex; flex-direction: column; gap: 10px; }
 .lp-social-btn {
@@ -3219,9 +3217,10 @@ select.admin-input { cursor: pointer; }
   white-space: nowrap;
 }
 .lp-sobre-ft-logo {
-  height: 34px;
+  height: 38px;
   width: auto;
   object-fit: contain;
+  border-radius: 8px;
 }
 
 .lp-sobre-quote {
