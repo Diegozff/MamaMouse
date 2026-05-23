@@ -3278,15 +3278,6 @@ select.admin-input { cursor: pointer; }
 }
 .lp-sobre-content { display: flex; flex-direction: column; gap: 16px; }
 .lp-sobre-title { margin: 8px 0 0 !important; }
-.lp-sobre-alias {
-  font-size: 0.65em;
-  font-weight: 700;
-  background: linear-gradient(135deg, #E8609A, #9B7EC8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.02em;
-}
 .lp-sobre-desc {
   font-size: 16px;
   color: #5a4a6a;
