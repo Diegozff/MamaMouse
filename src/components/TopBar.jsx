@@ -1,4 +1,4 @@
-export default function TopBar({ titular, destinos, estado }) {
+export default function TopBar({ titular, destinos, estado, onLogout }) {
   const initials = titular.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
@@ -23,6 +23,11 @@ export default function TopBar({ titular, destinos, estado }) {
       <div className="topbar-right">
         <span className={`estado-badge ${estado.cls}`}>{estado.label}</span>
         <div className="avatar">{initials}</div>
+        {onLogout && (
+          <button className="topbar-salir-btn" onClick={onLogout} title="Volver a la web">
+            ← Salir
+          </button>
+        )}
       </div>
     </header>
   )

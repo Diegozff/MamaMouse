@@ -84,7 +84,7 @@ function BookingView({ id, onLogout }) {
 
   return (
     <div className="dashboard">
-      <TopBar titular={booking.titular} destinos={booking.destinos} estado={estado} />
+      <TopBar titular={booking.titular} destinos={booking.destinos} estado={estado} onLogout={onLogout} />
       <div className="dashboard-body">
         <Sidebar activeTab={tab} onTabChange={setTab} />
         <main className="content-area" ref={contentRef}>

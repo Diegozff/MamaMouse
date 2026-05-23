@@ -137,6 +137,26 @@ body {
   gap: 10px;
   flex-shrink: 0;
 }
+.topbar-salir-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.topbar-salir-btn:hover {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
 .estado-badge {
   display: inline-flex;
   align-items: center;
