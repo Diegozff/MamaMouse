@@ -1787,7 +1787,8 @@ select.admin-input { cursor: pointer; }
   height: 120px;
   object-fit: cover;
   border-radius: 16px;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
+  display: block;
 }
 .login-title {
   font-size: 20px;
