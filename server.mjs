@@ -9,9 +9,21 @@ import { writeFile, readFile, readdir, access, mkdir } from 'node:fs/promises'
 import path           from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
+import nodemailer     from 'nodemailer'
 
 // Cargar variables de entorno
 dotenv.config()
+
+// ── Transporter de email ──────────────────────────────────────────────────────
+const mailer = nodemailer.createTransport({
+  host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
+  port:   Number(process.env.SMTP_PORT || 587),
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+})
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
 const PORT        = process.env.PORT || 3000
@@ -93,6 +105,38 @@ app.post('/api/cotizar', async (req, res) => {
       leads.push({ nombre, email, telefono, destino, fechas, adultos, ninos, edadesNinos, mensaje, fecha: new Date().toISOString() })
       await writeFile(leadsPath, JSON.stringify(leads, null, 2), 'utf-8')
     } catch (e) { console.warn('[API] No se pudo guardar lead:', e.message) }
+
+    // ── Enviar email a Carolina ──────────────────────────────────────────────
+    const edadesStr = edadesNinos?.length
+      ? `\nEdades de los niños: ${edadesNinos.join(', ')} años`
+      : ''
+
+    const htmlBody = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fafafa;border-radius:12px;">
+  <h2 style="color:#9B7EC8;margin-bottom:4px;">🐭 Nueva consulta de cotización</h2>
+  <p style="color:#888;margin-top:0;font-size:13px;">Mama Mouse – ${new Date().toLocaleString('es-AR')}</p>
+  <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
+  <table style="width:100%;border-collapse:collapse;font-size:15px;">
+    <tr><td style="padding:8px 0;color:#666;width:140px;"><strong>Nombre</strong></td><td>${nombre || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Email</strong></td><td>${email || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${telefono || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Destino</strong></td><td>${destino || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Fechas</strong></td><td>${fechas || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Adultos</strong></td><td>${adultos || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Niños</strong></td><td>${ninos || '0'}${edadesStr ? ' — Edades: ' + edadesNinos.join(', ') + ' años' : ''}</td></tr>
+    ${mensaje ? `<tr><td style="padding:8px 0;color:#666;vertical-align:top;"><strong>Mensaje</strong></td><td>${mensaje}</td></tr>` : ''}
+  </table>
+  <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
+  <p style="font-size:12px;color:#aaa;">Enviado desde el formulario de cotización de mamamouse.com.ar</p>
+</div>`
+
+    mailer.sendMail({
+      from:    process.env.EMAIL_FROM || 'Mama Mouse <noreply@mamamouse.com.ar>',
+      to:      'carolina@fasttravelvacation.com',
+      subject: `🐭 Nueva consulta: ${nombre} → ${destino || 'sin destino'}`,
+      html:    htmlBody,
+    }).then(() => console.log(`[API] Email cotización enviado a carolina@fasttravelvacation.com`))
+      .catch(e => console.warn('[API] Error enviando email cotización:', e.message))
 
     // Notificar por WhatsApp si está configurado
     const WA_TOKEN = process.env.TWILIO_ACCOUNT_SID
