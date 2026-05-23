@@ -12,25 +12,27 @@ import dotenv         from 'dotenv'
 // Cargar variables de entorno
 dotenv.config()
 
-// ── Transporter de email (Gmail) ──────────────────────────────────────────────
-import nodemailer from 'nodemailer'
-
-const mailer = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
-
+// ── Email vía Brevo API (HTTPS – funciona en Railway sin puertos SMTP) ────────
 async function sendEmail({ to, subject, html, text }) {
-  return mailer.sendMail({
-    from:    process.env.EMAIL_FROM || `Mama Mouse <${process.env.SMTP_USER}>`,
-    to,
-    subject,
-    html,
-    text,
+  const apiKey = process.env.BREVO_API_KEY
+  if (!apiKey) throw new Error('BREVO_API_KEY no configurado en Railway Variables')
+
+  const senderEmail = process.env.SMTP_USER || 'dm.zumoffen@gmail.com'
+
+  const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method:  'POST',
+    headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sender:      { name: 'Mama Mouse', email: senderEmail },
+      to:          [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text || subject,
+    }),
   })
+  const data = await r.json()
+  if (!r.ok) throw new Error(JSON.stringify(data))
+  return data
 }
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
