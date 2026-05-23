@@ -154,7 +154,7 @@ function Navbar({ onLoginClick }) {
             <span className="lp-nav-brand-text">MAMA MOUSE</span>
             <div className="lp-nav-fasttravel">
               <span className="lp-nav-ft-label">respaldada por</span>
-              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-nav-ft-logo" />
+              <img src="/fasttravel-logo.png" alt="Fast Travel Vacation" className="lp-nav-ft-logo" />
             </div>
           </div>
         </div>
@@ -262,7 +262,7 @@ function SobreMamaMouse({ onCotizarClick }) {
             </div>
             <div className="lp-sobre-respaldo">
               <span className="lp-sobre-respaldo-label">Respaldada por</span>
-              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-sobre-ft-logo" />
+              <img src="/fasttravel-logo.png" alt="Fast Travel Vacation" className="lp-sobre-ft-logo" />
             </div>
             <blockquote className="lp-sobre-quote">
               "No vendo viajes... <em>hago que el tuyo sea la mejor experiencia de tu vida.</em>"
@@ -740,7 +740,7 @@ function Footer() {
             <p className="lp-footer-tagline">No vendo viajes...<br /><em>hago que el tuyo sea la mejor experiencia de tu vida.</em></p>
             <div className="lp-footer-respaldo">
               <span className="lp-footer-respaldo-label">Respaldada por</span>
-              <img src="/fasttravel.png" alt="Fast Travel Vacation" className="lp-footer-ft-logo" />
+              <img src="/fasttravel-logo.png" alt="Fast Travel Vacation" className="lp-footer-ft-logo" />
             </div>
             <div className="lp-footer-social">
               <a href="https://wa.me/5493412143631" target="_blank" rel="noreferrer" className="lp-social-btn lp-social-wa">
