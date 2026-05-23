@@ -2111,30 +2111,28 @@ select.admin-input { cursor: pointer; }
 .lp-nav-fasttravel {
   display: flex;
   align-items: center;
-  gap: 5px;
-  border-radius: 6px;
-  padding: 2px 6px 2px 4px;
-  transition: background 0.35s;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 3px 8px 3px 5px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(4px);
+  transition: background 0.35s, box-shadow 0.35s;
 }
-/* En navbar transparente: fondo sutil para que se lea sobre el hero */
-.lp-nav-fasttravel {
-  background: rgba(0,0,0,0.18);
-}
-/* En navbar blanca: pill con gradiente de marca para que el logo blanco sea visible */
 .lp-nav-solid .lp-nav-fasttravel {
-  background: linear-gradient(135deg, #9B7EC8 0%, #7DC4E0 100%);
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 1px 6px rgba(155,126,200,0.18);
 }
 .lp-nav-ft-label {
   font-family: 'Nunito', sans-serif;
   font-size: 9px;
   font-weight: 700;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.8);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
 }
 .lp-nav-solid .lp-nav-ft-label {
-  color: rgba(255,255,255,0.85);
+  color: rgba(80,60,120,0.6);
 }
 /* Hamburger lines — oscuras sobre fondo blanco */
 .lp-nav-solid .lp-hamburger span {
@@ -3212,17 +3210,18 @@ select.admin-input { cursor: pointer; }
 .lp-sobre-respaldo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  /* Fondo degradado de marca para que el logo blanco sea visible */
-  background: linear-gradient(135deg, #9B7EC8 0%, #7DC4E0 100%);
+  gap: 12px;
+  padding: 10px 18px;
+  background: white;
+  border: 1.5px solid rgba(155,126,200,0.2);
   border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(155,126,200,0.1);
   width: fit-content;
 }
 .lp-sobre-respaldo-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  color: rgba(255,255,255,0.85);
+  color: #9a8ab0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
