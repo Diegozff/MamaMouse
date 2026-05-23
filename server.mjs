@@ -284,7 +284,7 @@ REGLAS DE ORO:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-haiku-4-5',
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: emailText.trim() }],
@@ -367,7 +367,7 @@ app.get('/api/test-anthropic', async (req, res) => {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-haiku-4-5',
         max_tokens: 10,
         messages: [{ role: 'user', content: 'Di hola' }],
       }),
