@@ -1382,6 +1382,84 @@ select.admin-input { cursor: pointer; }
 .fade-in { animation: fadeIn 0.3s ease; }
 
 /* ══════════════════════════════════
+   VIAJEROS
+══════════════════════════════════ */
+/* Admin – fila de viajero */
+.af-viajero-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 90px 1fr 36px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  padding: 0 4px 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.af-viajero-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 90px 1fr 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.af-viajero-fecha-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.af-viajero-edad {
+  font-size: 11px;
+  color: var(--purple);
+  font-weight: 700;
+  white-space: nowrap;
+  background: #f0ebff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.af-viajero-tipo { max-width: 90px; }
+
+/* Viajeros card en Overview del viajero */
+.ov-viajero-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ov-viajero-row:last-child { border-bottom: none; }
+.ov-viajero-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gradient-soft);
+  border: 1.5px solid var(--border);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.ov-viajero-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.ov-viajero-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════
    BOOKINGS LIST (listado admin)
 ══════════════════════════════════ */
 .admin-list-view {

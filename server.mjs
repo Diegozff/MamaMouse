@@ -277,6 +277,16 @@ Extraé la información del email y devolvé un JSON válido con esta estructura
       ]
     }
   ],
+  "viajeros": [
+    {
+      "id": "v1",
+      "nombre": "Nombre",
+      "apellido": "Apellido",
+      "fechaNac": "YYYY-MM-DD",
+      "tipoDoc": "DNI o Pasaporte",
+      "nroDoc": "número"
+    }
+  ],
   "promos": [],
   "regalos": [],
   "vouchers": [],
@@ -304,7 +314,8 @@ REGLAS DE ORO:
 6. Fechas siempre en YYYY-MM-DD. Si no tiene año, usá 2026
 7. Los destinos son los parques/lugares visitados (ej: "Walt Disney World", "Universal Orlando")
 8. Incluí toda la info relevante en la descripción del item (número de reserva, habitación, extras, etc.)
-9. Devolvé SOLO el JSON puro, sin explicaciones ni markdown`
+9. Para viajeros: extraé cada pasajero mencionado con nombre, apellido, fecha de nacimiento y DNI/Pasaporte si aparecen. Si solo dice "2 adultos y 2 menores", creá entradas vacías con los datos que tengas.
+10. Devolvé SOLO el JSON puro, sin explicaciones ni markdown`
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

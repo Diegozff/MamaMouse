@@ -6,6 +6,7 @@ import BookingsList    from './BookingsList'
 
 const NAV_SECTIONS = [
   { id: 'sec-general',    icon: '👤', label: 'General'    },
+  { id: 'sec-viajeros',   icon: '👥', label: 'Viajeros'   },
   { id: 'sec-items',      icon: '💳', label: 'Ítems'      },
   { id: 'sec-beneficios', icon: '🎁', label: 'Beneficios' },
   { id: 'sec-vouchers',   icon: '📄', label: 'Bauchers'   },
@@ -20,6 +21,7 @@ function emptyBooking(id = '') {
     promos: [],
     regalos: [],
     tips: [],
+    viajeros: [],
     itinerario: [],
     vouchers: [],
   }

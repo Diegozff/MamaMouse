@@ -51,8 +51,24 @@ function InfoRow({ label, value }) {
   )
 }
 
+function calcEdad(fechaNac) {
+  if (!fechaNac) return null
+  const hoy = new Date()
+  const nac = new Date(fechaNac)
+  let edad = hoy.getFullYear() - nac.getFullYear()
+  if (hoy < new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate())) edad--
+  return edad
+}
+
+function formatFechaNac(d) {
+  if (!d) return '—'
+  const [y, m, day] = d.split('-')
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  return `${parseInt(day)} ${meses[parseInt(m)-1]} ${y}`
+}
+
 export default function Overview({ booking, onTabChange }) {
-  const { hotel = {}, items = [], destinos } = booking
+  const { hotel = {}, items = [], destinos, viajeros = [] } = booking
   const { checkIn, checkOut } = tripDates(items, hotel)
 
   const [cd, setCd] = useState(() => calcCountdown(checkIn))
@@ -183,6 +199,35 @@ export default function Overview({ booking, onTabChange }) {
           </div>
         </div>
       </div>
+
+      {/* VIAJEROS */}
+      {viajeros.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <div className="card-header-icon">👥</div>
+            <span className="card-header-title">Viajeros</span>
+          </div>
+          <div className="card-body">
+            {viajeros.map((v, i) => {
+              const edad = calcEdad(v.fechaNac)
+              return (
+                <div key={v.id || i} className="ov-viajero-row">
+                  <div className="ov-viajero-avatar">
+                    {v.nombre?.[0]}{v.apellido?.[0]}
+                  </div>
+                  <div className="ov-viajero-info">
+                    <div className="ov-viajero-nombre">{v.nombre} {v.apellido}</div>
+                    <div className="ov-viajero-meta">
+                      {v.fechaNac && <span>🎂 {formatFechaNac(v.fechaNac)}{edad !== null ? ` (${edad} años)` : ''}</span>}
+                      {v.nroDoc   && <span>🪪 {v.tipoDoc || 'DNI'} {v.nroDoc}</span>}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ITEMS CONTRATADOS */}
       {items.length > 0 && (

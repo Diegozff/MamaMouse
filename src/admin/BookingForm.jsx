@@ -61,6 +61,41 @@ function DynamicList({ label, items, onChange, placeholder = 'Agregar ítem...' 
   )
 }
 
+/* ── Viajero row ── */
+function ViajerRow({ viajero, onChange, onRemove }) {
+  function calcEdad(fechaNac) {
+    if (!fechaNac) return null
+    const hoy = new Date()
+    const nac = new Date(fechaNac)
+    let edad = hoy.getFullYear() - nac.getFullYear()
+    if (hoy < new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate())) edad--
+    return edad
+  }
+  const edad = calcEdad(viajero.fechaNac)
+  return (
+    <div className="af-viajero-row">
+      <input className="admin-input" placeholder="Nombre" value={viajero.nombre || ''}
+        onChange={e => onChange({ ...viajero, nombre: e.target.value })} />
+      <input className="admin-input" placeholder="Apellido" value={viajero.apellido || ''}
+        onChange={e => onChange({ ...viajero, apellido: e.target.value })} />
+      <div className="af-viajero-fecha-wrap">
+        <input className="admin-input" type="date" value={viajero.fechaNac || ''}
+          onChange={e => onChange({ ...viajero, fechaNac: e.target.value })} />
+        {edad !== null && <span className="af-viajero-edad">{edad} años</span>}
+      </div>
+      <select className="admin-input af-viajero-tipo"
+        value={viajero.tipoDoc || 'DNI'}
+        onChange={e => onChange({ ...viajero, tipoDoc: e.target.value })}>
+        <option value="DNI">DNI</option>
+        <option value="Pasaporte">Pasaporte</option>
+      </select>
+      <input className="admin-input" placeholder="Nro. documento" value={viajero.nroDoc || ''}
+        onChange={e => onChange({ ...viajero, nroDoc: e.target.value })} />
+      <button className="af-remove-btn" onClick={onRemove}>✕</button>
+    </div>
+  )
+}
+
 /* ── Voucher row ── */
 function VoucherRow({ voucher, onChange, onRemove, bookingId }) {
   const [uploading, setUploading] = useState(false)
@@ -518,6 +553,10 @@ export default function BookingForm({ initialData, onSave, saving }) {
   const updateVoucher = (i, v) => { const vs = [...(d.vouchers || [])]; vs[i] = v; setA('vouchers', vs) }
   const removeVoucher = i => setA('vouchers', (d.vouchers || []).filter((_, idx) => idx !== i))
 
+  const addViajero    = () => setA('viajeros', [...(d.viajeros || []), { id: uid(), nombre: '', apellido: '', fechaNac: '', tipoDoc: 'DNI', nroDoc: '' }])
+  const updateViajero = (i, v) => { const vs = [...(d.viajeros || [])]; vs[i] = v; setA('viajeros', vs) }
+  const removeViajero = i => setA('viajeros', (d.viajeros || []).filter((_, idx) => idx !== i))
+
   const items = d.items || []
   const byCur = {}
   for (const it of items) {
@@ -567,6 +606,26 @@ export default function BookingForm({ initialData, onSave, saving }) {
         <Field label="Destinos">
           <DestinosField destinos={d.destinos || []} onChange={v => setA('destinos', v)} />
         </Field>
+      </Section>
+
+      {/* ── VIAJEROS ── */}
+      <Section id="sec-viajeros" icon="👥" title="Datos de los Viajeros">
+        {(d.viajeros || []).length === 0 && (
+          <p className="af-vouchers-hint">Agregá los datos de cada viajero: nombre, apellido, fecha de nacimiento y documento.</p>
+        )}
+        {(d.viajeros || []).length > 0 && (
+          <div className="af-viajero-header">
+            <span>Nombre</span><span>Apellido</span><span>Fecha de nacimiento</span><span>Tipo</span><span>Nro. documento</span><span></span>
+          </div>
+        )}
+        {(d.viajeros || []).map((v, i) => (
+          <ViajerRow key={v.id} viajero={v}
+            onChange={updated => updateViajero(i, updated)}
+            onRemove={() => removeViajero(i)} />
+        ))}
+        <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addViajero}>
+          + Agregar viajero
+        </button>
       </Section>
 
       {/* ── ITEMS ── */}
