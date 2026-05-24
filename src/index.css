@@ -1029,6 +1029,24 @@ body {
   font-size: 12px;
   justify-content: center;
 }
+.asb-delete-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px;
+  background: none;
+  border: 1.5px solid #fecaca;
+  border-radius: var(--radius-sm);
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+.asb-delete-btn:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
 
 /* ── Notifications section in sidebar ── */
 .asb-notify-section {
@@ -1649,7 +1667,21 @@ select.admin-input { cursor: pointer; }
   flex-shrink: 0;
 }
 .bl-row-total { font-size: 13px; font-weight: 700; color: var(--dark); }
-.bl-row-arrow { font-size: 16px; color: var(--text-light); margin-top: 2px; }
+.bl-row-actions { display: flex; align-items: center; gap: 8px; }
+.bl-row-arrow   { font-size: 16px; color: var(--text-light); }
+.bl-delete-btn {
+  background: none;
+  border: 1.5px solid #fecaca;
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 14px;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, background 0.2s;
+}
+.bl-row:hover .bl-delete-btn { opacity: 1; }
+.bl-delete-btn:hover { background: #fee2e2; }
 
 .bl-estado-badge {
   font-size: 11px;

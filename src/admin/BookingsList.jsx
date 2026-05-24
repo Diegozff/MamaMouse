@@ -13,6 +13,15 @@ function formatDate(d) {
   return `${parseInt(day)} ${meses[parseInt(m)-1]} ${y}`
 }
 
+async function deleteBooking(id, titular, setBookings) {
+  if (!window.confirm(`¿Eliminar la reserva de "${titular}"?\n\nEsta acción no se puede deshacer.`)) return
+  try {
+    const r = await fetch(`/api/booking/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    if (r.ok) setBookings(prev => prev.filter(b => b.id !== id))
+    else { const d = await r.json(); alert('Error: ' + d.error) }
+  } catch (e) { alert('Error: ' + e.message) }
+}
+
 export default function BookingsList({ onOpen }) {
   const [bookings,   setBookings]   = useState([])
   const [loading,    setLoading]    = useState(true)
@@ -136,7 +145,14 @@ export default function BookingsList({ onOpen }) {
                   <span className={`bl-estado-badge ${est.cls}`}>
                     {est.icon} {est.label}
                   </span>
-                  <span className="bl-row-arrow">→</span>
+                  <div className="bl-row-actions" onClick={e => e.stopPropagation()}>
+                    <button
+                      className="bl-delete-btn"
+                      title="Eliminar reserva"
+                      onClick={() => deleteBooking(b.id, b.titular, setBookings)}
+                    >🗑</button>
+                    <span className="bl-row-arrow">→</span>
+                  </div>
                 </div>
               </div>
             )

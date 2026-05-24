@@ -100,6 +100,15 @@ export default function AdminApp() {
     }
   }
 
+  const deleteBooking = async () => {
+    if (!window.confirm(`¿Eliminar la reserva "${bookingId}"?\n\nEsta acción no se puede deshacer.`)) return
+    try {
+      const r = await fetch(`/api/booking/${encodeURIComponent(bookingId)}`, { method: 'DELETE' })
+      if (r.ok) { handleBack() }
+      else { const d = await r.json(); alert('Error: ' + d.error) }
+    } catch (e) { alert('Error al eliminar: ' + e.message) }
+  }
+
   // Enviar notificación manual (resumen de reserva)
   const sendNotification = async (currentBooking) => {
     if (!currentBooking?.email && !currentBooking?.telefono) {
@@ -352,6 +361,13 @@ export default function AdminApp() {
               onClick={handleBack}
             >
               ← Cambiar reserva
+            </button>
+            <button
+              className="asb-delete-btn"
+              onClick={deleteBooking}
+              title="Eliminar esta reserva permanentemente"
+            >
+              🗑 Eliminar reserva
             </button>
           </div>
         </aside>

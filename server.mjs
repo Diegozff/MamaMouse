@@ -5,7 +5,7 @@
  */
 
 import express        from 'express'
-import { writeFile, readFile, readdir, access, mkdir } from 'node:fs/promises'
+import { writeFile, readFile, readdir, access, mkdir, unlink } from 'node:fs/promises'
 import path           from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
@@ -378,6 +378,22 @@ app.post('/api/booking', async (req, res) => {
     res.json({ ok: true, isNew, notifResult })
   } catch (e) {
     console.error('[API] Error saving booking:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// ── API: Eliminar reserva ─────────────────────────────────────────────────────
+app.delete('/api/booking/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const filePath = path.join(BOOKINGS_DIR, `${id}.json`)
+    if (!(await fileExists(filePath)))
+      return res.status(404).json({ ok: false, error: 'Reserva no encontrada' })
+    await unlink(filePath)
+    console.log(`[API] Reserva eliminada: ${id}`)
+    res.json({ ok: true })
+  } catch (e) {
+    console.error('[API] Error eliminando reserva:', e.message)
     res.status(500).json({ ok: false, error: e.message })
   }
 })
