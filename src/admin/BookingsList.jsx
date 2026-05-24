@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const ESTADO = {
   pagado:    { label: 'Pagado Total',   cls: 'bl-estado-pagado',    icon: '✅' },
@@ -14,11 +14,17 @@ function formatDate(d) {
 }
 
 export default function BookingsList({ onOpen }) {
-  const [bookings, setBookings] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
-  const [filtro,   setFiltro]   = useState('todos') // todos | pagado | parcial | pendiente
-  const [busqueda, setBusqueda] = useState('')
+  const [bookings,   setBookings]   = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState('')
+  const [filtro,     setFiltro]     = useState('todos')
+  const [busqueda,   setBusqueda]   = useState('')
+  const [showScroll, setShowScroll] = useState(false)
+  const scrollRef = useRef(null)
+
+  const handleScroll = () => setShowScroll(scrollRef.current?.scrollTop > 180)
+  const scrollTop    = () => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  const scrollBottom = () => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
 
   useEffect(() => {
     fetch('/api/bookings')
@@ -58,39 +64,40 @@ export default function BookingsList({ onOpen }) {
   )
 
   return (
-    <div className="bl-root">
-
-      {/* Header */}
-      <div className="bl-header">
-        <div className="bl-title">📋 Todas las Reservas</div>
-        <div className="bl-stats">
-          <span className="bl-stat-chip bl-chip-pagado">✅ {counts.pagado} pagadas</span>
-          <span className="bl-stat-chip bl-chip-parcial">🔄 {counts.parcial} parciales</span>
-          <span className="bl-stat-chip bl-chip-pendiente">⏳ {counts.pendiente} sin pago</span>
+    <>
+      {/* Header + filtros fijos */}
+      <div className="bl-sticky-header">
+        <div className="bl-header">
+          <div className="bl-title">📋 Todas las Reservas</div>
+          <div className="bl-stats">
+            <span className="bl-stat-chip bl-chip-pagado">✅ {counts.pagado} pagadas</span>
+            <span className="bl-stat-chip bl-chip-parcial">🔄 {counts.parcial} parciales</span>
+            <span className="bl-stat-chip bl-chip-pendiente">⏳ {counts.pendiente} sin pago</span>
+          </div>
+        </div>
+        <div className="bl-filters">
+          <div className="bl-filter-tabs">
+            {[['todos','Todas'],['pagado','Pagado Total'],['parcial','Pago Parcial'],['pendiente','Sin Pago']].map(([v, l]) => (
+              <button
+                key={v}
+                className={`bl-filter-btn ${filtro === v ? 'active' : ''}`}
+                onClick={() => setFiltro(v)}
+              >
+                {l} <span className="bl-filter-count">{counts[v]}</span>
+              </button>
+            ))}
+          </div>
+          <input
+            className="admin-input bl-search"
+            placeholder="🔍 Buscar por nombre, ID o destino…"
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Filtros + búsqueda */}
-      <div className="bl-filters">
-        <div className="bl-filter-tabs">
-          {[['todos','Todas'],['pagado','Pagado Total'],['parcial','Pago Parcial'],['pendiente','Sin Pago']].map(([v, l]) => (
-            <button
-              key={v}
-              className={`bl-filter-btn ${filtro === v ? 'active' : ''}`}
-              onClick={() => setFiltro(v)}
-            >
-              {l} <span className="bl-filter-count">{counts[v]}</span>
-            </button>
-          ))}
-        </div>
-        <input
-          className="admin-input bl-search"
-          placeholder="🔍 Buscar por nombre, ID o destino…"
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-        />
-      </div>
-
+      {/* Lista scrolleable */}
+      <div className="bl-root" ref={scrollRef} onScroll={handleScroll}>
       {/* Lista */}
       {filtered.length === 0 ? (
         <div className="bl-empty">No hay reservas que coincidan con el filtro.</div>
@@ -136,6 +143,15 @@ export default function BookingsList({ onOpen }) {
           })}
         </div>
       )}
-    </div>
+
+      {/* Botones flotantes de scroll */}
+      {showScroll && (
+        <div className="bl-scroll-nav">
+          <button className="bl-scroll-btn" onClick={scrollTop} title="Ir arriba">↑</button>
+          <button className="bl-scroll-btn" onClick={scrollBottom} title="Ir abajo">↓</button>
+        </div>
+      )}
+      </div>
+    </>
   )
 }

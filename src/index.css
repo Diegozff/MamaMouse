@@ -1385,22 +1385,77 @@ select.admin-input { cursor: pointer; }
    BOOKINGS LIST (listado admin)
 ══════════════════════════════════ */
 .admin-list-view {
-  padding: 24px;
-  max-width: 900px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  padding: 0;       /* anula el padding de admin-content */
 }
 .admin-list-topbar {
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+  padding: 16px 24px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .admin-list-topbar .admin-btn { flex-shrink: 0; }
 
-.bl-root { display: flex; flex-direction: column; gap: 16px; }
+/* La lista misma es el área scrollable */
+.bl-sticky-header {
+  flex-shrink: 0;
+  background: var(--bg);
+  padding: 16px 24px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bl-root {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* Botones flotantes ↑ ↓ */
+.bl-scroll-nav {
+  position: fixed;
+  right: 24px;
+  bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 50;
+}
+.bl-scroll-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(155,126,200,0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+}
+.bl-scroll-btn:hover {
+  background: var(--purple-dark);
+  transform: scale(1.1);
+}
 .bl-loading { display: flex; align-items: center; gap: 12px; color: var(--text-light); padding: 32px; }
 .bl-error { color: #dc2626; padding: 16px; background: #fff0f0; border-radius: var(--radius-sm); }
 .bl-empty { text-align: center; color: var(--text-light); padding: 32px; font-weight: 600; }
