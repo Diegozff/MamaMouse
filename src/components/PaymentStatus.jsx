@@ -71,7 +71,7 @@ function HotelDetails({ item }) {
       {/* PDF */}
       {item.pdfUrl && (
         <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="hotel-pdf-btn">
-          📄 Descargar voucher PDF
+          📄 Descargar baucher PDF
         </a>
       )}
     </div>
