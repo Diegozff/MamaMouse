@@ -36,7 +36,11 @@ export default function App() {
 
   const bookingId = urlId || loggedId
   if (!bookingId) return <LoginFlow onLogin={id => { sessionStorage.setItem('mm_booking_id', id); setLoggedId(id) }} />
-  return <BookingView id={bookingId} onLogout={() => { sessionStorage.removeItem('mm_booking_id'); setLoggedId(null) }} />
+  return <BookingView id={bookingId} onLogout={() => {
+    sessionStorage.removeItem('mm_booking_id')
+    setLoggedId(null)
+    if (urlId) window.location.href = '/'   // si vino por ?id=… redirigir al inicio
+  }} />
 }
 
 /* ── LoginFlow: splash → landing → login ─────────────────────────────── */
