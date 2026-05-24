@@ -241,6 +241,42 @@ app.get('/api/bookings', async (req, res) => {
   }
 })
 
+// ── Helper: resolver credenciales únicas ─────────────────────────────────────
+async function resolveUniqueCredentials(apellido) {
+  // Leer todos los usuarios ya existentes en las reservas
+  const existingUsuarios = new Set()
+  try {
+    const files = await readdir(BOOKINGS_DIR)
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue
+      try {
+        const raw  = await readFile(path.join(BOOKINGS_DIR, file), 'utf-8')
+        const data = JSON.parse(raw)
+        if (data.usuario) existingUsuarios.add(data.usuario.toLowerCase())
+      } catch { /* skip */ }
+    }
+  } catch { /* directorio vacío */ }
+
+  // Si el apellido base no está tomado, usar directo
+  if (!existingUsuarios.has(apellido.toLowerCase())) {
+    return { usuario: apellido, password: `${apellido}2026` }
+  }
+
+  // Probar con un dígito aleatorio al final hasta encontrar uno libre
+  // Mezclamos el orden para que sea realmente aleatorio
+  const digits = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5)
+  for (const d of digits) {
+    const candidato = `${apellido}${d}`
+    if (!existingUsuarios.has(candidato.toLowerCase())) {
+      return { usuario: candidato, password: `${candidato}2026` }
+    }
+  }
+
+  // Fallback muy improbable: usar dos dígitos aleatorios
+  const fallback = `${apellido}${Math.floor(Math.random() * 90 + 10)}`
+  return { usuario: fallback, password: `${fallback}2026` }
+}
+
 // ── API: Importar reserva desde email (Claude AI) ────────────────────────────
 app.post('/api/import-booking', async (req, res) => {
   try {
@@ -349,7 +385,16 @@ REGLAS DE ORO:
     if (!jsonMatch) throw new Error('El modelo no devolvió un JSON válido')
 
     const booking = JSON.parse(jsonMatch[0])
-    console.log(`[API] Reserva parseada: ${booking.titular} → id: ${booking.id}`)
+
+    // Resolver credenciales únicas: si el apellido ya está tomado, agregar dígito aleatorio
+    const baseApellido = booking.usuario || booking.id?.split('-')[0] || 'viajero'
+    const { usuario, password } = await resolveUniqueCredentials(
+      baseApellido.charAt(0).toUpperCase() + baseApellido.slice(1).toLowerCase()
+    )
+    booking.usuario  = usuario
+    booking.password = password
+
+    console.log(`[API] Reserva parseada: ${booking.titular} → id: ${booking.id} | usuario: ${usuario}`)
     res.json({ ok: true, booking })
 
   } catch (e) {
