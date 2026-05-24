@@ -191,41 +191,43 @@ export default function AdminApp() {
               <BookingsList onOpen={id => { setShowList(false); setInputId(id); setTimeout(() => { setInputId(id); loadBooking() }, 0); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
             </div>
           ) : (
-            <div className="admin-selector">
-              <div className="admin-selector-card">
-                <h2 className="admin-selector-title">¿Qué reserva querés gestionar?</h2>
-                <p className="admin-selector-sub">Ingresá el ID del viajero (ej: familia-garcia)</p>
+            <div className="admin-home">
+              <div className="admin-home-hero">
+                <img src="/logo.png" alt="Mama Mouse" className="admin-home-logo" />
+                <h1 className="admin-home-title">Panel de Administración</h1>
+                <p className="admin-home-sub">Bienvenida, Carolina ✨</p>
+              </div>
+
+              {/* Buscador */}
+              <div className="admin-home-search-card">
+                <div className="admin-home-search-label">Buscar reserva por ID</div>
                 <div className="admin-selector-row">
                   <input
                     className="admin-input"
-                    placeholder="ID del viajero"
+                    placeholder="Ej: beltrando, garcia…"
                     value={inputId}
                     onChange={e => setInputId(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && loadBooking()}
+                    autoFocus
                   />
-                  <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Cargar</button>
-                  <button className="admin-btn admin-btn-secondary" onClick={newBooking}>+ Nueva reserva</button>
+                  <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Buscar</button>
                 </div>
               </div>
 
-              {/* Ver todas las reservas */}
-              <div className="admin-import-card" onClick={() => setShowList(true)}>
-                <div className="admin-import-icon">📋</div>
-                <div className="admin-import-info">
-                  <div className="admin-import-title">Ver Todas las Reservas</div>
-                  <div className="admin-import-sub">Listado completo con estado de pago: Pagado Total · Pago Parcial · Sin Pago</div>
-                </div>
-                <div className="admin-import-arrow">→</div>
-              </div>
-
-              {/* Importar por email */}
-              <div className="admin-import-card" onClick={() => setShowImport(true)}>
-                <div className="admin-import-icon">📧</div>
-                <div className="admin-import-info">
-                  <div className="admin-import-title">Importar Reserva por Email</div>
-                  <div className="admin-import-sub">Pegá el email con los datos y el agente crea la reserva automáticamente</div>
-                </div>
-                <div className="admin-import-arrow">→</div>
+              {/* Acciones */}
+              <div className="admin-home-actions">
+                <button className="admin-home-action-btn" onClick={() => setShowList(true)}>
+                  <span className="admin-home-action-icon">📋</span>
+                  <span className="admin-home-action-label">Ver Reservas</span>
+                </button>
+                <button className="admin-home-action-btn" onClick={() => setShowImport(true)}>
+                  <span className="admin-home-action-icon">📧</span>
+                  <span className="admin-home-action-label">Importar Email</span>
+                </button>
+                <button className="admin-home-action-btn" onClick={newBooking}>
+                  <span className="admin-home-action-icon">✏️</span>
+                  <span className="admin-home-action-label">Nueva Reserva</span>
+                </button>
               </div>
             </div>
           )}
