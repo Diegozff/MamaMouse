@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import AdminLogin      from './AdminLogin'
 import BookingForm     from './BookingForm'
 import ImportBooking   from './ImportBooking'
+import BookingsList    from './BookingsList'
 
 const NAV_SECTIONS = [
   { id: 'sec-general',    icon: '👤', label: 'General'    },
@@ -34,6 +35,7 @@ export default function AdminApp() {
   const [notifStatus, setNotifStatus] = useState('idle') // idle | sending | ok | error | no_contact
   const [copyStatus,  setCopyStatus]  = useState('idle') // idle | copied
   const [showImport,  setShowImport]  = useState(false)
+  const [showList,    setShowList]    = useState(false)
 
   const mainRef = useRef(null)
 
@@ -173,33 +175,60 @@ export default function AdminApp() {
           </div>
         </header>
         <div className="admin-content">
-          <div className="admin-selector">
-            <div className="admin-selector-card">
-              <h2 className="admin-selector-title">¿Qué reserva querés gestionar?</h2>
-              <p className="admin-selector-sub">Ingresá el ID del viajero (ej: familia-garcia)</p>
-              <div className="admin-selector-row">
-                <input
-                  className="admin-input"
-                  placeholder="ID del viajero"
-                  value={inputId}
-                  onChange={e => setInputId(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && loadBooking()}
-                />
-                <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Cargar</button>
-                <button className="admin-btn admin-btn-secondary" onClick={newBooking}>+ Nueva reserva</button>
+          {showList ? (
+            <div className="admin-list-view">
+              <div className="admin-list-topbar">
+                <button className="admin-btn admin-btn-ghost" onClick={() => setShowList(false)}>
+                  ← Volver
+                </button>
+                <button className="admin-btn admin-btn-primary" onClick={newBooking}>
+                  + Nueva reserva
+                </button>
+                <button className="admin-btn admin-btn-secondary" onClick={() => { setShowList(false); setShowImport(true) }}>
+                  📧 Importar por Email
+                </button>
               </div>
+              <BookingsList onOpen={id => { setShowList(false); setInputId(id); setTimeout(() => { setInputId(id); loadBooking() }, 0); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
             </div>
+          ) : (
+            <div className="admin-selector">
+              <div className="admin-selector-card">
+                <h2 className="admin-selector-title">¿Qué reserva querés gestionar?</h2>
+                <p className="admin-selector-sub">Ingresá el ID del viajero (ej: familia-garcia)</p>
+                <div className="admin-selector-row">
+                  <input
+                    className="admin-input"
+                    placeholder="ID del viajero"
+                    value={inputId}
+                    onChange={e => setInputId(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && loadBooking()}
+                  />
+                  <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Cargar</button>
+                  <button className="admin-btn admin-btn-secondary" onClick={newBooking}>+ Nueva reserva</button>
+                </div>
+              </div>
 
-            {/* Importar por email */}
-            <div className="admin-import-card" onClick={() => setShowImport(true)}>
-              <div className="admin-import-icon">📧</div>
-              <div className="admin-import-info">
-                <div className="admin-import-title">Importar Reserva por Email</div>
-                <div className="admin-import-sub">Pegá el email con los datos y el agente crea la reserva automáticamente</div>
+              {/* Ver todas las reservas */}
+              <div className="admin-import-card" onClick={() => setShowList(true)}>
+                <div className="admin-import-icon">📋</div>
+                <div className="admin-import-info">
+                  <div className="admin-import-title">Ver Todas las Reservas</div>
+                  <div className="admin-import-sub">Listado completo con estado de pago: Pagado Total · Pago Parcial · Sin Pago</div>
+                </div>
+                <div className="admin-import-arrow">→</div>
               </div>
-              <div className="admin-import-arrow">→</div>
+
+              {/* Importar por email */}
+              <div className="admin-import-card" onClick={() => setShowImport(true)}>
+                <div className="admin-import-icon">📧</div>
+                <div className="admin-import-info">
+                  <div className="admin-import-title">Importar Reserva por Email</div>
+                  <div className="admin-import-sub">Pegá el email con los datos y el agente crea la reserva automáticamente</div>
+                </div>
+                <div className="admin-import-arrow">→</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {showImport && (

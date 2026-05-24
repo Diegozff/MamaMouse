@@ -1293,6 +1293,154 @@ select.admin-input { cursor: pointer; }
 .fade-in { animation: fadeIn 0.3s ease; }
 
 /* ══════════════════════════════════
+   BOOKINGS LIST (listado admin)
+══════════════════════════════════ */
+.admin-list-view {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.admin-list-topbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.admin-list-topbar .admin-btn { flex-shrink: 0; }
+
+.bl-root { display: flex; flex-direction: column; gap: 16px; }
+.bl-loading { display: flex; align-items: center; gap: 12px; color: var(--text-light); padding: 32px; }
+.bl-error { color: #dc2626; padding: 16px; background: #fff0f0; border-radius: var(--radius-sm); }
+.bl-empty { text-align: center; color: var(--text-light); padding: 32px; font-weight: 600; }
+
+.bl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.bl-title { font-size: 18px; font-weight: 800; color: var(--dark); }
+.bl-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.bl-stat-chip {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.bl-chip-pagado    { background: #dcfce7; color: #16a34a; }
+.bl-chip-parcial   { background: #fef9c3; color: #a16207; }
+.bl-chip-pendiente { background: #fee2e2; color: #dc2626; }
+
+.bl-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.bl-filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.bl-filter-btn {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bl-filter-btn:hover { border-color: var(--purple); color: var(--purple); }
+.bl-filter-btn.active { background: var(--purple); border-color: var(--purple); color: white; }
+.bl-filter-count {
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+.bl-filter-btn:not(.active) .bl-filter-count { background: var(--border); color: var(--text-light); }
+.bl-search { max-width: 260px; flex: 1; }
+
+.bl-list { display: flex; flex-direction: column; gap: 8px; }
+.bl-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.15s, transform 0.15s;
+}
+.bl-row:hover {
+  border-color: var(--purple);
+  box-shadow: var(--shadow);
+  transform: translateX(3px);
+}
+.bl-row-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--gradient);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.bl-row-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bl-row-titular { font-size: 15px; font-weight: 700; color: var(--dark); }
+.bl-row-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bl-row-id { font-size: 11px; color: var(--text-light); font-family: monospace; }
+.bl-row-dest {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+.bl-row-fecha { font-size: 11px; color: var(--text-light); font-weight: 600; }
+.bl-row-bar-wrap {
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.bl-row-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.bl-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.bl-row-total { font-size: 13px; font-weight: 700; color: var(--dark); }
+.bl-row-arrow { font-size: 16px; color: var(--text-light); margin-top: 2px; }
+
+.bl-estado-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.bl-estado-pagado    { background: #dcfce7; color: #16a34a; }
+.bl-estado-parcial   { background: #fef9c3; color: #a16207; }
+.bl-estado-pendiente { background: #fee2e2; color: #dc2626; }
+
+/* ══════════════════════════════════
    IMPORT BOOKING (agente email)
 ══════════════════════════════════ */
 .admin-import-card {

@@ -211,6 +211,36 @@ app.post('/api/resena', async (req, res) => {
   }
 })
 
+// ── API: Listar todas las reservas ───────────────────────────────────────────
+app.get('/api/bookings', async (req, res) => {
+  try {
+    const files = await readdir(BOOKINGS_DIR)
+    const bookings = []
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue
+      try {
+        const raw  = await readFile(path.join(BOOKINGS_DIR, file), 'utf-8')
+        const data = JSON.parse(raw)
+        const id   = file.replace('.json', '')
+        let total = 0, paid = 0
+        for (const it of (data.items || [])) {
+          total += Number(it.total) || 0
+          paid  += (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+        }
+        const saldo  = total - paid
+        const estado = saldo <= 0 ? 'pagado' : paid === 0 ? 'pendiente' : 'parcial'
+        const fechas = (data.items || []).map(i => i.fechaInicio).filter(Boolean).sort()
+        bookings.push({ id, titular: data.titular || id, destinos: data.destinos || [],
+          total, paid, saldo, estado, fechaViaje: fechas[0] || '' })
+      } catch { /* skip corrupt */ }
+    }
+    bookings.sort((a, b) => (a.fechaViaje || 'z') < (b.fechaViaje || 'z') ? -1 : 1)
+    res.json({ ok: true, bookings })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 // ── API: Importar reserva desde email (Claude AI) ────────────────────────────
 app.post('/api/import-booking', async (req, res) => {
   try {
