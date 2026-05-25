@@ -4,6 +4,90 @@ import BookingForm     from './BookingForm'
 import ImportBooking   from './ImportBooking'
 import BookingsList    from './BookingsList'
 
+// ── WhatsApp helpers ──────────────────────────────────────────────────────────
+function formatWAPhone(phone) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.startsWith('54')) return digits
+  if (digits.startsWith('0'))  return '54' + digits.slice(1)
+  return '54' + digits
+}
+
+function money(n, cur = 'USD') {
+  return `$${Number(n).toLocaleString('es-AR')} ${cur}`
+}
+
+function buildWAMessage(type, booking, bookingId) {
+  const url   = `${window.location.origin}/?id=${bookingId}`
+  const nom   = booking.titular || ''
+  const dests = (booking.destinos || []).join(', ')
+
+  let totalViaje = 0, totalPagado = 0
+  for (const it of (booking.items || [])) {
+    totalViaje  += Number(it.total) || 0
+    totalPagado += (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+  }
+  const saldo = totalViaje - totalPagado
+  const pct   = totalViaje > 0 ? Math.round((totalPagado / totalViaje) * 100) : 0
+
+  const itemsList = (booking.items || []).map(it => {
+    const paid  = (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+    const sal   = it.total - paid
+    return `${it.icono} *${it.tipo}*: ${money(it.total, it.moneda)}${sal > 0 ? ` _(saldo: ${money(sal, it.moneda)})_` : ' ✅'}`
+  }).join('\n')
+
+  if (type === 'bienvenida') return `🐭 *¡Bienvenidos a Mama Mouse!*
+Hola *${nom}* 🎉
+
+Tu reserva de viaje está confirmada. ¡Prepárate para la aventura!
+
+🌍 *Destinos:* ${dests}
+
+📋 *Ítems contratados:*
+${itemsList}
+
+👉 Ver todos los detalles de tu viaje:
+${url}
+
+¿Tenés alguna consulta? ¡Escribinos! 💛`
+
+  if (type === 'actualizacion') return `📝 *Reserva actualizada*
+🐭 *Mama Mouse*
+
+Hola *${nom}* 👋
+
+Actualizamos los datos de tu reserva.
+
+👉 Revisá los cambios aquí:
+${url}
+
+¿Tenés alguna duda? ¡Escribinos! 💛`
+
+  if (type === 'resumen') return `💳 *Resumen de pagos*
+🐭 *Mama Mouse*
+
+Hola *${nom}* 👋
+
+📊 *Estado de tu viaje: ${pct}% pagado*
+✅ Abonado: ${money(totalPagado, 'USD')}
+${saldo > 0 ? `💳 Saldo restante: ${money(saldo, 'USD')}` : '🎉 ¡Viaje totalmente pagado!'}
+
+📋 *Detalle:*
+${itemsList}
+
+👉 Ver tu reserva completa:
+${url}`
+
+  return ''
+}
+
+function openWhatsApp(phone, message) {
+  const num = formatWAPhone(phone)
+  if (!num) return
+  const url = `https://wa.me/${num}?text=${encodeURIComponent(message)}`
+  window.open(url, '_blank')
+}
+
 const NAV_SECTIONS = [
   { id: 'sec-general',    icon: '👤', label: 'General'    },
   { id: 'sec-viajeros',   icon: '👥', label: 'Viajeros'   },
@@ -365,6 +449,30 @@ export default function AdminApp() {
               Los pagos nuevos se notifican automáticamente al guardar.
             </div>
           </div>
+
+          {/* WhatsApp rápido */}
+          {booking?.telefono && (
+            <div className="asb-notify-section">
+              <div className="asb-nav-title">WhatsApp rápido</div>
+              <button className="asb-notify-btn asb-wa-btn"
+                onClick={() => openWhatsApp(booking.telefono, buildWAMessage('bienvenida', booking, bookingId))}>
+                <span>💬</span><span>Enviar bienvenida</span>
+              </button>
+              <button className="asb-notify-btn asb-wa-btn"
+                onClick={() => openWhatsApp(booking.telefono, buildWAMessage('actualizacion', booking, bookingId))}
+                style={{ marginTop: 6 }}>
+                <span>💬</span><span>Notificar actualización</span>
+              </button>
+              <button className="asb-notify-btn asb-wa-btn"
+                onClick={() => openWhatsApp(booking.telefono, buildWAMessage('resumen', booking, bookingId))}
+                style={{ marginTop: 6 }}>
+                <span>💬</span><span>Resumen de pagos</span>
+              </button>
+              <div className="asb-notif-hint">
+                Abre WhatsApp Web con el mensaje listo para enviar.
+              </div>
+            </div>
+          )}
 
           {/* footer actions */}
           <div className="asb-footer">

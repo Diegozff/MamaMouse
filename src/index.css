@@ -1083,6 +1083,13 @@ body {
 }
 .asb-notify-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 .asb-notify-btn.sending { animation: pulseSending 1.2s ease-in-out infinite; }
+.asb-wa-btn {
+  background: linear-gradient(135deg, #25D366, #128C7E) !important;
+  box-shadow: 0 2px 8px rgba(37,211,102,0.35) !important;
+}
+.asb-wa-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(37,211,102,0.45) !important;
+}
 
 @keyframes pulseSending {
   0%, 100% { opacity: 0.7; }
