@@ -121,7 +121,7 @@ function VoucherRow({ voucher, onChange, onRemove, bookingId }) {
       <input
         className="admin-input af-voucher-nombre"
         value={voucher.nombre}
-        placeholder="Ej: Baucher Hotel Disney, Recibo Aéreos…"
+        placeholder="Ej: Voucher Hotel Disney, Recibo Aéreos…"
         onChange={e => onChange({ ...voucher, nombre: e.target.value })}
       />
       {voucher.url ? (
@@ -386,7 +386,7 @@ function HotelFields({ item, setField, bookingId }) {
 
       {/* PDF */}
       <div className="af-hotel-block">
-        <div className="af-hotel-block-title">📄 Baucher PDF</div>
+        <div className="af-hotel-block-title">📄 Voucher PDF</div>
         {item.pdfUrl ? (
           <div className="af-pdf-row">
             <a href={item.pdfUrl} target="_blank" rel="noreferrer" className="af-pdf-link">
@@ -659,9 +659,9 @@ export default function BookingForm({ initialData, onSave, saving }) {
       </Section>
 
       {/* ── VOUCHERS ── */}
-      <Section id="sec-vouchers" icon="📄" title="Bauchers y Recibos">
+      <Section id="sec-vouchers" icon="📄" title="Vouchers y Recibos">
         <p className="af-vouchers-hint">
-          Subí los PDFs de bauchers, recibos y confirmaciones. El viajero podrá descargarlos desde su reserva.
+          Subí los PDFs de vouchers, recibos y confirmaciones. El viajero podrá descargarlos desde su reserva.
         </p>
         <div className="af-dynamic">
           {(d.vouchers || []).map((v, i) => (
@@ -674,7 +674,7 @@ export default function BookingForm({ initialData, onSave, saving }) {
             />
           ))}
           <button className="admin-btn admin-btn-ghost af-add-btn" onClick={addVoucher}>
-            + Agregar baucher / recibo
+            + Agregar voucher / recibo
           </button>
         </div>
       </Section>

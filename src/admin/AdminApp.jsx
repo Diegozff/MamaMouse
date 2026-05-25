@@ -93,7 +93,7 @@ const NAV_SECTIONS = [
   { id: 'sec-viajeros',   icon: '👥', label: 'Viajeros'   },
   { id: 'sec-items',      icon: '💳', label: 'Ítems'      },
   { id: 'sec-beneficios', icon: '🎁', label: 'Beneficios' },
-  { id: 'sec-vouchers',   icon: '📄', label: 'Bauchers'   },
+  { id: 'sec-vouchers',   icon: '📄', label: 'Vouchers'   },
 ]
 
 function emptyBooking(id = '') {

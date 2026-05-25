@@ -890,7 +890,7 @@ function SeccionViajeros({ onLoginClick }) {
               <li>✅ Estado de pagos en tiempo real</li>
               <li>🗓️ Itinerario día a día</li>
               <li>🏨 Datos de hotel y tickets</li>
-              <li>📄 Documentos y bauchers</li>
+              <li>📄 Documentos y vouchers</li>
               <li>🎁 Beneficios y sorpresas</li>
             </ul>
             <button className="lp-btn-primary lp-btn-white" onClick={onLoginClick}>
