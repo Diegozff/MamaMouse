@@ -629,6 +629,21 @@ async function runPaymentReminders() {
   console.log(`[Cron] Recordatorios enviados: ${count}`)
 }
 
+// ── API: Disparar recordatorios manualmente (para cron externo o testing) ─────
+app.get('/api/run-reminders', async (req, res) => {
+  // Protección mínima con token secreto
+  const token = process.env.CRON_SECRET || 'mamamouse-cron'
+  if (req.query.token !== token) {
+    return res.status(401).json({ ok: false, error: 'Token inválido' })
+  }
+  try {
+    await runPaymentReminders()
+    res.json({ ok: true, message: 'Recordatorios procesados', timestamp: new Date().toISOString() })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 // ── Arrancar servidor ─────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🐭 Mama Mouse Server corriendo`)
