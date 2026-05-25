@@ -46,7 +46,14 @@ const PDFS_DIR     = path.join(__dirname, 'public', 'bookings', 'pdfs')
 await mkdir(PDFS_DIR, { recursive: true })
 
 // ── Notificaciones ────────────────────────────────────────────────────────────
-const { notifyBookingCreated, notifyBookingSummary } = await import('./server/notifier.mjs')
+const {
+  notifyBookingCreated,
+  notifyBookingUpdated,
+  notifyPaymentReceived,
+  notifyPaymentReminder,
+  notifyBookingSummary,
+  daysUntil,
+} = await import('./server/notifier.mjs')
 
 // ── App Express ───────────────────────────────────────────────────────────────
 const app = express()
@@ -406,20 +413,61 @@ REGLAS DE ORO:
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
 app.post('/api/booking', async (req, res) => {
   try {
-    const { id, data } = req.body
+    const { id, data, notify } = req.body
     if (!id || !data) return res.status(400).json({ ok: false, error: 'Faltan id o data' })
 
     const filePath = path.join(BOOKINGS_DIR, `${id}.json`)
     const isNew    = !(await fileExists(filePath))
 
+    // Leer reserva anterior para detectar cambios (solo si existe)
+    let oldData = null
+    if (!isNew) {
+      try { oldData = JSON.parse(await readFile(filePath, 'utf-8')) } catch {}
+    }
+
     await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
     console.log(`[API] Reserva guardada: ${id}`)
 
-    // Notificación automática en nueva reserva
     let notifResult = null
-    if (isNew && (data.email || data.telefono)) {
-      console.log(`[API] Nueva reserva – enviando bienvenida a ${data.email || data.telefono}`)
-      notifResult = await notifyBookingCreated(data).catch(e => ({ error: e.message }))
+    const contact = data.email || data.telefono
+
+    if (contact) {
+      if (isNew) {
+        // ── Nueva reserva: enviar bienvenida ──────────────────────────────
+        console.log(`[API] Nueva reserva – enviando bienvenida a ${contact}`)
+        notifResult = await notifyBookingCreated(data).catch(e => ({ error: e.message }))
+
+      } else {
+        // ── Reserva existente: detectar nuevos pagos ──────────────────────
+        const newPayments = []
+        for (const item of (data.items || [])) {
+          const oldItem = (oldData?.items || []).find(i => i.id === item.id)
+          const oldPaidCount = oldItem?.pagos?.length || 0
+          const newPagos     = item.pagos || []
+          // Pagos que no existían antes
+          if (newPagos.length > oldPaidCount) {
+            const added = newPagos.slice(oldPaidCount)
+            for (const p of added) {
+              newPayments.push({
+                ...p,
+                itemTipo:  item.tipo,
+                itemIcono: item.icono,
+                moneda:    item.moneda,
+              })
+            }
+          }
+        }
+
+        if (newPayments.length > 0) {
+          // Hay pagos nuevos → notificar pago recibido
+          console.log(`[API] ${newPayments.length} pago(s) nuevo(s) en ${id} – notificando`)
+          notifResult = await notifyPaymentReceived(data, newPayments).catch(e => ({ error: e.message }))
+        } else if (notify === 'update') {
+          // El admin pidió explícitamente notificar actualización
+          console.log(`[API] Notificando actualización de reserva: ${id}`)
+          notifResult = await notifyBookingUpdated(data).catch(e => ({ error: e.message }))
+        }
+      }
     }
 
     res.json({ ok: true, isNew, notifResult })
@@ -445,19 +493,33 @@ app.delete('/api/booking/:id', async (req, res) => {
   }
 })
 
-// ── API: Enviar notificación manual ──────────────────────────────────────────
+// ── API: Notificaciones manuales ─────────────────────────────────────────────
 app.post('/api/notify/summary', async (req, res) => {
   try {
     const { booking } = req.body
     if (!booking) return res.status(400).json({ ok: false, error: 'Falta booking' })
-    if (!booking.email && !booking.telefono) {
-      return res.status(400).json({ ok: false, error: 'La reserva no tiene email ni teléfono' })
-    }
+    if (!booking.email && !booking.telefono)
+      return res.status(400).json({ ok: false, error: 'Sin email ni teléfono' })
     const results = await notifyBookingSummary(booking)
-    console.log(`[API] Notificación manual enviada: ${booking.id}`)
+    console.log(`[API] Bienvenida enviada: ${booking.id}`)
     res.json({ ok: true, results })
   } catch (e) {
-    console.error('[API] Error notificación:', e.message)
+    console.error('[API] Error notify/summary:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+app.post('/api/notify/update', async (req, res) => {
+  try {
+    const { booking } = req.body
+    if (!booking) return res.status(400).json({ ok: false, error: 'Falta booking' })
+    if (!booking.email && !booking.telefono)
+      return res.status(400).json({ ok: false, error: 'Sin email ni teléfono' })
+    const results = await notifyBookingUpdated(booking)
+    console.log(`[API] Actualización notificada: ${booking.id}`)
+    res.json({ ok: true, results })
+  } catch (e) {
+    console.error('[API] Error notify/update:', e.message)
     res.status(500).json({ ok: false, error: e.message })
   }
 })
@@ -515,6 +577,58 @@ app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(DIST_DIR, 'index.html'))
 })
 
+// ── Cron: recordatorios de fechas límite de pago ─────────────────────────────
+const REMINDERS_FILE = path.join(__dirname, 'public', 'reminders-sent.json')
+const REMINDER_DAYS  = [7, 3, 1, 0] // días antes del vencimiento para avisar
+
+async function loadRemindersSent() {
+  try { return JSON.parse(await readFile(REMINDERS_FILE, 'utf-8')) } catch { return {} }
+}
+async function saveRemindersSent(data) {
+  await writeFile(REMINDERS_FILE, JSON.stringify(data, null, 2), 'utf-8').catch(() => {})
+}
+
+async function runPaymentReminders() {
+  console.log('[Cron] Verificando fechas límite de pago…')
+  const sent = await loadRemindersSent()
+  const today = new Date().toISOString().slice(0, 10)
+  let count = 0
+
+  try {
+    const files = await readdir(BOOKINGS_DIR)
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue
+      try {
+        const raw     = await readFile(path.join(BOOKINGS_DIR, file), 'utf-8')
+        const booking = JSON.parse(raw)
+        if (!booking.email && !booking.telefono) continue // sin contacto, skip
+
+        for (const item of (booking.items || [])) {
+          if (!item.fechaLimite) continue
+          const paid  = (item.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+          const saldo = item.total - paid
+          if (saldo <= 0) continue // ya pagado, skip
+
+          const days = daysUntil(item.fechaLimite)
+          // Enviar solo para los días configurados
+          if (!REMINDER_DAYS.includes(days)) continue
+
+          const key = `${booking.id}-${item.id}-${days}d-${today}`
+          if (sent[key]) continue // ya enviado hoy
+
+          console.log(`[Cron] Recordatorio: ${booking.titular} | ${item.tipo} | ${days}d`)
+          await notifyPaymentReminder(booking, item, days).catch(e => console.warn('[Cron] Error notif:', e.message))
+          sent[key] = today
+          count++
+        }
+      } catch { /* skip archivo corrupto */ }
+    }
+  } catch (e) { console.error('[Cron] Error:', e.message) }
+
+  await saveRemindersSent(sent)
+  console.log(`[Cron] Recordatorios enviados: ${count}`)
+}
+
 // ── Arrancar servidor ─────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🐭 Mama Mouse Server corriendo`)
@@ -522,6 +636,10 @@ app.listen(PORT, () => {
   console.log(`   Dominio:  ${process.env.APP_URL || 'https://www.mamamouse.com.ar'}`)
   console.log(`   Admin:    ${process.env.APP_URL || 'http://localhost:' + PORT}/?admin`)
   console.log(`   Env:      ${process.env.NODE_ENV || 'development'}`)
-  console.log(`   SMTP:     ${process.env.SMTP_USER || '⚠️  NO CONFIGURADO'} → ${process.env.SMTP_HOST || '?'}:${process.env.SMTP_PORT || '?'}`)
+  console.log(`   Brevo:    ${process.env.BREVO_API_KEY ? '✅ configurado' : '⚠️  NO CONFIGURADO'}`)
   console.log(`   Email cotizaciones → dm.zumoffen@gmail.com\n`)
+
+  // Ejecutar cron de recordatorios: al iniciar y luego cada 24hs
+  runPaymentReminders()
+  setInterval(runPaymentReminders, 24 * 60 * 60 * 1000)
 })

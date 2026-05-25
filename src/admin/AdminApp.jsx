@@ -109,8 +109,8 @@ export default function AdminApp() {
     } catch (e) { alert('Error al eliminar: ' + e.message) }
   }
 
-  // Enviar notificación manual (resumen de reserva)
-  const sendNotification = async (currentBooking) => {
+  // Enviar notificación manual
+  const sendNotification = async (currentBooking, type = 'summary') => {
     if (!currentBooking?.email && !currentBooking?.telefono) {
       setNotifStatus('no_contact')
       setTimeout(() => setNotifStatus('idle'), 4000)
@@ -118,7 +118,8 @@ export default function AdminApp() {
     }
     setNotifStatus('sending')
     try {
-      const r = await fetch('/api/notify/summary', {
+      const endpoint = type === 'update' ? '/api/notify/update' : '/api/notify/summary'
+      const r = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ booking: { ...currentBooking, id: bookingId } }),
@@ -330,12 +331,23 @@ export default function AdminApp() {
 
             <button
               className={`asb-notify-btn ${notifStatus === 'sending' ? 'sending' : ''}`}
-              onClick={() => sendNotification(booking)}
+              onClick={() => sendNotification(booking, 'summary')}
               disabled={notifStatus === 'sending'}
               title={!booking?.email && !booking?.telefono ? 'Agregá email o teléfono en la sección General' : ''}
             >
               <span>📣</span>
-              <span>{notifStatus === 'sending' ? 'Enviando…' : 'Notificar viajero'}</span>
+              <span>{notifStatus === 'sending' ? 'Enviando…' : 'Enviar bienvenida'}</span>
+            </button>
+
+            <button
+              className={`asb-notify-btn ${notifStatus === 'sending' ? 'sending' : ''}`}
+              onClick={() => sendNotification(booking, 'update')}
+              disabled={notifStatus === 'sending'}
+              title={!booking?.email && !booking?.telefono ? 'Agregá email o teléfono en la sección General' : ''}
+              style={{ marginTop: 6 }}
+            >
+              <span>📝</span>
+              <span>{notifStatus === 'sending' ? 'Enviando…' : 'Notificar actualización'}</span>
             </button>
 
             {/* status feedback */}
@@ -350,7 +362,7 @@ export default function AdminApp() {
             )}
 
             <div className="asb-notif-hint">
-              Envía un resumen de la reserva y el estado de pagos por email y WhatsApp.
+              Los pagos nuevos se notifican automáticamente al guardar.
             </div>
           </div>
 
