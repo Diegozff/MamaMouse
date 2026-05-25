@@ -339,7 +339,7 @@ Extraé la información del email y devolvé un JSON válido con esta estructura
 
 TIPOS DE SERVICIO Y SUS ICONOS:
 - Aéreos → ✈️
-- Hoteles → 🏨
+- Hotel / Hospedaje → 🏨
 - Hotel Disney → 🏰
 - Tickets Disney → 🎟️
 - Tickets Universal → 🎢
@@ -347,20 +347,43 @@ TIPOS DE SERVICIO Y SUS ICONOS:
 - Paquete Disney → ✨
 - Asistencia al Viajero → 🛡️
 - Renta de Auto → 🚗
+- Tickets After Hours → 🌙
+- Tickets Parques Acuáticos → 🌊
 
-REGLAS DE ORO:
-1. id = apellido del titular en minúsculas, sin espacios ni tildes (ej: "garcia", "beltrando")
+REGLAS DE ORO — CREDENCIALES:
+1. id = apellido del titular en minúsculas, sin espacios, sin tildes (ej: "garcia", "beltrando", "ramirez")
 2. usuario = Apellido con mayúscula inicial (ej: "Garcia")
 3. password = Apellido2026 (ej: "Garcia2026")
-4. PAGOS: En el array "pagos" solo incluí los pagos que YA FUERON REALIZADOS (cuotas abonadas, señas, pagos parciales). NO incluyas saldos pendientes ni montos futuros.
-5. SALDO PENDIENTE con Fecha Límite: Si el email muestra un "SALDO PENDIENTE" o "Saldo restante" con una "Fecha Límite de Pago" futura, ese monto NO va en pagos. El saldo queda sin pagar automáticamente. Guardá la fecha límite en el campo "fechaLimite" del item.
-6. SALDO EN DESTINO: La única excepción es si dice explícitamente "saldo a abonar en destino al check-in" o similar (monto que se paga en el hotel, no a la agencia). Ese saldo SÍ va como pago con concepto "Saldo a abonar en destino al check-in".
-7. ABONADO COMPLETO: Si dice "ABONADO COMPLETO" y no hay saldo pendiente, los pagos deben sumar exactamente el total.
-8. Fechas siempre en YYYY-MM-DD. Si no tiene año, usá 2026.
-9. Los destinos son los parques/lugares visitados (ej: "Walt Disney World", "Universal Orlando")
-10. Incluí toda la info relevante en la descripción del item (número de reserva, habitación, extras, etc.)
-11. Para viajeros: extraé cada pasajero mencionado con nombre, apellido, fecha de nacimiento y DNI/Pasaporte si aparecen. Si solo dice "2 adultos y 2 menores", creá entradas vacías con los datos que tengas.
-12. Devolvé SOLO el JSON puro, sin explicaciones ni markdown`
+
+REGLAS DE ORO — PAGOS (leer con atención):
+4. En "pagos[]" van ÚNICAMENTE los pagos que YA FUERON REALIZADOS y acreditados. Nunca montos futuros.
+
+5. CASO — Solo hay Fecha Límite, sin pagos listados:
+   El item aún no tiene ningún pago. "pagos" debe ser un array VACÍO [].
+   Guardá la fecha límite en "fechaLimite". Ejemplo: Renta de auto con "Fecha Límite de Pago total: 28 de junio 2026" y sin cuotas listadas → pagos: [], fechaLimite: "2026-06-28".
+
+6. CASO — SALDO PENDIENTE con Fecha Límite:
+   Si dice "SALDO PENDIENTE: USD X" con "Fecha Límite: DD/MM/YYYY", ese saldo NO va en pagos. Solo registrá los pagos ya realizados. Guardá la fecha límite en "fechaLimite".
+
+7. CASO — ABONADO COMPLETO sin detalle de cuotas:
+   Si dice "ABONADO COMPLETO" y no lista cuotas individuales, creá UN SOLO pago por el monto total con fecha aproximada y concepto "Pago total". Ejemplo: total USD 1,056.37 → pagos: [{ fecha: "2026-01-01", monto: 1056.37, concepto: "Pago total" }].
+
+8. CASO — ABONADO COMPLETO con cuotas listadas:
+   Registrá cada cuota individualmente. La suma debe ser igual al total.
+
+9. CASO — Impuestos/tasas a pagar en destino:
+   Frases como "Impuestos y tasas a pagar en destino: USD X" o "taxes payable at check-in" NO son pagos a la agencia. Mencionálos solo en la descripción del item, NO los incluyas en "total" ni en "pagos".
+
+10. CASO — Saldo a abonar en destino al check-in:
+    Si dice explícitamente que hay un monto a pagar EN EL HOTEL (no a la agencia) al hacer check-in, ese monto SÍ va como pago con concepto "Saldo a abonar en destino al check-in".
+
+REGLAS DE ORO — OTROS:
+11. Fechas siempre en formato YYYY-MM-DD. Si no tiene año explícito, usá 2026.
+12. Los destinos son los parques/lugares visitados (ej: "Walt Disney World", "Universal Orlando", "Miami").
+13. Incluí en la descripción: número de reserva, tipo de habitación, huéspedes, extras, promociones, regalos.
+14. Cada ítem del email es un item separado en el JSON, aunque tengan el mismo número de lista.
+15. Para viajeros: extraé cada pasajero con nombre, apellido, fechaNac y documento si aparecen. Si dice "2 adultos + 1 menor de 8 años" creá 3 entradas vacías con los roles que correspondan.
+16. Devolvé SOLO el JSON puro, sin explicaciones ni markdown.`
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
