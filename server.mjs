@@ -39,11 +39,37 @@ const __dirname   = path.dirname(fileURLToPath(import.meta.url))
 const PORT        = process.env.PORT || 3000
 const DIST_DIR    = path.join(__dirname, 'dist')
 const PUBLIC_DIR  = path.join(__dirname, 'public')
-const BOOKINGS_DIR = path.join(__dirname, 'public', 'bookings')
-const PDFS_DIR     = path.join(__dirname, 'public', 'bookings', 'pdfs')
 
-// Asegurar que exista el directorio de PDFs
-await mkdir(PDFS_DIR, { recursive: true })
+// DATA_DIR: directorio persistente. En Railway se monta un volumen en /app/data.
+// En desarrollo local usa ./data (o ./public como fallback si DATA_PATH no está seteado).
+const DATA_DIR    = process.env.DATA_PATH || path.join(__dirname, 'data')
+const BOOKINGS_DIR = path.join(DATA_DIR, 'bookings')
+const PDFS_DIR     = path.join(DATA_DIR, 'bookings', 'pdfs')
+const RESENAS_FILE_DATA = path.join(DATA_DIR, 'resenas.json')
+
+// Crear directorios necesarios
+await mkdir(BOOKINGS_DIR, { recursive: true })
+await mkdir(PDFS_DIR,     { recursive: true })
+
+// Inicializar: copiar reservas de public/bookings → DATA_DIR/bookings si están vacías
+// (solo la primera vez que se monta el volumen en Railway)
+async function initDataDir() {
+  try {
+    const srcDir = path.join(__dirname, 'public', 'bookings')
+    const existing = await readdir(BOOKINGS_DIR).catch(() => [])
+    const jsonExisting = existing.filter(f => f.endsWith('.json'))
+    if (jsonExisting.length === 0) {
+      // Volumen nuevo / vacío: copiar archivos semilla desde public/bookings
+      const { copyFile } = await import('node:fs/promises')
+      const seeds = (await readdir(srcDir).catch(() => [])).filter(f => f.endsWith('.json'))
+      for (const f of seeds) {
+        await copyFile(path.join(srcDir, f), path.join(BOOKINGS_DIR, f)).catch(() => {})
+      }
+      if (seeds.length) console.log(`[Init] Copiados ${seeds.length} archivos semilla a DATA_DIR`)
+    }
+  } catch (e) { console.warn('[Init] Error inicializando DATA_DIR:', e.message) }
+}
+await initDataDir()
 
 // ── Notificaciones ────────────────────────────────────────────────────────────
 const {
@@ -174,7 +200,7 @@ app.post('/api/cotizar', async (req, res) => {
 })
 
 // ── API: Reseñas de viajeros ──────────────────────────────────────────────────
-const RESENAS_FILE = path.join(PUBLIC_DIR, 'resenas.json')
+const RESENAS_FILE = RESENAS_FILE_DATA
 
 app.get('/api/resenas', async (req, res) => {
   try {
@@ -611,7 +637,9 @@ app.get('/api/test-email', async (req, res) => {
 // ── Archivos estáticos ────────────────────────────────────────────────────────
 // La app buildeada de React
 app.use(express.static(DIST_DIR))
-// Archivos públicos (bookings JSON, guías PDF, logos, etc.)
+// Archivos dinámicos persistentes (bookings, PDFs, reseñas) desde DATA_DIR
+app.use('/bookings', express.static(BOOKINGS_DIR))
+// Archivos públicos estáticos (imágenes, logos, guías)
 app.use(express.static(PUBLIC_DIR))
 
 // ── SPA Fallback: todas las rutas sirven index.html ───────────────────────────
