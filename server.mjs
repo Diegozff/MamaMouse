@@ -250,7 +250,7 @@ app.get('/api/bookings', async (req, res) => {
 
 // ── Helper: resolver credenciales únicas ─────────────────────────────────────
 async function resolveUniqueCredentials(apellido) {
-  // Leer todos los usuarios ya existentes en las reservas
+  // Leer todos los usuarios y archivos existentes
   const existingUsuarios = new Set()
   try {
     const files = await readdir(BOOKINGS_DIR)
@@ -270,7 +270,6 @@ async function resolveUniqueCredentials(apellido) {
   }
 
   // Probar con un dígito aleatorio al final hasta encontrar uno libre
-  // Mezclamos el orden para que sea realmente aleatorio
   const digits = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5)
   for (const d of digits) {
     const candidato = `${apellido}${d}`
@@ -279,9 +278,25 @@ async function resolveUniqueCredentials(apellido) {
     }
   }
 
-  // Fallback muy improbable: usar dos dígitos aleatorios
+  // Fallback: dos dígitos aleatorios
   const fallback = `${apellido}${Math.floor(Math.random() * 90 + 10)}`
   return { usuario: fallback, password: `${fallback}2026` }
+}
+
+// ── Helper: resolver id único (nombre de archivo) ────────────────────────────
+async function resolveUniqueId(baseId) {
+  // Si el archivo no existe, usar el id tal cual
+  const filePath = path.join(BOOKINGS_DIR, `${baseId}.json`)
+  if (!(await fileExists(filePath))) return baseId
+
+  // Si existe, agregar sufijo numérico hasta encontrar uno libre
+  for (let i = 2; i <= 20; i++) {
+    const candidate = `${baseId}-${i}`
+    if (!(await fileExists(path.join(BOOKINGS_DIR, `${candidate}.json`)))) {
+      return candidate
+    }
+  }
+  return `${baseId}-${Date.now()}`
 }
 
 // ── API: Importar reserva desde email (Claude AI) ────────────────────────────
@@ -351,9 +366,9 @@ TIPOS DE SERVICIO Y SUS ICONOS:
 - Tickets Parques Acuáticos → 🌊
 
 REGLAS DE ORO — CREDENCIALES:
-1. id = apellido del titular en minúsculas, sin espacios, sin tildes (ej: "garcia", "beltrando", "ramirez")
-2. usuario = Apellido con mayúscula inicial (ej: "Garcia")
-3. password = Apellido2026 (ej: "Garcia2026")
+1. id = apellido + guion + primer nombre, todo en minúsculas, sin tildes, sin espacios (ej: "ramirez-maricel", "garcia-pablo", "beltrando-matias"). SIEMPRE incluí el nombre para evitar conflictos entre personas del mismo apellido.
+2. usuario = Apellido con mayúscula inicial (ej: "Garcia", "Ramirez")
+3. password = Apellido2026 (ej: "Garcia2026", "Ramirez2026")
 
 REGLAS DE ORO — PAGOS (leer con atención):
 4. En "pagos[]" van ÚNICAMENTE los pagos que YA FUERON REALIZADOS y acreditados. Nunca montos futuros.
@@ -416,8 +431,12 @@ REGLAS DE ORO — OTROS:
 
     const booking = JSON.parse(jsonMatch[0])
 
-    // Resolver credenciales únicas: si el apellido ya está tomado, agregar dígito aleatorio
-    const baseApellido = booking.usuario || booking.id?.split('-')[0] || 'viajero'
+    // Resolver id único (apellido-nombre): evitar que dos personas del mismo apellido
+    // se pisen el archivo JSON
+    booking.id = await resolveUniqueId(booking.id || 'viajero')
+
+    // Resolver credenciales únicas: si el usuario ya está tomado, agregar dígito aleatorio
+    const baseApellido = booking.usuario || booking.id.split('-')[0] || 'viajero'
     const { usuario, password } = await resolveUniqueCredentials(
       baseApellido.charAt(0).toUpperCase() + baseApellido.slice(1).toLowerCase()
     )
