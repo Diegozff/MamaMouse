@@ -667,11 +667,32 @@ app.get('/api/test-email', async (req, res) => {
   }
 })
 
+// ── Ruta explícita para bookings (SIEMPRE desde DATA_DIR, nunca desde public/) ─
+// Esto evita que public/bookings/*.json (archivos del repo git) tape los cambios
+app.get('/bookings/:id.json', async (req, res) => {
+  const filePath = path.join(BOOKINGS_DIR, `${req.params.id}.json`)
+  try {
+    const data = await readFile(filePath, 'utf-8')
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+    res.send(data)
+  } catch {
+    // Fallback: buscar en public/bookings (archivos semilla del repo)
+    const fallback = path.join(PUBLIC_DIR, 'bookings', `${req.params.id}.json`)
+    try {
+      const data = await readFile(fallback, 'utf-8')
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
+      res.setHeader('Cache-Control', 'no-store')
+      res.send(data)
+    } catch {
+      res.status(404).json({ error: 'Reserva no encontrada' })
+    }
+  }
+})
+
 // ── Archivos estáticos ────────────────────────────────────────────────────────
 // La app buildeada de React
 app.use(express.static(DIST_DIR))
-// Archivos dinámicos persistentes (bookings, PDFs, reseñas) desde DATA_DIR
-app.use('/bookings', express.static(BOOKINGS_DIR))
 // Archivos públicos estáticos (imágenes, logos, guías)
 app.use(express.static(PUBLIC_DIR))
 
