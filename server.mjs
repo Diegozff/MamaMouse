@@ -83,7 +83,16 @@ const {
 
 // ── App Express ───────────────────────────────────────────────────────────────
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))   // reservas grandes con muchos pagos/items
+
+// CORS: permitir requests desde cualquier origen (admin desde distintos equipos)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
 
 // Helper: detectar si un archivo existe
 async function fileExists(p) {
@@ -588,6 +597,30 @@ app.post('/api/notify/update', async (req, res) => {
     res.json({ ok: true, results })
   } catch (e) {
     console.error('[API] Error notify/update:', e.message)
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// ── API: Diagnóstico del sistema ─────────────────────────────────────────────
+app.get('/api/status', async (req, res) => {
+  try {
+    const files = await readdir(BOOKINGS_DIR).catch(() => [])
+    const testFile = path.join(BOOKINGS_DIR, '_test_write.tmp')
+    let canWrite = false
+    try {
+      await writeFile(testFile, 'ok', 'utf-8')
+      await unlink(testFile)
+      canWrite = true
+    } catch {}
+    res.json({
+      ok: true,
+      dataDir: DATA_DIR,
+      bookingsDir: BOOKINGS_DIR,
+      bookingsCount: files.filter(f => f.endsWith('.json')).length,
+      canWrite,
+      dataPathEnv: process.env.DATA_PATH || '(no configurado, usando ./data)',
+    })
+  } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
   }
 })

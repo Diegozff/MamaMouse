@@ -176,9 +176,19 @@ export default function AdminApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: bookingId, data: { ...data, id: bookingId } }),
       })
-      if (r.ok) { setSaveStatus('ok'); setTimeout(() => setSaveStatus('idle'), 3000) }
-      else throw new Error()
-    } catch {
+      if (r.ok) {
+        setSaveStatus('ok')
+        setTimeout(() => setSaveStatus('idle'), 3000)
+      } else {
+        const errData = await r.json().catch(() => ({}))
+        console.error('[Admin] Error guardando:', r.status, errData)
+        alert(`Error al guardar (${r.status}): ${errData.error || 'Error desconocido'}`)
+        setSaveStatus('error')
+        setTimeout(() => setSaveStatus('idle'), 3000)
+      }
+    } catch (e) {
+      console.error('[Admin] Error de red:', e.message)
+      alert(`Error de conexión: ${e.message}`)
       setSaveStatus('error')
       setTimeout(() => setSaveStatus('idle'), 3000)
     }
