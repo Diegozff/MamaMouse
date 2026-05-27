@@ -122,6 +122,8 @@ export default function AdminApp() {
   const [copyStatus,  setCopyStatus]  = useState('idle') // idle | copied
   const [showImport,  setShowImport]  = useState(false)
   const [showList,    setShowList]    = useState(false)
+  const [showNew,     setShowNew]     = useState(false)
+  const [newTitular,  setNewTitular]  = useState('')
 
   const mainRef = useRef(null)
 
@@ -157,8 +159,25 @@ export default function AdminApp() {
   }
 
   const newBooking = () => {
-    const id = inputId.trim().toLowerCase().replace(/\s+/g, '-') || 'nuevo-viajero'
-    setBooking(emptyBooking(id))
+    setNewTitular('')
+    setShowNew(true)
+  }
+
+  const confirmNewBooking = () => {
+    const titular = newTitular.trim()
+    if (!titular) return
+    // Generar id desde apellido-nombre, sin tocar el inputId de búsqueda
+    const palabras = titular.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')  // quitar tildes
+      .replace(/[^a-z0-9\s]/g, '').trim().split(/\s+/)
+    // Usar apellido-nombre si hay dos palabras, o toda la cadena
+    const id = palabras.length >= 2
+      ? `${palabras[palabras.length - 1]}-${palabras[0]}`
+      : palabras[0] || `reserva-${Date.now()}`
+    const data = { ...emptyBooking(id), titular }
+    setShowNew(false)
+    setNewTitular('')
+    setBooking(data)
     setBookingId(id)
   }
 
@@ -338,6 +357,37 @@ export default function AdminApp() {
             </div>
           )}
         </div>
+
+        {showNew && (
+          <div className="ib-overlay" onClick={e => e.target === e.currentTarget && setShowNew(false)}>
+            <div className="ib-modal" style={{ maxWidth: 420 }}>
+              <div className="ib-modal-header">
+                <div className="ib-modal-title"><span>✏️</span><span>Nueva Reserva</span></div>
+                <button className="ib-close-btn" onClick={() => setShowNew(false)}>✕</button>
+              </div>
+              <div className="ib-modal-body">
+                <p className="ib-hint">Ingresá el nombre completo del titular para crear la reserva.</p>
+                <input
+                  className="admin-input"
+                  placeholder="Ej: Maricel Ramírez"
+                  value={newTitular}
+                  onChange={e => setNewTitular(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && confirmNewBooking()}
+                  autoFocus
+                  style={{ fontSize: 16, padding: '12px 14px', marginBottom: 8 }}
+                />
+                <div className="ib-modal-actions">
+                  <button className="admin-btn admin-btn-ghost" onClick={() => setShowNew(false)}>Cancelar</button>
+                  <button
+                    className="admin-btn admin-btn-primary"
+                    onClick={confirmNewBooking}
+                    disabled={!newTitular.trim()}
+                  >✏️ Crear Reserva</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showImport && (
           <ImportBooking
