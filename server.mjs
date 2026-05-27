@@ -433,7 +433,8 @@ REGLAS DE ORO — OTROS:
 13. Incluí en la descripción: número de reserva, tipo de habitación, huéspedes, extras, promociones, regalos.
 14. Cada ítem del email es un item separado en el JSON, aunque tengan el mismo número de lista.
 15. Para viajeros: extraé cada pasajero con nombre, apellido, fechaNac y documento si aparecen. Si dice "2 adultos + 1 menor de 8 años" creá 3 entradas vacías con los roles que correspondan.
-16. Devolvé SOLO el JSON puro, sin explicaciones ni markdown.`
+16. FECHAS DE TICKETS: Para tickets que dicen "válidos hasta [fecha lejana]" (ej: "válidos hasta mayo 2027"), usá como fechaFin la última fecha de uso real dentro del viaje (ej: último día que el viajero visita el parque), NO la fecha de vencimiento. La fecha de vencimiento va solo en la descripción. Si no hay fecha de uso específica, dejá fechaFin vacío.
+17. Devolvé SOLO el JSON puro, sin explicaciones ni markdown.`
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

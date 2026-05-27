@@ -25,10 +25,21 @@ function calcCountdown(dateStr) {
 // Derive trip start/end from items fechaInicio/fechaFin, fallback to hotel
 function tripDates(items = [], hotel = {}) {
   const starts = items.map(i => i.fechaInicio).filter(Boolean).sort()
-  const ends   = items.map(i => i.fechaFin).filter(Boolean).sort()
+  const allEnds = items.map(i => i.fechaFin).filter(Boolean).sort()
+
+  // Filtrar fechaFin: descartar fechas que son más de 60 días después del inicio del viaje
+  // Esas son fechas de vencimiento de tickets, no fechas reales de fin del viaje
+  const tripStart = starts[0]
+  const ends = tripStart
+    ? allEnds.filter(f => {
+        const diff = (new Date(f) - new Date(tripStart)) / (1000 * 60 * 60 * 24)
+        return diff <= 60
+      })
+    : allEnds
+
   return {
-    checkIn:  starts[0]              || hotel?.checkIn  || '',
-    checkOut: ends[ends.length - 1]  || hotel?.checkOut || '',
+    checkIn:  starts[0]                              || hotel?.checkIn  || '',
+    checkOut: ends[ends.length - 1] || allEnds[0]   || hotel?.checkOut || '',
   }
 }
 
