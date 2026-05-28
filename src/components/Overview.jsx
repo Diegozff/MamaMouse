@@ -62,6 +62,12 @@ function InfoRow({ label, value }) {
   )
 }
 
+function daysUntil(dateStr) {
+  if (!dateStr) return null
+  const d = Math.ceil((new Date(dateStr + 'T00:00:00') - new Date()) / (1000*60*60*24))
+  return isNaN(d) ? null : d
+}
+
 function calcEdad(fechaNac) {
   if (!fechaNac) return null
   const hoy = new Date()
@@ -240,6 +246,44 @@ export default function Overview({ booking, onTabChange }) {
         </div>
       )}
 
+      {/* ALERTAS DE FECHAS LÍMITE */}
+      {(() => {
+        const alertas = items
+          .map(it => {
+            const paid  = it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+            const saldo = it.total - paid
+            const days  = daysUntil(it.fechaLimite)
+            return { it, saldo, days }
+          })
+          .filter(({ saldo, days }) => saldo > 0 && days !== null && days <= 30)
+          .sort((a, b) => a.days - b.days)
+
+        if (!alertas.length) return null
+        return (
+          <div className="ov-deadlines-card">
+            <div className="ov-deadlines-header">
+              <span>⏰</span>
+              <span>Fechas límite de pago</span>
+            </div>
+            {alertas.map(({ it, saldo, days }) => {
+              const urgent = days <= 7
+              return (
+                <div key={it.id} className={`ov-deadline-row ${urgent ? 'ov-deadline-urgent' : 'ov-deadline-warn'}`}>
+                  <span className="ov-deadline-icon">{it.icono}</span>
+                  <div className="ov-deadline-info">
+                    <span className="ov-deadline-tipo">{it.tipo}</span>
+                    <span className="ov-deadline-date">
+                      Vence {days === 0 ? 'HOY' : `en ${days} día${days !== 1 ? 's' : ''}`} — {formatDate(it.fechaLimite)}
+                    </span>
+                  </div>
+                  <span className="ov-deadline-saldo">-${saldo.toLocaleString('es-AR')} {it.moneda}</span>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
+
       {/* ITEMS CONTRATADOS */}
       {items.length > 0 && (
         <div className="card grid-1">
@@ -252,6 +296,8 @@ export default function Overview({ booking, onTabChange }) {
               const paid  = it.pagos.reduce((s, p) => s + Number(p.monto), 0)
               const saldo = it.total - paid
               const p     = it.total > 0 ? Math.min(100, Math.round((paid / it.total) * 100)) : 0
+              const days  = daysUntil(it.fechaLimite)
+              const showDeadline = saldo > 0 && days !== null
               return (
                 <div key={it.id} className="overview-item-row">
                   <span className="overview-item-icon">{it.icono}</span>
@@ -260,6 +306,12 @@ export default function Overview({ booking, onTabChange }) {
                     <div className="overview-item-bar-wrap">
                       <div className="overview-item-bar-fill" style={{ width:`${p}%` }} />
                     </div>
+                    {showDeadline && (
+                      <span className={`ov-item-deadline ${days <= 7 ? 'ov-item-deadline-urgent' : days <= 30 ? 'ov-item-deadline-warn' : 'ov-item-deadline-ok'}`}>
+                        📅 Límite: {formatDate(it.fechaLimite)}
+                        {days === 0 ? ' — HOY' : days < 0 ? ' — vencida' : ` — ${days}d`}
+                      </span>
+                    )}
                   </div>
                   <div className="overview-item-amounts">
                     <span className="overview-item-total">${it.total.toLocaleString('es-AR')} {it.moneda}</span>

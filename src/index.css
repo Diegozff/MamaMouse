@@ -2227,6 +2227,66 @@ select.admin-input { cursor: pointer; }
   color: var(--pink);
 }
 
+/* ── Deadline box (prominente dentro de cada item card) ── */
+.deadline-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 2px solid;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin: 8px 0 4px;
+}
+.deadline-box-icon  { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.deadline-box-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; margin-bottom: 2px; }
+.deadline-box-date  { font-size: 15px; font-weight: 900; }
+.deadline-box-saldo { font-size: 12px; font-weight: 700; margin-top: 3px; opacity: 0.85; }
+
+/* ── Alertas de vencimiento en Overview ── */
+.ov-deadlines-card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.ov-deadlines-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #FF6F00, #E65100);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+}
+.ov-deadline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.ov-deadline-row:last-child { border-bottom: none; }
+.ov-deadline-urgent { background: #FFF3E0; }
+.ov-deadline-warn   { background: #FFFDE7; }
+.ov-deadline-icon   { font-size: 22px; flex-shrink: 0; }
+.ov-deadline-info   { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.ov-deadline-tipo   { font-size: 13px; font-weight: 800; color: var(--dark); }
+.ov-deadline-date   { font-size: 12px; font-weight: 700; color: #E65100; }
+.ov-deadline-saldo  { font-size: 13px; font-weight: 900; color: #C62828; flex-shrink: 0; }
+
+/* ── Fecha límite inline en overview-item-row ── */
+.ov-item-deadline {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 3px;
+  display: block;
+}
+.ov-item-deadline-urgent { color: #C62828; }
+.ov-item-deadline-warn   { color: #E65100; }
+.ov-item-deadline-ok     { color: #1565C0; }
+
 /* Deadline badges */
 .deadline-badge {
   padding: 5px 12px;

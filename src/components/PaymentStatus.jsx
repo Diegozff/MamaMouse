@@ -11,14 +11,39 @@ function daysUntil(dateStr) {
 
 function DeadlineBadge({ fechaLimite, saldo }) {
   if (saldo <= 0) return <span className="deadline-badge deadline-badge-done">✅ Pagado</span>
+  if (!fechaLimite)   return null
   const days = daysUntil(fechaLimite)
+  if (isNaN(days))    return null
   let cls = 'deadline-badge-ok'
-  let label = `Vence en ${days} días`
-  if (days < 0)       { cls = 'deadline-badge-expired'; label = `Venció hace ${Math.abs(days)} días` }
-  else if (days === 0){ cls = 'deadline-badge-urgent';  label = 'Vence hoy' }
-  else if (days <= 30){ cls = 'deadline-badge-urgent';  label = `⚠️ ${days} días restantes` }
-  else if (days <= 60){ cls = 'deadline-badge-warn';    label = `${days} días restantes` }
+  let label = `📅 Vence ${fmtFull(fechaLimite)}`
+  if (days < 0)        { cls = 'deadline-badge-expired'; label = `❌ Venció el ${fmtFull(fechaLimite)}` }
+  else if (days === 0) { cls = 'deadline-badge-urgent';  label = `🚨 Vence HOY — ${fmtFull(fechaLimite)}` }
+  else if (days <= 7)  { cls = 'deadline-badge-urgent';  label = `🚨 Vence en ${days} días — ${fmtFull(fechaLimite)}` }
+  else if (days <= 30) { cls = 'deadline-badge-warn';    label = `⚠️ Vence en ${days} días — ${fmtFull(fechaLimite)}` }
   return <span className={`deadline-badge ${cls}`}>{label}</span>
+}
+
+function DeadlineBox({ fechaLimite, saldo, moneda }) {
+  if (saldo <= 0 || !fechaLimite) return null
+  const days = daysUntil(fechaLimite)
+  if (isNaN(days)) return null
+  let bg = '#FFF3E0', border = '#FF9800', color = '#E65100', icon = '⚠️'
+  if (days < 0)       { bg = '#FFEBEE'; border = '#EF5350'; color = '#C62828'; icon = '❌' }
+  else if (days <= 7) { bg = '#FFEBEE'; border = '#EF5350'; color = '#C62828'; icon = '🚨' }
+  else if (days <= 30){ bg = '#FFF3E0'; border = '#FF9800'; color = '#E65100'; icon = '⚠️' }
+  else                { bg = '#E8F5E9'; border = '#66BB6A'; color = '#2E7D32'; icon = '📅' }
+  return (
+    <div className="deadline-box" style={{ background: bg, borderColor: border, color }}>
+      <span className="deadline-box-icon">{icon}</span>
+      <div>
+        <div className="deadline-box-title">Fecha límite de pago</div>
+        <div className="deadline-box-date">{fmtFull(fechaLimite)}
+          {days >= 0 ? ` — ${days === 0 ? 'HOY' : `en ${days} día${days !== 1 ? 's' : ''}`}` : ` — vencida`}
+        </div>
+        {saldo > 0 && <div className="deadline-box-saldo">Saldo pendiente: <strong>${Number(saldo).toLocaleString('es-AR')} {moneda}</strong></div>}
+      </div>
+    </div>
+  )
 }
 
 const HOTEL_TIPOS   = ['Hoteles']
@@ -190,7 +215,10 @@ function ItemCard({ item }) {
         </div>
       </div>
 
-      {/* totals + deadline */}
+      {/* Deadline box — destacado cuando hay saldo pendiente */}
+      <DeadlineBox fechaLimite={item.fechaLimite} saldo={saldo} moneda={item.moneda} />
+
+      {/* totals + deadline badge */}
       <div className="item-payment-footer">
         <div className="item-totals">
           <div className="item-total-row">
