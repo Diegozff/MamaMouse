@@ -55,17 +55,27 @@ function GuideCard({ guide }) {
   )
 }
 
-export default function GuidesLibrary() {
-  const [guides,   setGuides]   = useState([])
-  const [catActiva, setCat]     = useState('Todos')
-  const [loading,  setLoading]  = useState(true)
+export default function GuidesLibrary({ booking = {} }) {
+  const [allGuides, setAllGuides] = useState([])
+  const [catActiva, setCat]       = useState('Todos')
+  const [loading,   setLoading]   = useState(true)
+
+  // IDs de guías asignadas a esta reserva (vacío = todas, para compatibilidad)
+  const asignadas = booking.guias || []
 
   useEffect(() => {
-    fetch('/guides/index.json')
+    fetch('/api/guides')
       .then(r => r.json())
-      .then(data => { setGuides(data); setLoading(false) })
+      .then(data => { setAllGuides(data.guides || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
+
+  // Solo mostrar las guías asignadas a esta reserva (con PDF disponible)
+  const guides = asignadas.length > 0
+    ? allGuides.filter(g => asignadas.includes(g.id))
+    : []   // si no hay ninguna asignada, no mostrar nada
+
+  const cats = ['Todos', ...new Set(guides.map(g => g.categoria))]
 
   const filtradas = catActiva === 'Todos'
     ? guides
@@ -78,26 +88,34 @@ export default function GuidesLibrary() {
         <div className="content-subtitle">Descargá las guías exclusivas de Mama Mouse para cada parque</div>
       </div>
 
-      {/* FILTROS */}
-      <div className="guides-filter-row">
-        {CATEGORIAS.map(cat => (
-          <button
-            key={cat}
-            className={`guides-filter-btn ${catActiva === cat ? 'active' : ''}`}
-            onClick={() => setCat(cat)}
-          >
-            {cat === 'Disney World' && '🏰 '}
-            {cat === 'Universal'    && '🎬 '}
-            {cat === 'Destino'      && '🌴 '}
-            {cat === 'Todos'        && '✨ '}
-            {cat}
-          </button>
-        ))}
-      </div>
+      {/* FILTROS — solo si hay más de una categoría */}
+      {cats.length > 2 && (
+        <div className="guides-filter-row">
+          {cats.map(cat => (
+            <button
+              key={cat}
+              className={`guides-filter-btn ${catActiva === cat ? 'active' : ''}`}
+              onClick={() => setCat(cat)}
+            >
+              {cat === 'Disney World' && '🏰 '}
+              {cat === 'Universal'    && '🎬 '}
+              {cat === 'Destino'      && '🌴 '}
+              {cat === 'Todos'        && '✨ '}
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* CARDS GRID */}
       {loading ? (
         <div className="guides-loading">Cargando guías...</div>
+      ) : guides.length === 0 ? (
+        <div className="guides-loading">
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+          <div style={{ fontWeight: 700, color: 'var(--text)' }}>Las guías de tu viaje estarán disponibles próximamente</div>
+          <div style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 6 }}>Tu agente Mama Mouse las estará cargando antes de tu viaje ✨</div>
+        </div>
       ) : (
         <div className="guides-grid">
           {filtradas.map(guide => (

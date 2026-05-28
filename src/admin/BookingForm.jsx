@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 const DESTINOS_OPT = ['Disney World', 'Universal Studios', 'SeaWorld', 'Busch Gardens']
 const MONEDAS      = ['USD', 'ARS', 'EUR']
@@ -530,6 +530,70 @@ function ItemEditor({ item, onChange, onRemove, bookingId }) {
   )
 }
 
+/* ── Selector de guías para el viajero ── */
+function GuidesSelector({ selected = [], onChange }) {
+  const [allGuides, setAllGuides] = useState([])
+  const [loading,   setLoading]   = useState(true)
+
+  useEffect(() => {
+    fetch('/api/guides')
+      .then(r => r.json())
+      .then(d => { setAllGuides(d.guides || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const toggle = (id) => {
+    if (selected.includes(id)) onChange(selected.filter(x => x !== id))
+    else                        onChange([...selected, id])
+  }
+
+  const cats = [...new Set(allGuides.map(g => g.categoria))]
+
+  if (loading) return <p className="af-vouchers-hint">Cargando guías disponibles…</p>
+  if (!allGuides.length) return (
+    <p className="af-vouchers-hint">
+      No hay guías en la biblioteca aún. Cargalas desde el panel de <strong>📚 Gestionar Guías</strong>.
+    </p>
+  )
+
+  return (
+    <div className="af-guides-selector">
+      <p className="af-vouchers-hint" style={{ marginBottom: 12 }}>
+        Seleccioná las guías que verá este viajero en su perfil. Solo se muestran las guías marcadas aquí.
+      </p>
+      {cats.map(cat => (
+        <div key={cat} className="af-guides-cat">
+          <div className="af-guides-cat-label">{cat}</div>
+          <div className="af-guides-cat-items">
+            {allGuides.filter(g => g.categoria === cat).map(g => {
+              const on = selected.includes(g.id)
+              return (
+                <button
+                  key={g.id}
+                  type="button"
+                  className={`af-guide-chip ${on ? 'af-guide-chip-on' : ''}`}
+                  style={on ? { borderColor: g.color, background: g.color + '18' } : {}}
+                  onClick={() => toggle(g.id)}
+                >
+                  <span>{g.icono}</span>
+                  <span>{g.nombre}</span>
+                  {!g.pdfExists && <span className="af-guide-chip-warn" title="Sin PDF subido">⚠️</span>}
+                  {on && <span className="af-guide-chip-check" style={{ color: g.color }}>✓</span>}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+      {selected.length > 0 && (
+        <div className="af-guides-summary">
+          ✅ {selected.length} guía{selected.length !== 1 ? 's' : ''} asignada{selected.length !== 1 ? 's' : ''} a este viajero
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Main Form ── */
 export default function BookingForm({ initialData, onSave, saving }) {
   const [d, setD] = useState(initialData)
@@ -677,6 +741,14 @@ export default function BookingForm({ initialData, onSave, saving }) {
             + Agregar voucher / recibo
           </button>
         </div>
+      </Section>
+
+      {/* ── GUÍAS ── */}
+      <Section id="sec-guias" icon="📚" title="Guías del Viajero">
+        <GuidesSelector
+          selected={d.guias || []}
+          onChange={v => setA('guias', v)}
+        />
       </Section>
 
       {/* ── SAVE BAR ── */}

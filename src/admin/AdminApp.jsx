@@ -3,6 +3,7 @@ import AdminLogin      from './AdminLogin'
 import BookingForm     from './BookingForm'
 import ImportBooking   from './ImportBooking'
 import BookingsList    from './BookingsList'
+import GuidesAdmin     from './GuidesAdmin'
 
 // ── WhatsApp helpers ──────────────────────────────────────────────────────────
 function formatWAPhone(phone) {
@@ -94,6 +95,7 @@ const NAV_SECTIONS = [
   { id: 'sec-items',      icon: '💳', label: 'Ítems'      },
   { id: 'sec-beneficios', icon: '🎁', label: 'Beneficios' },
   { id: 'sec-vouchers',   icon: '📄', label: 'Vouchers'   },
+  { id: 'sec-guias',      icon: '📚', label: 'Guías'      },
 ]
 
 function emptyBooking(id = '') {
@@ -124,6 +126,7 @@ export default function AdminApp() {
   const [showList,    setShowList]    = useState(false)
   const [showNew,     setShowNew]     = useState(false)
   const [newTitular,  setNewTitular]  = useState('')
+  const [showGuides,  setShowGuides]  = useState(false)
 
   const mainRef = useRef(null)
 
@@ -283,6 +286,8 @@ export default function AdminApp() {
 
   if (!authed) return <AdminLogin onLogin={handleLogin} />
 
+  if (showGuides) return <GuidesAdmin onBack={() => setShowGuides(false)} />
+
   /* ── SELECTOR (no booking loaded) ── */
   if (!booking) {
     return (
@@ -352,6 +357,10 @@ export default function AdminApp() {
                 <button className="admin-home-action-btn" onClick={newBooking}>
                   <span className="admin-home-action-icon">✏️</span>
                   <span className="admin-home-action-label">Nueva Reserva</span>
+                </button>
+                <button className="admin-home-action-btn" onClick={() => setShowGuides(true)}>
+                  <span className="admin-home-action-icon">📚</span>
+                  <span className="admin-home-action-label">Guías</span>
                 </button>
               </div>
             </div>
@@ -452,6 +461,14 @@ export default function AdminApp() {
                 {activeNav === s.id && <span className="asb-nav-dot" />}
               </button>
             ))}
+
+            {/* Separador + Gestionar Guías (siempre visible) */}
+            <div className="asb-nav-divider" />
+            <div className="asb-nav-title">Biblioteca</div>
+            <button className="asb-nav-btn asb-guides-btn" onClick={() => setShowGuides(true)}>
+              <span className="asb-nav-icon">📚</span>
+              <span className="asb-nav-label">Gestionar Guías</span>
+            </button>
           </nav>
 
           {/* link de la reserva */}

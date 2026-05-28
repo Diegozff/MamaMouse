@@ -95,7 +95,7 @@ function BookingView({ id, onLogout }) {
           {tab === 'overview'   && <Overview   booking={booking} onTabChange={setTab} />}
           {tab === 'pagos'      && <PaymentStatus items={booking.items} />}
           {tab === 'vouchers'   && <Vouchers   vouchers={booking.vouchers || []} />}
-          {tab === 'guias'      && <GuidesLibrary />}
+          {tab === 'guias'      && <GuidesLibrary booking={booking} />}
           {tab === 'beneficios' && <Benefits   booking={booking} />}
         </main>
       </div>

@@ -46,26 +46,37 @@ const DATA_DIR    = process.env.DATA_PATH || path.join(__dirname, 'data')
 const BOOKINGS_DIR = path.join(DATA_DIR, 'bookings')
 const PDFS_DIR     = path.join(DATA_DIR, 'bookings', 'pdfs')
 const RESENAS_FILE_DATA = path.join(DATA_DIR, 'resenas.json')
+const GUIDES_DIR   = path.join(DATA_DIR, 'guides')
+const GUIDES_INDEX = path.join(DATA_DIR, 'guides', 'index.json')
 
 // Crear directorios necesarios
 await mkdir(BOOKINGS_DIR, { recursive: true })
 await mkdir(PDFS_DIR,     { recursive: true })
+await mkdir(GUIDES_DIR,   { recursive: true })
 
 // Inicializar: copiar reservas de public/bookings → DATA_DIR/bookings si están vacías
 // (solo la primera vez que se monta el volumen en Railway)
 async function initDataDir() {
   try {
+    const { copyFile } = await import('node:fs/promises')
+
+    // Copiar reservas semilla si el directorio está vacío
     const srcDir = path.join(__dirname, 'public', 'bookings')
     const existing = await readdir(BOOKINGS_DIR).catch(() => [])
     const jsonExisting = existing.filter(f => f.endsWith('.json'))
     if (jsonExisting.length === 0) {
-      // Volumen nuevo / vacío: copiar archivos semilla desde public/bookings
-      const { copyFile } = await import('node:fs/promises')
       const seeds = (await readdir(srcDir).catch(() => [])).filter(f => f.endsWith('.json'))
       for (const f of seeds) {
         await copyFile(path.join(srcDir, f), path.join(BOOKINGS_DIR, f)).catch(() => {})
       }
       if (seeds.length) console.log(`[Init] Copiados ${seeds.length} archivos semilla a DATA_DIR`)
+    }
+
+    // Copiar index.json de guías si no existe en DATA_DIR
+    if (!(await fileExists(GUIDES_INDEX))) {
+      const srcGuides = path.join(__dirname, 'public', 'guides', 'index.json')
+      await copyFile(srcGuides, GUIDES_INDEX).catch(() => {})
+      console.log('[Init] Copiado guides/index.json a DATA_DIR')
     }
   } catch (e) { console.warn('[Init] Error inicializando DATA_DIR:', e.message) }
 }
@@ -666,6 +677,108 @@ app.get('/api/test-email', async (req, res) => {
     console.error('[API] Test email ERROR:', e.message)
     return res.status(500).json({ ok: false, error: e.message, cfg })
   }
+})
+
+// ── API: Guías – CRUD ─────────────────────────────────────────────────────────
+async function loadGuidesIndex() {
+  try { return JSON.parse(await readFile(GUIDES_INDEX, 'utf-8')) } catch { return [] }
+}
+async function saveGuidesIndex(data) {
+  await writeFile(GUIDES_INDEX, JSON.stringify(data, null, 2), 'utf-8')
+}
+
+// Listar todas las guías
+app.get('/api/guides', async (req, res) => {
+  try {
+    const guides = await loadGuidesIndex()
+    // Enriquecer con info de si el PDF existe
+    for (const g of guides) {
+      g.pdfExists = await fileExists(path.join(GUIDES_DIR, g.archivo))
+    }
+    res.json({ ok: true, guides })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// Crear o actualizar una guía (metadata)
+app.post('/api/guides', async (req, res) => {
+  try {
+    const { guide } = req.body
+    if (!guide?.id || !guide?.nombre) return res.status(400).json({ ok: false, error: 'Faltan campos' })
+    const guides = await loadGuidesIndex()
+    const idx = guides.findIndex(g => g.id === guide.id)
+    if (idx >= 0) {
+      guides[idx] = { ...guides[idx], ...guide }
+    } else {
+      guides.push(guide)
+    }
+    await saveGuidesIndex(guides)
+    console.log(`[API] Guía guardada: ${guide.id}`)
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// Eliminar una guía
+app.delete('/api/guides/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const guides = await loadGuidesIndex()
+    const guide  = guides.find(g => g.id === id)
+    const updated = guides.filter(g => g.id !== id)
+    await saveGuidesIndex(updated)
+    // Eliminar PDF si existe
+    if (guide?.archivo) {
+      await unlink(path.join(GUIDES_DIR, guide.archivo)).catch(() => {})
+    }
+    console.log(`[API] Guía eliminada: ${id}`)
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+// Subir PDF de una guía
+app.post('/api/upload-guide/:id',
+  express.raw({ type: ['application/pdf', 'application/octet-stream'], limit: '30mb' }),
+  async (req, res) => {
+    try {
+      const { id } = req.params
+      const guides = await loadGuidesIndex()
+      const guide  = guides.find(g => g.id === id)
+      if (!guide) return res.status(404).json({ ok: false, error: 'Guía no encontrada' })
+
+      const filename = guide.archivo || `${id}.pdf`
+      await writeFile(path.join(GUIDES_DIR, filename), req.body)
+      console.log(`[API] PDF guía guardado: ${filename}`)
+      res.json({ ok: true, url: `/guides/${filename}` })
+    } catch (e) {
+      console.error('[API] Error subiendo PDF guía:', e.message)
+      res.status(500).json({ ok: false, error: e.message })
+    }
+  }
+)
+
+// Servir PDFs de guías desde DATA_DIR (con fallback a public/guides)
+app.get('/guides/:filename', async (req, res) => {
+  const { filename } = req.params
+  // Seguridad: no permitir path traversal
+  if (filename.includes('..') || filename.includes('/')) {
+    return res.status(400).json({ error: 'Nombre inválido' })
+  }
+  const dataPath = path.join(GUIDES_DIR, filename)
+  if (await fileExists(dataPath)) {
+    res.setHeader('Cache-Control', 'public, max-age=3600')
+    return res.sendFile(dataPath)
+  }
+  // Fallback: public/guides (index.json y PDFs del repo)
+  const pubPath = path.join(PUBLIC_DIR, 'guides', filename)
+  if (await fileExists(pubPath)) {
+    return res.sendFile(pubPath)
+  }
+  res.status(404).json({ error: 'Archivo no encontrado' })
 })
 
 // ── Ruta explícita para bookings (SIEMPRE desde DATA_DIR, nunca desde public/) ─
