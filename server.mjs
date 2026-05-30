@@ -816,8 +816,10 @@ app.get('/{*path}', (req, res) => {
 })
 
 // ── Cron: recordatorios de fechas límite de pago ─────────────────────────────
-const REMINDERS_FILE = path.join(__dirname, 'public', 'reminders-sent.json')
-const REMINDER_DAYS  = [7, 3, 1, 0] // días antes del vencimiento para avisar
+const REMINDERS_FILE  = path.join(__dirname, 'public', 'reminders-sent.json')
+const REMINDER_DAYS   = [7, 5, 3, 1, 0] // días antes del vencimiento para avisar al viajero
+const CAROLINA_EMAIL  = 'carolina@fasttravelvacation.com'
+const CAROLINA_ALERT_DAYS = [5] // días en que también se avisa a Carolina
 
 async function loadRemindersSent() {
   try { return JSON.parse(await readFile(REMINDERS_FILE, 'utf-8')) } catch { return {} }
@@ -855,7 +857,37 @@ async function runPaymentReminders() {
           if (sent[key]) continue // ya enviado hoy
 
           console.log(`[Cron] Recordatorio: ${booking.titular} | ${item.tipo} | ${days}d`)
-          await notifyPaymentReminder(booking, item, days).catch(e => console.warn('[Cron] Error notif:', e.message))
+          await notifyPaymentReminder(booking, item, days).catch(e => console.warn('[Cron] Error notif viajero:', e.message))
+
+          // Alerta interna a Carolina cuando quedan exactamente 5 días
+          if (CAROLINA_ALERT_DAYS.includes(days)) {
+            const saldoFmt = `$${saldo.toLocaleString('es-AR')} ${item.moneda}`
+            const fechaFmt = new Date(item.fechaLimite + 'T00:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' })
+            const html = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fafafa;border-radius:12px;">
+  <h2 style="color:#E65100;margin-bottom:4px;">⚠️ Alerta: fecha límite de pago en ${days} días</h2>
+  <p style="color:#888;margin-top:0;font-size:13px;">Mama Mouse – ${new Date().toLocaleString('es-AR')}</p>
+  <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
+  <table style="width:100%;border-collapse:collapse;font-size:15px;">
+    <tr><td style="padding:8px 0;color:#666;width:160px;"><strong>Viajero</strong></td><td>${booking.titular || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Reserva</strong></td><td>${booking.id || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Ítem</strong></td><td>${item.icono || ''} ${item.tipo}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Saldo pendiente</strong></td><td style="color:#C62828;font-weight:700;">${saldoFmt}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Fecha límite</strong></td><td style="color:#E65100;font-weight:700;">${fechaFmt} (en ${days} días)</td></tr>
+    ${booking.email ? `<tr><td style="padding:8px 0;color:#666;"><strong>Email viajero</strong></td><td>${booking.email}</td></tr>` : ''}
+    ${booking.telefono ? `<tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${booking.telefono}</td></tr>` : ''}
+  </table>
+  <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
+  <p style="font-size:12px;color:#aaa;">Alerta automática generada por el sistema Mama Mouse</p>
+</div>`
+            await sendEmail({
+              to:      CAROLINA_EMAIL,
+              subject: `⚠️ Mama Mouse – ${booking.titular} tiene ${days} días para pagar ${item.tipo}`,
+              html,
+            }).then(() => console.log(`[Cron] Alerta Carolina enviada: ${booking.titular} | ${item.tipo}`))
+              .catch(e => console.warn('[Cron] Error alerta Carolina:', e.message))
+          }
+
           sent[key] = today
           count++
         }
