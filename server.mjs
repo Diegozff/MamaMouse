@@ -804,17 +804,6 @@ app.get('/bookings/:id.json', async (req, res) => {
   }
 })
 
-// ── Archivos estáticos ────────────────────────────────────────────────────────
-// La app buildeada de React
-app.use(express.static(DIST_DIR))
-// Archivos públicos estáticos (imágenes, logos, guías)
-app.use(express.static(PUBLIC_DIR))
-
-// ── SPA Fallback: todas las rutas sirven index.html ───────────────────────────
-app.get('/{*path}', (req, res) => {
-  res.sendFile(path.join(DIST_DIR, 'index.html'))
-})
-
 // ── Cron: recordatorios de fechas límite de pago ─────────────────────────────
 const REMINDERS_FILE  = path.join(__dirname, 'public', 'reminders-sent.json')
 const REMINDER_DAYS   = [7, 5, 3, 1, 0] // días antes del vencimiento para avisar al viajero
@@ -901,7 +890,6 @@ async function runPaymentReminders() {
 
 // ── API: Disparar recordatorios manualmente (para cron externo o testing) ─────
 app.get('/api/run-reminders', async (req, res) => {
-  // Protección mínima con token secreto
   const token = process.env.CRON_SECRET || 'mamamouse-cron'
   if (req.query.token !== token) {
     return res.status(401).json({ ok: false, error: 'Token inválido' })
@@ -912,6 +900,15 @@ app.get('/api/run-reminders', async (req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
   }
+})
+
+// ── Archivos estáticos ────────────────────────────────────────────────────────
+app.use(express.static(DIST_DIR))
+app.use(express.static(PUBLIC_DIR))
+
+// ── SPA Fallback: todas las rutas sirven index.html ───────────────────────────
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(DIST_DIR, 'index.html'))
 })
 
 // ── Arrancar servidor ─────────────────────────────────────────────────────────
