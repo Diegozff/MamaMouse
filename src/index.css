@@ -2370,6 +2370,42 @@ select.admin-input { cursor: pointer; }
   color: var(--pink);
 }
 
+/* Fecha límite inline en items del overview */
+.ov-item-deadline {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.ov-item-deadline-urgent { background: #FFEBEE; color: #C62828; }
+.ov-item-deadline-warn   { background: #FFF3E0; color: #E65100; }
+.ov-item-deadline-ok     { background: #E3F2FD; color: #1565C0; }
+
+/* Alertas de vencimiento en Overview */
+.ov-deadline-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.ov-deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.ov-deadline-item:hover { opacity: 0.85; }
+.ov-deadline-icon { font-size: 22px; flex-shrink: 0; }
+.ov-deadline-body { flex: 1; }
+.ov-deadline-tipo { font-size: 12px; font-weight: 900; opacity: 0.75; margin-bottom: 2px; }
+.ov-deadline-msg  { font-size: 14px; font-weight: 700; }
+.ov-deadline-arrow { font-size: 16px; font-weight: 900; flex-shrink: 0; }
+
 /* ══════════════════════════════════
    ADMIN – ITEM EDITOR
 ══════════════════════════════════ */

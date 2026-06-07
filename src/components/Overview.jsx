@@ -84,6 +84,58 @@ function formatFechaNac(d) {
   return `${parseInt(day)} ${meses[parseInt(m)-1]} ${y}`
 }
 
+// Alertas de vencimiento para el resumen
+function DeadlineAlerts({ items, onTabChange }) {
+  const today = new Date().toISOString().slice(0, 10)
+  const alertas = items
+    .map(it => {
+      if (!it.fechaLimite) return null
+      const paid  = (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+      const saldo = Number(it.total) - paid
+      if (saldo <= 0) return null
+      const days = daysUntil(it.fechaLimite)
+      if (days === null || days < 0) return null
+      return { ...it, saldo, days }
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.days - b.days)
+
+  if (!alertas.length) return null
+
+  return (
+    <div className="ov-deadline-alerts">
+      {alertas.map(it => {
+        let bg, border, color, icon
+        if (it.days === 0)      { bg='#FFEBEE'; border='#EF5350'; color='#C62828'; icon='🚨' }
+        else if (it.days <= 3)  { bg='#FFEBEE'; border='#EF5350'; color='#C62828'; icon='🚨' }
+        else if (it.days <= 7)  { bg='#FFF3E0'; border='#FF9800'; color='#E65100'; icon='⚠️' }
+        else if (it.days <= 30) { bg='#FFFDE7'; border='#FDD835'; color='#F57F17'; icon='📅' }
+        else                    { bg='#E8F5E9'; border='#66BB6A'; color='#2E7D32'; icon='📅' }
+        return (
+          <div
+            key={it.id}
+            className="ov-deadline-item"
+            style={{ background: bg, borderColor: border, color }}
+            onClick={() => onTabChange('pagos')}
+          >
+            <span className="ov-deadline-icon">{icon}</span>
+            <div className="ov-deadline-body">
+              <div className="ov-deadline-tipo">{it.icono} {it.tipo}</div>
+              <div className="ov-deadline-msg">
+                {it.days === 0
+                  ? <><strong>¡Vence hoy!</strong> — Saldo: ${Number(it.saldo).toLocaleString('es-AR')} {it.moneda}</>
+                  : <><strong>{it.days === 1 ? 'Vence mañana' : `Vence en ${it.days} días`}</strong> ({formatDate(it.fechaLimite)}) — Saldo: ${Number(it.saldo).toLocaleString('es-AR')} {it.moneda}</>
+                }
+              </div>
+            </div>
+            <span className="ov-deadline-arrow">→</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Overview({ booking, onTabChange }) {
   const { hotel = {}, items = [], destinos, viajeros = [] } = booking
   const { checkIn, checkOut } = tripDates(items, hotel)
@@ -168,6 +220,9 @@ export default function Overview({ booking, onTabChange }) {
           )}
         </div>
       )}
+
+      {/* ALERTAS DE VENCIMIENTO */}
+      <DeadlineAlerts items={items} onTabChange={onTabChange} />
 
       {/* PAGOS CARD */}
       <div className="grid-2">
@@ -318,6 +373,15 @@ export default function Overview({ booking, onTabChange }) {
                     {saldo > 0 && (
                       <span className="overview-item-saldo">-${saldo.toLocaleString('es-AR')}</span>
                     )}
+                    {saldo > 0 && it.fechaLimite && (() => {
+                      const d = daysUntil(it.fechaLimite)
+                      if (d === null || d < 0) return null
+                      return (
+                        <span className={`ov-item-deadline ${d <= 7 ? 'ov-item-deadline-urgent' : d <= 30 ? 'ov-item-deadline-warn' : 'ov-item-deadline-ok'}`}>
+                          {d === 0 ? '🚨 Vence hoy' : d === 1 ? '⚠️ Vence mañana' : `📅 ${formatDate(it.fechaLimite)}`}
+                        </span>
+                      )
+                    })()}
                   </div>
                 </div>
               )
