@@ -3,6 +3,7 @@ import AdminLogin      from './AdminLogin'
 import BookingForm     from './BookingForm'
 import ImportBooking   from './ImportBooking'
 import BookingsList    from './BookingsList'
+import AdminDashboard  from './AdminDashboard'
 import GuidesAdmin     from './GuidesAdmin'
 
 // ── WhatsApp helpers ──────────────────────────────────────────────────────────
@@ -318,51 +319,31 @@ export default function AdminApp() {
                   📧 Importar por Email
                 </button>
               </div>
-              <BookingsList onOpen={id => { setShowList(false); setInputId(id); setTimeout(() => { setInputId(id); loadBooking() }, 0); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
+              <BookingsList onOpen={id => { setShowList(false); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
             </div>
           ) : (
             <div className="admin-home">
-              <div className="admin-home-hero">
-                <img src="/logo.png" alt="Mama Mouse" className="admin-home-logo" />
-                <h1 className="admin-home-title">Panel de Administración</h1>
-                <p className="admin-home-sub">Bienvenida, Carolina ✨</p>
+              {/* Buscador rápido en topbar del dashboard */}
+              <div className="dash-search-bar">
+                <input
+                  className="admin-input"
+                  placeholder="🔍 Buscar reserva por ID o apellido…"
+                  value={inputId}
+                  onChange={e => setInputId(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && loadBooking()}
+                />
+                <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Abrir</button>
               </div>
 
-              {/* Buscador */}
-              <div className="admin-home-search-card">
-                <div className="admin-home-search-label">Buscar reserva por ID</div>
-                <div className="admin-selector-row">
-                  <input
-                    className="admin-input"
-                    placeholder="Ej: beltrando, garcia…"
-                    value={inputId}
-                    onChange={e => setInputId(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && loadBooking()}
-                    autoFocus
-                  />
-                  <button className="admin-btn admin-btn-primary" onClick={loadBooking}>Buscar</button>
-                </div>
-              </div>
+              {/* Dashboard */}
+              <AdminDashboard
+                onOpenBooking={id => { fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }}
+                onNewBooking={newBooking}
+                onImport={() => setShowImport(true)}
+                onList={() => setShowList(true)}
+                onGuides={() => setShowGuides(true)}
+              />
 
-              {/* Acciones */}
-              <div className="admin-home-actions">
-                <button className="admin-home-action-btn" onClick={() => setShowList(true)}>
-                  <span className="admin-home-action-icon">📋</span>
-                  <span className="admin-home-action-label">Ver Reservas</span>
-                </button>
-                <button className="admin-home-action-btn" onClick={() => setShowImport(true)}>
-                  <span className="admin-home-action-icon">📧</span>
-                  <span className="admin-home-action-label">Importar Email</span>
-                </button>
-                <button className="admin-home-action-btn" onClick={newBooking}>
-                  <span className="admin-home-action-icon">✏️</span>
-                  <span className="admin-home-action-label">Nueva Reserva</span>
-                </button>
-                <button className="admin-home-action-btn" onClick={() => setShowGuides(true)}>
-                  <span className="admin-home-action-icon">📚</span>
-                  <span className="admin-home-action-label">Guías</span>
-                </button>
-              </div>
             </div>
           )}
         </div>

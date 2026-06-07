@@ -283,8 +283,32 @@ app.get('/api/bookings', async (req, res) => {
         const saldo  = total - paid
         const estado = saldo <= 0 ? 'pagado' : paid === 0 ? 'pendiente' : 'parcial'
         const fechas = (data.items || []).map(i => i.fechaInicio).filter(Boolean).sort()
-        bookings.push({ id, titular: data.titular || id, destinos: data.destinos || [],
-          total, paid, saldo, estado, fechaViaje: fechas[0] || '' })
+
+        // Próximo vencimiento: item con saldo > 0 y fechaLimite más cercana
+        const today = new Date().toISOString().slice(0, 10)
+        const vencimientos = (data.items || [])
+          .filter(it => {
+            if (!it.fechaLimite || it.fechaLimite < today) return false
+            const itPaid = (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
+            return (Number(it.total) - itPaid) > 0
+          })
+          .map(it => ({
+            fecha: it.fechaLimite,
+            tipo:  it.tipo,
+            icono: it.icono || '📦',
+            saldo: Number(it.total) - (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0),
+            moneda: it.moneda || 'USD',
+          }))
+          .sort((a, b) => a.fecha.localeCompare(b.fecha))
+
+        bookings.push({
+          id, titular: data.titular || id, destinos: data.destinos || [],
+          total, paid, saldo, estado,
+          fechaViaje: fechas[0] || '',
+          proximoVencimiento: vencimientos[0] || null,
+          email: data.email || '',
+          telefono: data.telefono || '',
+        })
       } catch { /* skip corrupt */ }
     }
     bookings.sort((a, b) => (a.fechaViaje || 'z') < (b.fechaViaje || 'z') ? -1 : 1)
