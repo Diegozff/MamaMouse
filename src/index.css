@@ -877,10 +877,11 @@ body {
 
 /* ── Shell base ── */
 .admin-shell {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* ── Shell en modo editor: topbar sticky + body fijo ── */
