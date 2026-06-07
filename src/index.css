@@ -1127,18 +1127,22 @@ body {
 .admin-main .af-form { max-width: 800px; width: 100%; }
 
 /* ── Content (selector mode, no sidebar) ── */
-.admin-content { flex: 1; padding: 28px; max-width: 960px; margin: 0 auto; width: 100%; }
+.admin-content {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  height: calc(100vh - 64px);
+}
 
-/* Booking selector */
 /* Pantalla home del admin */
 .admin-home {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  gap: 28px;
-  padding: 40px 24px;
+  gap: 0;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 0 60px;
 }
 .admin-home-hero {
   display: flex;
@@ -4841,15 +4845,12 @@ select.admin-input { cursor: pointer; }
 .dash-search-bar {
   display: flex;
   gap: 10px;
-  padding: 16px 20px 0;
-  max-width: 600px;
+  padding: 20px 28px 0;
 }
-.dash-search-bar .admin-input { flex: 1; font-size: 15px; }
+.dash-search-bar .admin-input { flex: 1; font-size: 15px; max-width: 500px; }
 
 .dash-root {
-  padding: 0 20px 40px;
-  max-width: 960px;
-  margin: 0 auto;
+  padding: 0 28px 60px;
 }
 
 .dash-hero {
@@ -4908,14 +4909,17 @@ select.admin-input { cursor: pointer; }
   font-size: 14px; font-weight: 800;
   color: var(--dark); cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 .dash-action-btn:hover { border-color: var(--purple); color: var(--purple); box-shadow: 0 2px 8px rgba(155,126,200,0.2); }
 .dash-action-primary {
-  background: var(--gradient-main);
-  color: white !important; border-color: transparent !important;
+  background: linear-gradient(135deg, #9B7EC8, #E8609A);
+  color: white; border-color: transparent;
 }
-.dash-action-primary:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(155,126,200,0.4) !important; }
-.dash-action-icon { font-size: 18px; }
+.dash-action-primary:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(155,126,200,0.4); }
+.dash-action-primary .dash-action-label { color: white; }
+.dash-action-icon { font-size: 18px; line-height: 1; }
+.dash-action-label { font-size: 14px; font-weight: 800; }
 
 /* Dos columnas */
 .dash-cols {
