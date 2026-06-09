@@ -5132,3 +5132,109 @@ select.admin-input { cursor: pointer; }
   background: #F7F0FF;
 }
 
+
+/* ══════════════════════════════════
+   PROMO POPUP (LandingPage)
+══════════════════════════════════ */
+.promo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: promoFadeIn 0.35s ease;
+}
+.promo-overlay.promo-closing {
+  animation: promoFadeOut 0.3s ease forwards;
+}
+@keyframes promoFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes promoFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.promo-modal {
+  position: relative;
+  max-width: 420px;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  animation: promoSlideUp 0.35s ease;
+  background: #1a0a3c;
+}
+@keyframes promoSlideUp {
+  from { transform: translateY(40px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+.promo-close {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  border: none;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+  transition: background 0.15s;
+}
+.promo-close:hover { background: rgba(0,0,0,0.8); }
+
+.promo-img {
+  width: 100%;
+  display: block;
+}
+
+.promo-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: #1a0a3c;
+}
+
+.promo-cta {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.promo-cta:hover { opacity: 0.9; }
+
+.promo-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.promo-dismiss:hover { color: rgba(255,255,255,0.85); }
+
+@media (max-width: 480px) {
+  .promo-modal { max-width: 100%; border-radius: 16px 16px 0 0; }
+  .promo-overlay { align-items: flex-end; padding: 0; }
+}

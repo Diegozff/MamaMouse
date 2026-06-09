@@ -981,11 +981,56 @@ function Footer() {
 }
 
 /* ─── MAIN LANDING PAGE ─────────────────────────────────────────────────── */
+/* ─── Popup de novedad ─────────────────────────────────────────────────── */
+function PromoPopup() {
+  const [visible, setVisible] = useState(false)
+  const [closing, setClosing] = useState(false)
+
+  useEffect(() => {
+    // No mostrar si ya fue cerrado en esta sesión
+    if (sessionStorage.getItem('mm_promo_closed')) return
+    // Aparecer después de 1 segundo
+    const t = setTimeout(() => setVisible(true), 1000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const close = () => {
+    setClosing(true)
+    setTimeout(() => {
+      setVisible(false)
+      sessionStorage.setItem('mm_promo_closed', '1')
+    }, 300)
+  }
+
+  if (!visible) return null
+
+  return (
+    <div className={`promo-overlay ${closing ? 'promo-closing' : ''}`} onClick={close}>
+      <div className="promo-modal" onClick={e => e.stopPropagation()}>
+        <button className="promo-close" onClick={close} aria-label="Cerrar">✕</button>
+        <img src="/novedad.jpg" alt="Novedad Mama Mouse" className="promo-img" />
+        <div className="promo-footer">
+          <a
+            href="https://wa.me/5493412143631?text=Hola!%20Me%20interesa%20el%20viaje%20a%20Universal%20Orlando%202027%20🎢"
+            target="_blank" rel="noreferrer"
+            className="promo-cta"
+            onClick={close}
+          >
+            💬 ¡Me interesa! Contactar ahora
+          </a>
+          <button className="promo-dismiss" onClick={close}>Cerrar y seguir navegando</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage({ onLoginClick }) {
   const scrollToCotizar = () => document.getElementById('cotizar')?.scrollIntoView({ behavior: 'smooth' })
 
   return (
     <div className="lp-root">
+      <PromoPopup />
       <Navbar onLoginClick={onLoginClick} />
       <Hero onCotizarClick={scrollToCotizar} onLoginClick={onLoginClick} />
       <LogosStrip />
