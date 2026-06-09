@@ -805,6 +805,21 @@ app.get('/guides/:filename', async (req, res) => {
   res.status(404).json({ error: 'Archivo no encontrado' })
 })
 
+// ── Ruta explícita para PDFs de vouchers (DATA_DIR/bookings/pdfs/) ─────────────
+app.get('/bookings/pdfs/:filename', async (req, res) => {
+  const filePath = path.join(PDFS_DIR, req.params.filename)
+  try {
+    await access(filePath)
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `inline; filename="${req.params.filename}"`)
+    res.setHeader('Cache-Control', 'no-store')
+    const { createReadStream } = await import('node:fs')
+    createReadStream(filePath).pipe(res)
+  } catch {
+    res.status(404).json({ error: 'PDF no encontrado' })
+  }
+})
+
 // ── Ruta explícita para bookings (SIEMPRE desde DATA_DIR, nunca desde public/) ─
 // Esto evita que public/bookings/*.json (archivos del repo git) tape los cambios
 app.get('/bookings/:id.json', async (req, res) => {
