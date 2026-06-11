@@ -2164,6 +2164,70 @@ select.admin-input { cursor: pointer; }
   .countdown-num { width: 58px; height: 58px; font-size: 24px; }
 }
 
+/* Countdown mobile: días grande + horas/min/seg compactos */
+@media (max-width: 480px) {
+  .countdown-hero { padding: 22px 16px 20px; }
+
+  .countdown-grid {
+    flex-wrap: wrap;
+    row-gap: 14px;
+    column-gap: 8px;
+  }
+
+  /* Días: fila completa, número enorme */
+  .countdown-item:first-child {
+    flex-basis: 100%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .countdown-item:first-child .countdown-num {
+    width: auto;
+    height: auto;
+    font-size: 80px;
+    line-height: 1;
+    background: transparent;
+    border: none;
+    backdrop-filter: none;
+    padding: 0;
+    border-radius: 0;
+  }
+  .countdown-item:first-child .countdown-unit {
+    font-size: 24px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.85);
+    text-transform: lowercase;
+    letter-spacing: 0;
+    margin-top: 0;
+  }
+
+  /* Horas / Min / Seg: compactos en una fila */
+  .countdown-item:not(:first-child) {
+    flex: 1;
+    min-width: 0;
+  }
+  .countdown-item:not(:first-child) .countdown-num {
+    width: 100%;
+    height: 50px;
+    font-size: 22px;
+    border-radius: 8px;
+  }
+  .countdown-item:not(:first-child) .countdown-unit {
+    font-size: 9px;
+    letter-spacing: 0.4px;
+  }
+
+  /* Date pills */
+  .countdown-dates { gap: 8px; }
+  .date-pill { font-size: 11px; padding: 5px 12px; }
+
+  /* Stats cards: 4 en 2x2 */
+  .stat-card { padding: 14px 12px; }
+  .stat-value { font-size: 26px; }
+  .stat-label { font-size: 10px; }
+}
+
 /* ══════════════════════════════════
    PAYMENT STATUS – PER-ITEM CARDS
 ══════════════════════════════════ */
