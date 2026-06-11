@@ -1236,30 +1236,103 @@ body {
 .save-ok  { background: #E8F5E9; color: #2E7D32; }
 .save-err { background: #FFEBEE; color: #C62828; }
 
-/* Responsive sidebar */
+/* ── Hamburger (hidden on desktop) ── */
+.admin-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--dark);
+  flex-shrink: 0;
+}
+
+/* ── Sidebar backdrop (hidden on desktop) ── */
+.admin-sidebar-backdrop {
+  display: none;
+}
+
+/* ── Desktop-only topbar elements: hidden on mobile via media query below ── */
+
+/* ── MOBILE ADMIN (≤ 700px) ── */
 @media (max-width: 700px) {
-  .admin-body { flex-direction: column; height: auto; overflow: visible; }
+  /* Hamburger visible */
+  .admin-hamburger { display: flex; }
+
+  /* Desktop-only elements hidden */
+  .admin-topbar-desktop-only { display: none !important; }
+
+  /* Topbar compacto */
+  .admin-topbar { padding: 0 12px; gap: 8px; }
+  .admin-topbar-sub { display: none; }
+  .admin-topbar-logo { width: 36px; height: 36px; }
+  .admin-topbar-center { display: none; }
+  .admin-topbar-right { gap: 6px; }
+
+  /* Shell mantiene altura fija */
+  .admin-shell-editor { height: 100vh; overflow: hidden; }
+
+  /* Body: sin cambiar flex-direction; main toma todo el ancho */
+  .admin-body { height: calc(100vh - 64px); }
+
+  /* Backdrop: overlay oscuro cuando sidebar abierto */
+  .admin-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.38);
+    z-index: 298;
+  }
+
+  /* Sidebar: drawer lateral */
   .admin-sidebar {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 10px 12px;
-    overflow-y: visible;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 299;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+    padding: 20px 12px;
   }
-  .asb-booking-card { display: none; }
-  .asb-nav { flex-direction: row; flex-wrap: wrap; flex: unset; gap: 4px; }
-  .asb-nav-title { display: none; }
-  .asb-nav-btn { width: auto; padding: 7px 10px; font-size: 12px; }
-  .asb-nav-label { display: none; }
-  .asb-footer { display: none; }
-  .admin-main {
-    overflow-y: visible;
-    padding: 16px;
-    height: auto;
+  .admin-sidebar-open {
+    transform: translateX(0);
+    box-shadow: 6px 0 28px rgba(0,0,0,0.18);
   }
-  .admin-shell-editor { height: auto; overflow: visible; }
+
+  /* Main: ancho completo */
+  .admin-main { width: 100%; padding: 12px; }
+
+  /* Save bar: botón ocupa todo */
+  .af-save-bar { padding: 12px 14px; }
+  .af-save-btn { width: 100%; justify-content: center; }
+
+  /* Dashboard / home */
+  .dash-search-bar { padding: 14px 14px 0; }
+  .dash-root { padding: 0 14px 60px; }
+  .dash-actions { flex-wrap: wrap; }
+  .dash-action-btn { flex: 1; min-width: 130px; }
+
+  /* Lista de reservas */
+  .admin-list-view { height: calc(100vh - 64px); }
+  .admin-list-topbar { flex-wrap: wrap; padding: 10px 12px; gap: 8px; }
+
+  /* Secciones del formulario */
+  .af-section-body { padding: 14px; }
+  .af-viajero-row { flex-wrap: wrap; }
+  .af-hotel-block { padding: 12px; }
+  .af-pago-row { flex-wrap: wrap; gap: 6px; }
+  .af-pago-row .admin-input { min-width: 0; flex: 1; }
+
+  /* Inputs táctiles más grandes */
+  .admin-input { font-size: 16px; padding: 12px 14px; }
 }
 
 /* Shared inputs */

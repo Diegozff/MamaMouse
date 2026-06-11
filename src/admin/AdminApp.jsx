@@ -129,6 +129,7 @@ export default function AdminApp() {
   const [showNew,     setShowNew]     = useState(false)
   const [newTitular,  setNewTitular]  = useState('')
   const [showGuides,  setShowGuides]  = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const mainRef = useRef(null)
 
@@ -411,18 +412,26 @@ export default function AdminApp() {
           {saveStatus === 'error' && <span className="save-badge save-err">❌ Error</span>}
           {saveStatus === 'saving'&& <span className="save-badge">⏳ Guardando…</span>}
           <a href={`/?id=${bookingId}`} target="_blank" rel="noreferrer"
-             className="admin-btn admin-btn-ghost">
+             className="admin-btn admin-btn-ghost admin-topbar-desktop-only">
             👁 Ver viajero
           </a>
-          <button className="admin-btn admin-btn-ghost" onClick={handleLogout}>Salir</button>
+          <button className="admin-btn admin-btn-ghost admin-topbar-desktop-only" onClick={handleLogout}>Salir</button>
+          <button className="admin-hamburger" onClick={() => setSidebarOpen(o => !o)} aria-label="Menú">
+            ☰
+          </button>
         </div>
       </header>
 
       {/* BODY: sidebar + main */}
       <div className="admin-body">
 
+        {/* backdrop mobile */}
+        {sidebarOpen && (
+          <div className="admin-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+        )}
+
         {/* ── SIDEBAR ── */}
-        <aside className="admin-sidebar">
+        <aside className={`admin-sidebar${sidebarOpen ? ' admin-sidebar-open' : ''}`}>
           {/* booking info */}
           <div className="asb-booking-card">
             <div className="asb-booking-label">Reserva activa</div>
@@ -436,7 +445,7 @@ export default function AdminApp() {
               <button
                 key={s.id}
                 className={`asb-nav-btn ${activeNav === s.id ? 'asb-nav-active' : ''}`}
-                onClick={() => scrollToSection(s.id)}
+                onClick={() => { scrollToSection(s.id); setSidebarOpen(false) }}
               >
                 <span className="asb-nav-icon">{s.icon}</span>
                 <span className="asb-nav-label">{s.label}</span>
@@ -447,7 +456,7 @@ export default function AdminApp() {
             {/* Separador + Gestionar Guías (siempre visible) */}
             <div className="asb-nav-divider" />
             <div className="asb-nav-title">Biblioteca</div>
-            <button className="asb-nav-btn asb-guides-btn" onClick={() => setShowGuides(true)}>
+            <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowGuides(true); setSidebarOpen(false) }}>
               <span className="asb-nav-icon">📚</span>
               <span className="asb-nav-label">Gestionar Guías</span>
             </button>
