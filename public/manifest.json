@@ -1,0 +1,25 @@
+{
+  "name": "Mama Mouse – Tu Viaje Mágico",
+  "short_name": "Mama Mouse",
+  "description": "Consultá tu reserva, vouchers y guías de viaje.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9B7EC8",
+  "lang": "es",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
