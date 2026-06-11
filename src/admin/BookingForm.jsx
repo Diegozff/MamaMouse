@@ -751,6 +751,20 @@ export default function BookingForm({ initialData, onSave, saving }) {
         />
       </Section>
 
+      {/* ── NOTAS INTERNAS ── */}
+      <Section id="sec-notas" icon="📝" title="Notas Internas">
+        <p className="af-vouchers-hint af-notas-hint">
+          🔒 Solo visibles en el panel de administración. El viajero no puede ver este contenido.
+        </p>
+        <textarea
+          className="admin-input af-textarea af-notas-textarea"
+          value={d.notasInternas || ''}
+          onChange={e => setA('notasInternas', e.target.value)}
+          placeholder="Recordatorios, observaciones, detalles de negociación, pendientes... Solo lo ve Carolina."
+          rows={6}
+        />
+      </Section>
+
       {/* ── SAVE BAR ── */}
       <div className="af-save-bar">
         <button className="admin-btn admin-btn-primary af-save-btn"

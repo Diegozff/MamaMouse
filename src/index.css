@@ -4840,6 +4840,18 @@ select.admin-input { cursor: pointer; }
   font-weight: 700;
 }
 
+.af-notas-hint {
+  background: #FFFDE7;
+  border: 1px solid #FDD835;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: #795548;
+}
+.af-notas-textarea {
+  min-height: 140px;
+  font-family: inherit;
+}
+
 /* ══════════════════════════════════
    ADMIN DASHBOARD
 ══════════════════════════════════ */
