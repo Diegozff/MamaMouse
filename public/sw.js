@@ -1,4 +1,4 @@
-const CACHE = 'mama-mouse-v1'
+const CACHE = 'mama-mouse-v2'
 
 const PRECACHE = [
   '/',
@@ -26,10 +26,10 @@ self.addEventListener('fetch', e => {
   const { request } = e
   const url = new URL(request.url)
 
-  // API y PDFs: siempre red — no cachear datos dinámicos
+  // Datos dinámicos: siempre red, nunca caché
   if (
     url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/bookings/pdfs/') ||
+    url.pathname.startsWith('/bookings/') ||  // JSONs de reservas + PDFs
     url.pathname.startsWith('/guides/')
   ) {
     return
