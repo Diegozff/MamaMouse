@@ -48,11 +48,14 @@ const PDFS_DIR     = path.join(DATA_DIR, 'bookings', 'pdfs')
 const RESENAS_FILE_DATA = path.join(DATA_DIR, 'resenas.json')
 const GUIDES_DIR   = path.join(DATA_DIR, 'guides')
 const GUIDES_INDEX = path.join(DATA_DIR, 'guides', 'index.json')
+const PROMO_DIR    = path.join(DATA_DIR, 'promo')
+const PROMO_FILE   = path.join(DATA_DIR, 'promo.json')
 
 // Crear directorios necesarios
 await mkdir(BOOKINGS_DIR, { recursive: true })
 await mkdir(PDFS_DIR,     { recursive: true })
 await mkdir(GUIDES_DIR,   { recursive: true })
+await mkdir(PROMO_DIR,    { recursive: true })
 
 // Inicializar: copiar reservas de public/bookings → DATA_DIR/bookings si están vacías
 // (solo la primera vez que se monta el volumen en Railway)
@@ -803,6 +806,61 @@ app.get('/guides/:filename', async (req, res) => {
     return res.sendFile(pubPath)
   }
   res.status(404).json({ error: 'Archivo no encontrado' })
+})
+
+// ── Promo popup configurable ──────────────────────────────────────────────────
+app.get('/api/promo', async (req, res) => {
+  try {
+    const raw = await readFile(PROMO_FILE, 'utf-8').catch(() => null)
+    res.json(raw ? JSON.parse(raw) : { activa: false })
+  } catch (e) {
+    res.json({ activa: false })
+  }
+})
+
+app.post('/api/promo', async (req, res) => {
+  try {
+    await writeFile(PROMO_FILE, JSON.stringify(req.body, null, 2), 'utf-8')
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
+app.post('/api/upload-promo',
+  express.raw({ type: ['image/jpeg', 'image/png', 'image/webp', 'application/octet-stream'], limit: '10mb' }),
+  async (req, res) => {
+    try {
+      const ct = req.headers['content-type'] || ''
+      const ext = ct.includes('png') ? '.png' : ct.includes('webp') ? '.webp' : '.jpg'
+      const filename = `novedad${ext}`
+      await writeFile(path.join(PROMO_DIR, filename), req.body)
+      console.log(`[API] Imagen promo guardada: ${filename}`)
+      res.json({ ok: true, url: `/promo/${filename}` })
+    } catch (e) {
+      console.error('[API] Error subiendo imagen promo:', e.message)
+      res.status(500).json({ ok: false, error: e.message })
+    }
+  }
+)
+
+app.get('/promo/:filename', async (req, res) => {
+  const { filename } = req.params
+  if (filename.includes('..') || filename.includes('/')) {
+    return res.status(400).json({ error: 'Nombre inválido' })
+  }
+  const filePath = path.join(PROMO_DIR, filename)
+  try {
+    await access(filePath)
+    const ext = path.extname(filename).toLowerCase()
+    const mime = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg'
+    res.setHeader('Content-Type', mime)
+    res.setHeader('Cache-Control', 'no-store')
+    const { createReadStream } = await import('node:fs')
+    createReadStream(filePath).pipe(res)
+  } catch {
+    res.status(404).json({ error: 'Imagen no encontrada' })
+  }
 })
 
 // ── Ruta explícita para PDFs de vouchers (DATA_DIR/bookings/pdfs/) ─────────────

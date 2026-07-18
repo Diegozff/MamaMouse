@@ -5,6 +5,7 @@ import ImportBooking   from './ImportBooking'
 import BookingsList    from './BookingsList'
 import AdminDashboard  from './AdminDashboard'
 import GuidesAdmin     from './GuidesAdmin'
+import PromoAdmin      from './PromoAdmin'
 
 // ── WhatsApp helpers ──────────────────────────────────────────────────────────
 function formatWAPhone(phone) {
@@ -129,6 +130,7 @@ export default function AdminApp() {
   const [showNew,     setShowNew]     = useState(false)
   const [newTitular,  setNewTitular]  = useState('')
   const [showGuides,  setShowGuides]  = useState(false)
+  const [showPromo,   setShowPromo]   = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const mainRef = useRef(null)
@@ -290,6 +292,7 @@ export default function AdminApp() {
   if (!authed) return <AdminLogin onLogin={handleLogin} />
 
   if (showGuides) return <GuidesAdmin onBack={() => setShowGuides(false)} />
+  if (showPromo)  return <PromoAdmin  onBack={() => setShowPromo(false)} />
 
   /* ── SELECTOR (no booking loaded) ── */
   if (!booking) {
@@ -344,6 +347,7 @@ export default function AdminApp() {
                 onImport={() => setShowImport(true)}
                 onList={() => setShowList(true)}
                 onGuides={() => setShowGuides(true)}
+                onPromo={() => setShowPromo(true)}
               />
 
             </div>
@@ -453,12 +457,16 @@ export default function AdminApp() {
               </button>
             ))}
 
-            {/* Separador + Gestionar Guías (siempre visible) */}
+            {/* Separador + Biblioteca */}
             <div className="asb-nav-divider" />
             <div className="asb-nav-title">Biblioteca</div>
             <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowGuides(true); setSidebarOpen(false) }}>
               <span className="asb-nav-icon">📚</span>
               <span className="asb-nav-label">Gestionar Guías</span>
+            </button>
+            <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowPromo(true); setSidebarOpen(false) }}>
+              <span className="asb-nav-icon">🎉</span>
+              <span className="asb-nav-label">Popup de Novedad</span>
             </button>
           </nav>
 

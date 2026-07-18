@@ -983,15 +983,21 @@ function Footer() {
 /* ─── MAIN LANDING PAGE ─────────────────────────────────────────────────── */
 /* ─── Popup de novedad ─────────────────────────────────────────────────── */
 function PromoPopup() {
+  const [config, setConfig]   = useState(null)
   const [visible, setVisible] = useState(false)
   const [closing, setClosing] = useState(false)
 
   useEffect(() => {
-    // No mostrar si ya fue cerrado en esta sesión
     if (sessionStorage.getItem('mm_promo_closed')) return
-    // Aparecer después de 1 segundo
-    const t = setTimeout(() => setVisible(true), 1000)
-    return () => clearTimeout(t)
+    fetch('/api/promo')
+      .then(r => r.json())
+      .then(cfg => {
+        if (!cfg.activa || !cfg.imagen) return
+        setConfig(cfg)
+        const t = setTimeout(() => setVisible(true), 1000)
+        return () => clearTimeout(t)
+      })
+      .catch(() => {})
   }, [])
 
   const close = () => {
@@ -1002,22 +1008,24 @@ function PromoPopup() {
     }, 300)
   }
 
-  if (!visible) return null
+  if (!visible || !config) return null
 
   return (
     <div className={`promo-overlay ${closing ? 'promo-closing' : ''}`} onClick={close}>
       <div className="promo-modal" onClick={e => e.stopPropagation()}>
         <button className="promo-close" onClick={close} aria-label="Cerrar">✕</button>
-        <img src="/novedad.jpg" alt="Novedad Mama Mouse" className="promo-img" />
+        <img src={config.imagen} alt="Novedad Mama Mouse" className="promo-img" />
         <div className="promo-footer">
-          <a
-            href="https://wa.me/5493412143631?text=Hola!%20Me%20interesa%20el%20viaje%20a%20Universal%20Orlando%202027%20🎢"
-            target="_blank" rel="noreferrer"
-            className="promo-cta"
-            onClick={close}
-          >
-            💬 ¡Me interesa! Contactar ahora
-          </a>
+          {config.ctaUrl && (
+            <a
+              href={config.ctaUrl}
+              target="_blank" rel="noreferrer"
+              className="promo-cta"
+              onClick={close}
+            >
+              {config.ctaLabel || '💬 Contactar ahora'}
+            </a>
+          )}
           <button className="promo-dismiss" onClick={close}>Cerrar y seguir navegando</button>
         </div>
       </div>

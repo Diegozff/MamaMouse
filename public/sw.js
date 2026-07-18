@@ -1,4 +1,4 @@
-const CACHE = 'mama-mouse-v2'
+const CACHE = 'mama-mouse-v3'
 
 const PRECACHE = [
   '/',
@@ -30,7 +30,8 @@ self.addEventListener('fetch', e => {
   if (
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/bookings/') ||  // JSONs de reservas + PDFs
-    url.pathname.startsWith('/guides/')
+    url.pathname.startsWith('/guides/') ||
+    url.pathname.startsWith('/promo/')         // Imagen promo configurable
   ) {
     return
   }

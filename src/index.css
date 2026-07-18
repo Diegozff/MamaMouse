@@ -5387,3 +5387,109 @@ select.admin-input { cursor: pointer; }
   .promo-modal { max-width: 100%; border-radius: 16px 16px 0 0; }
   .promo-overlay { align-items: flex-end; padding: 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROMO ADMIN PANEL
+══════════════════════════════════════════════════════════════════════════ */
+.promo-admin-main {
+  padding: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.promo-admin-card {
+  background: #fff;
+  border: 1px solid #e8e0f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+.promo-admin-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #6b3fa0;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.promo-admin-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.promo-admin-toggle-switch {
+  width: 48px;
+  height: 26px;
+  border-radius: 13px;
+  background: #ccc;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+.promo-admin-toggle-switch.on { background: #9B7EC8; }
+.promo-admin-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  transition: transform 0.25s;
+}
+.promo-admin-toggle-switch.on .promo-admin-toggle-knob { transform: translateX(22px); }
+.promo-admin-toggle-text {
+  font-size: 0.95rem;
+  color: #444;
+}
+.promo-admin-img-row {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+.promo-admin-preview-img {
+  width: 160px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e0d4f0;
+  flex-shrink: 0;
+}
+.promo-admin-no-img {
+  width: 160px;
+  height: 100px;
+  border-radius: 10px;
+  border: 2px dashed #c9b8e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a080c0;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.promo-admin-img-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.promo-admin-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 6px;
+}
+.promo-admin-hint {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 6px 0 0;
+}
+.promo-admin-save {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+}
