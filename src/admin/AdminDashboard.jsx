@@ -17,6 +17,31 @@ function money(n) {
   return `$${Math.round(n).toLocaleString('es-AR')}`
 }
 
+function fechaLegible(dateStr) {
+  if (!dateStr) return ''
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date  = new Date(y, m - 1, d)
+  const dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+  return `el ${dias[date.getDay()]} ${d} de ${meses[m - 1]}`
+}
+
+function formatPhone(phone) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.startsWith('54')) return digits
+  if (digits.startsWith('0'))  return '54' + digits.slice(1)
+  return '54' + digits
+}
+
+function waReminderLink(v) {
+  const phone = formatPhone(v.telefono)
+  if (!phone) return null
+  const nombre = (v.titular || '').split(' ')[0]
+  const msg = `Hola ${nombre}! 👋 Te recuerdo que ${fechaLegible(v.fecha)} vence el pago de ${money(v.saldo)} ${v.moneda} del ${v.tipo}. Cuando puedas coordinamos 🙏`
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+}
+
 function KpiCard({ icon, value, label, sub, color }) {
   return (
     <div className="dash-kpi" style={{ borderTop: `3px solid ${color}` }}>
@@ -56,7 +81,7 @@ export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, 
   // Vencimientos próximos con saldo (30 días)
   const vencimientos = bookings
     .filter(b => b.proximoVencimiento)
-    .map(b => ({ ...b.proximoVencimiento, titular: b.titular, id: b.id, dias: diasHasta(b.proximoVencimiento.fecha) }))
+    .map(b => ({ ...b.proximoVencimiento, titular: b.titular, id: b.id, telefono: b.telefono, dias: diasHasta(b.proximoVencimiento.fecha) }))
     .filter(v => v.dias !== null && v.dias >= 0 && v.dias <= 30)
     .sort((a, b) => a.dias - b.dias)
     .slice(0, 6)
@@ -131,24 +156,39 @@ export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, 
               <div className="dash-empty">✅ Sin vencimientos próximos</div>
             ) : (
               <div className="dash-table">
-                {vencimientos.map((v, i) => (
-                  <div
-                    key={i}
-                    className={`dash-row ${v.dias <= 3 ? 'dash-row-urgent' : v.dias <= 7 ? 'dash-row-warn' : ''}`}
-                    onClick={() => onOpenBooking(v.id)}
-                  >
-                    <div className="dash-row-left">
-                      <div className="dash-row-name">{v.titular}</div>
-                      <div className="dash-row-detail">{v.icono} {v.tipo} · {money(v.saldo)} {v.moneda}</div>
-                    </div>
-                    <div className="dash-row-right">
-                      <div className="dash-row-date">{formatDate(v.fecha)}</div>
-                      <div className={`dash-row-dias ${v.dias <= 3 ? 'dias-urgent' : v.dias <= 7 ? 'dias-warn' : 'dias-ok'}`}>
-                        {v.dias === 0 ? '¡Hoy!' : `${v.dias}d`}
+                {vencimientos.map((v, i) => {
+                  const waLink = waReminderLink(v)
+                  return (
+                    <div
+                      key={i}
+                      className={`dash-row ${v.dias <= 3 ? 'dash-row-urgent' : v.dias <= 7 ? 'dash-row-warn' : ''}`}
+                      onClick={() => onOpenBooking(v.id)}
+                    >
+                      <div className="dash-row-left">
+                        <div className="dash-row-name">{v.titular}</div>
+                        <div className="dash-row-detail">{v.icono} {v.tipo} · {money(v.saldo)} {v.moneda}</div>
+                      </div>
+                      <div className="dash-row-right">
+                        <div className="dash-row-date">{formatDate(v.fecha)}</div>
+                        <div className={`dash-row-dias ${v.dias <= 3 ? 'dias-urgent' : v.dias <= 7 ? 'dias-warn' : 'dias-ok'}`}>
+                          {v.dias === 0 ? '¡Hoy!' : `${v.dias}d`}
+                        </div>
+                        {waLink && (
+                          <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="dash-wa-btn"
+                            onClick={e => e.stopPropagation()}
+                            title="Enviar recordatorio por WhatsApp"
+                          >
+                            💬
+                          </a>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
