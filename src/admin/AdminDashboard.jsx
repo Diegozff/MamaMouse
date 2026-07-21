@@ -53,7 +53,7 @@ function KpiCard({ icon, value, label, sub, color }) {
   )
 }
 
-export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, onList, onGuides, onPromo }) {
+export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, onList, onGuides, onPromo, onCalendar }) {
   const [bookings, setBookings] = useState([])
   const [loading,  setLoading]  = useState(true)
 
@@ -134,6 +134,10 @@ export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, 
         <button className="dash-action-btn" onClick={onGuides}>
           <span className="dash-action-icon">📚</span>
           <span className="dash-action-label">Gestionar Guías</span>
+        </button>
+        <button className="dash-action-btn" onClick={onCalendar}>
+          <span className="dash-action-icon">📅</span>
+          <span className="dash-action-label">Calendario</span>
         </button>
         <button className="dash-action-btn" onClick={onPromo}>
           <span className="dash-action-icon">🎉</span>

@@ -285,7 +285,8 @@ app.get('/api/bookings', async (req, res) => {
         }
         const saldo  = total - paid
         const estado = saldo <= 0 ? 'pagado' : paid === 0 ? 'pendiente' : 'parcial'
-        const fechas = (data.items || []).map(i => i.fechaInicio).filter(Boolean).sort()
+        const fechas    = (data.items || []).map(i => i.fechaInicio || i.checkIn).filter(Boolean).sort()
+        const fechasFin = (data.items || []).map(i => i.fechaFin || i.checkOut).filter(Boolean).sort()
 
         // Próximo vencimiento: item con saldo > 0 y fechaLimite más cercana
         const today = new Date().toISOString().slice(0, 10)
@@ -308,6 +309,7 @@ app.get('/api/bookings', async (req, res) => {
           id, titular: data.titular || id, destinos: data.destinos || [],
           total, paid, saldo, estado,
           fechaViaje: fechas[0] || '',
+          fechaFin:   fechasFin.at(-1) || fechas.at(-1) || '',
           proximoVencimiento: vencimientos[0] || null,
           email: data.email || '',
           telefono: data.telefono || '',

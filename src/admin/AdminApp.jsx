@@ -6,6 +6,7 @@ import BookingsList    from './BookingsList'
 import AdminDashboard  from './AdminDashboard'
 import GuidesAdmin     from './GuidesAdmin'
 import PromoAdmin      from './PromoAdmin'
+import CalendarAdmin   from './CalendarAdmin'
 
 // ── WhatsApp helpers ──────────────────────────────────────────────────────────
 function formatWAPhone(phone) {
@@ -130,8 +131,9 @@ export default function AdminApp() {
   const [showNew,     setShowNew]     = useState(false)
   const [newTitular,  setNewTitular]  = useState('')
   const [showGuides,  setShowGuides]  = useState(false)
-  const [showPromo,   setShowPromo]   = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showPromo,     setShowPromo]     = useState(false)
+  const [showCalendar,  setShowCalendar]  = useState(false)
+  const [sidebarOpen,   setSidebarOpen]   = useState(false)
 
   const mainRef = useRef(null)
 
@@ -292,7 +294,8 @@ export default function AdminApp() {
   if (!authed) return <AdminLogin onLogin={handleLogin} />
 
   if (showGuides) return <GuidesAdmin onBack={() => setShowGuides(false)} />
-  if (showPromo)  return <PromoAdmin  onBack={() => setShowPromo(false)} />
+  if (showPromo)    return <PromoAdmin    onBack={() => setShowPromo(false)} />
+  if (showCalendar) return <CalendarAdmin onBack={() => setShowCalendar(false)} onOpenBooking={id => { setShowCalendar(false); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
 
   /* ── SELECTOR (no booking loaded) ── */
   if (!booking) {
@@ -348,6 +351,7 @@ export default function AdminApp() {
                 onList={() => setShowList(true)}
                 onGuides={() => setShowGuides(true)}
                 onPromo={() => setShowPromo(true)}
+                onCalendar={() => setShowCalendar(true)}
               />
 
             </div>
@@ -463,6 +467,10 @@ export default function AdminApp() {
             <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowGuides(true); setSidebarOpen(false) }}>
               <span className="asb-nav-icon">📚</span>
               <span className="asb-nav-label">Gestionar Guías</span>
+            </button>
+            <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowCalendar(true); setSidebarOpen(false) }}>
+              <span className="asb-nav-icon">📅</span>
+              <span className="asb-nav-label">Calendario</span>
             </button>
             <button className="asb-nav-btn asb-guides-btn" onClick={() => { setShowPromo(true); setSidebarOpen(false) }}>
               <span className="asb-nav-icon">🎉</span>
