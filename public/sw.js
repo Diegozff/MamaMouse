@@ -1,4 +1,4 @@
-const CACHE = 'mama-mouse-v3'
+const CACHE = 'mama-mouse-v4'
 
 const PRECACHE = [
   '/',
