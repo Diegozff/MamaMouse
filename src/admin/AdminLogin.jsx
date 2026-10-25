@@ -1,14 +1,23 @@
 import { useState } from 'react'
+import { adminLogin } from './adminAuth'
 
-const PASS = import.meta.env.VITE_ADMIN_PASS || 'mamamouse'
-
-export default function AdminLogin({ onLogin }) {
+export default function AdminLogin({ onLogin, expired = false }) {
   const [pass, setPass] = useState('')
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleSubmit = () => {
-    if (pass === PASS) { onLogin() }
-    else { setError(true); setTimeout(() => setError(false), 2000) }
+  const handleSubmit = async () => {
+    if (busy || !pass) return
+    setBusy(true)
+    try {
+      await adminLogin(pass)
+      onLogin()
+    } catch (e) {
+      setError(e.message || 'Contraseña incorrecta')
+      setTimeout(() => setError(''), 3000)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -16,7 +25,9 @@ export default function AdminLogin({ onLogin }) {
       <div className="admin-login-card">
         <img src="/logo.png" alt="Mama Mouse" className="admin-login-logo" />
         <h2 className="admin-login-title">Panel de Administración</h2>
-        <p className="admin-login-sub">Mama Mouse · Agente Oficial</p>
+        <p className="admin-login-sub">
+          {expired ? 'Tu sesión venció. Ingresá de nuevo: no se pierde lo que tenés en pantalla.' : 'Mama Mouse · Agente Oficial'}
+        </p>
         <input
           className={`admin-input ${error ? 'admin-input-error' : ''}`}
           type="password"
@@ -26,9 +37,9 @@ export default function AdminLogin({ onLogin }) {
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           autoFocus
         />
-        {error && <p className="admin-login-error">Contraseña incorrecta</p>}
-        <button className="admin-btn admin-btn-primary" onClick={handleSubmit}>
-          Ingresar ✨
+        {error && <p className="admin-login-error">{error}</p>}
+        <button className="admin-btn admin-btn-primary" onClick={handleSubmit} disabled={busy}>
+          {busy ? 'Ingresando…' : 'Ingresar ✨'}
         </button>
       </div>
     </div>

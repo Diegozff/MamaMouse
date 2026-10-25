@@ -15,8 +15,8 @@ import LandingPage from './components/LandingPage'
 function getEstado(items = []) {
   let total = 0, paid = 0
   for (const it of items) {
-    total += it.total
-    paid  += it.pagos.reduce((s, p) => s + Number(p.monto), 0)
+    total += Number(it.total) || 0
+    paid  += (it.pagos || []).reduce((s, p) => s + Number(p.monto), 0)
   }
   const saldo = total - paid
   if (saldo <= 0) return { label: '✅ Totalmente Pagado', cls: 'estado-total' }

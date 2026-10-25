@@ -7,6 +7,9 @@ import AdminDashboard  from './AdminDashboard'
 import GuidesAdmin     from './GuidesAdmin'
 import PromoAdmin      from './PromoAdmin'
 import CalendarAdmin   from './CalendarAdmin'
+import { getToken, clearToken, installAdminFetch } from './adminAuth'
+
+installAdminFetch()
 
 // ── WhatsApp helpers ──────────────────────────────────────────────────────────
 function formatWAPhone(phone) {
@@ -117,8 +120,29 @@ function emptyBooking(id = '') {
   }
 }
 
+// Envoltorio: si el servidor responde 401 en medio del trabajo (sesión vencida) se pide
+// la contraseña en un overlay SIN desmontar el panel, para no perder lo cargado en pantalla.
 export default function AdminApp() {
-  const [authed,      setAuthed]      = useState(() => sessionStorage.getItem('mm_admin') === '1')
+  const [expired, setExpired] = useState(false)
+  useEffect(() => {
+    const h = () => setExpired(true)
+    window.addEventListener('mm-admin-unauth', h)
+    return () => window.removeEventListener('mm-admin-unauth', h)
+  }, [])
+  return (
+    <>
+      <AdminInner />
+      {expired && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto', background: 'rgba(40,20,70,.55)' }}>
+          <AdminLogin expired onLogin={() => setExpired(false)} />
+        </div>
+      )}
+    </>
+  )
+}
+
+function AdminInner() {
+  const [authed,      setAuthed]      = useState(() => !!getToken())
   const [bookingId,   setBookingId]   = useState('')
   const [inputId,     setInputId]     = useState('')
   const [booking,     setBooking]     = useState(null)
@@ -138,12 +162,11 @@ export default function AdminApp() {
   const mainRef = useRef(null)
 
   const handleLogin = useCallback(() => {
-    sessionStorage.setItem('mm_admin', '1')
     setAuthed(true)
   }, [])
 
   const handleLogout = () => {
-    sessionStorage.removeItem('mm_admin')
+    clearToken()
     setAuthed(false)
     setBooking(null)
   }
@@ -159,12 +182,29 @@ export default function AdminApp() {
     const id = inputId.trim().toLowerCase().replace(/\s+/g, '-')
     if (!id) return
     try {
-      const r = await fetch(`/bookings/${id}.json?t=${Date.now()}`)
-      setBooking(r.ok ? await r.json() : emptyBooking(id))
+      const r = await fetch(`/api/admin/booking/${encodeURIComponent(id)}?t=${Date.now()}`)
+      if (r.status === 401) return            // se pide la contraseña en el overlay
+      if (r.ok) setBooking(await r.json())
+      else if (r.status === 404) setBooking(emptyBooking(id))   // reserva nueva
+      else { alert('No se pudo abrir la reserva.'); return }
       setBookingId(id)
     } catch {
-      setBooking(emptyBooking(id))
+      alert('Error de conexión: no se abrió la reserva.')
+    }
+  }
+
+  // Abre una reserva existente desde el servidor (con credenciales completas)
+  const openById = async (id) => {
+    try {
+      const r = await fetch(`/api/admin/booking/${encodeURIComponent(id)}?t=${Date.now()}`)
+      if (!r.ok) {
+        if (r.status !== 401) alert('No se pudo abrir la reserva.')
+        return
+      }
+      setBooking(await r.json())
       setBookingId(id)
+    } catch {
+      alert('Error de conexión al abrir la reserva.')
     }
   }
 
@@ -295,7 +335,7 @@ export default function AdminApp() {
 
   if (showGuides) return <GuidesAdmin onBack={() => setShowGuides(false)} />
   if (showPromo)    return <PromoAdmin    onBack={() => setShowPromo(false)} />
-  if (showCalendar) return <CalendarAdmin onBack={() => setShowCalendar(false)} onOpenBooking={id => { setShowCalendar(false); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
+  if (showCalendar) return <CalendarAdmin onBack={() => setShowCalendar(false)} onOpenBooking={id => { setShowCalendar(false); openById(id) }} />
 
   /* ── SELECTOR (no booking loaded) ── */
   if (!booking) {
@@ -327,7 +367,7 @@ export default function AdminApp() {
                   📧 Importar por Email
                 </button>
               </div>
-              <BookingsList onOpen={id => { setShowList(false); fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }} />
+              <BookingsList onOpen={id => { setShowList(false); openById(id) }} />
             </div>
           ) : (
             <div className="admin-home">
@@ -345,7 +385,7 @@ export default function AdminApp() {
 
               {/* Dashboard */}
               <AdminDashboard
-                onOpenBooking={id => { fetch(`/bookings/${id}.json?t=${Date.now()}`).then(r => r.json()).then(d => { setBooking(d); setBookingId(id) }) }}
+                onOpenBooking={id => { openById(id) }}
                 onNewBooking={newBooking}
                 onImport={() => setShowImport(true)}
                 onList={() => setShowList(true)}

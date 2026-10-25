@@ -12,6 +12,11 @@
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Escapa texto de usuario antes de ponerlo en HTML de emails
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+}
+
 function money(n, cur = 'USD') {
   return `$${Number(n).toLocaleString('es-AR')} ${cur}`
 }
@@ -29,7 +34,7 @@ export function daysUntil(dateStr) {
 }
 
 function bookingUrl(id) {
-  return `${process.env.APP_URL || 'https://www.mamamouse.com.ar'}/?id=${id}`
+  return `${process.env.APP_URL || 'https://www.mamamouse.com.ar'}/?id=${encodeURIComponent(id ?? '')}`
 }
 
 function itemPaid(item) {
@@ -134,7 +139,7 @@ function itemsTable(items) {
       ? '<span style="color:#2E7D32;font-weight:700">✅ Pagado</span>'
       : `<span style="color:#E65100;font-weight:700">Saldo ${money(saldo, it.moneda)}</span>`
     return `<tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF">${it.icono} <strong>${it.tipo}</strong><br><span style="font-size:11px;color:#888">${it.descripcion || ''}</span></td>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF">${esc(it.icono)} <strong>${esc(it.tipo)}</strong><br><span style="font-size:11px;color:#888">${esc(it.descripcion)}</span></td>
       <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;text-align:right;font-weight:700;white-space:nowrap">${money(it.total, it.moneda)}</td>
       <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;text-align:right">${estadoHtml}</td>
       <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;text-align:right;color:#999;font-size:12px;white-space:nowrap">${fmtDate(it.fechaLimite)}</td>
@@ -159,7 +164,7 @@ function emailWelcome(booking) {
   const url  = bookingUrl(booking.id)
   const body = `
   <div style="padding:28px 32px">
-    <h2 style="color:#333;font-size:22px;margin:0 0 10px">¡Bienvenidos, ${booking.titular}! 🎉</h2>
+    <h2 style="color:#333;font-size:22px;margin:0 0 10px">¡Bienvenidos, ${esc(booking.titular)}! 🎉</h2>
     <p style="color:#555;line-height:1.7;margin:0 0 20px">
       Tu reserva con <strong>Mama Mouse</strong> está confirmada.
       Hacé click en el botón para ver todos los detalles, el estado de tus pagos y el itinerario personalizado.
@@ -167,7 +172,7 @@ function emailWelcome(booking) {
     ${btnPrimary(url, '✨ Ver mi reserva completa')}
     <h3 style="color:#9B7EC8;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">Ítems contratados</h3>
     ${itemsTable(booking.items)}
-    ${booking.destinos?.length ? `<p style="color:#777;font-size:13px;margin-top:14px">🌍 <strong>Destinos:</strong> ${booking.destinos.join(' · ')}</p>` : ''}
+    ${booking.destinos?.length ? `<p style="color:#777;font-size:13px;margin-top:14px">🌍 <strong>Destinos:</strong> ${booking.destinos.map(esc).join(' · ')}</p>` : ''}
   </div>`
   return { subject: `🐭 ¡Tu reserva con Mama Mouse está confirmada! – ${booking.titular}`, html: emailBase(body) }
 }
@@ -204,7 +209,7 @@ function emailUpdate(booking) {
       <p style="margin:0;color:#9B7EC8;font-weight:700;font-size:15px">📝 Tu reserva fue actualizada</p>
       <p style="margin:6px 0 0;color:#666;font-size:13px">Carolina actualizó los datos de tu viaje. Revisá los detalles a continuación.</p>
     </div>
-    <h2 style="color:#333;font-size:20px;margin:0 0 10px">Hola, ${booking.titular} 👋</h2>
+    <h2 style="color:#333;font-size:20px;margin:0 0 10px">Hola, ${esc(booking.titular)} 👋</h2>
     <p style="color:#555;line-height:1.7;margin:0 0 20px">
       Tu agente de viajes actualizó tu reserva. Hacé click en el botón para ver los últimos cambios.
     </p>
@@ -246,10 +251,10 @@ function emailPaymentReceived(booking, newPayments) {
 
   const paymentRows = newPayments.map(p => `
     <tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF">${p.itemIcono} <strong>${p.itemTipo}</strong></td>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF">${esc(p.itemIcono)} <strong>${esc(p.itemTipo)}</strong></td>
       <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;text-align:right;color:#666;font-size:12px">${fmtDate(p.fecha)}</td>
       <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;text-align:right;font-weight:700;color:#2E7D32;white-space:nowrap">+${money(p.monto, p.moneda)}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;font-size:12px;color:#888">${p.concepto || ''}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #F0E6FF;font-size:12px;color:#888">${esc(p.concepto)}</td>
     </tr>`).join('')
 
   const body = `
@@ -258,7 +263,7 @@ function emailPaymentReceived(booking, newPayments) {
       <p style="margin:0;color:#2E7D32;font-weight:700;font-size:15px">✅ Pago registrado correctamente</p>
       <p style="margin:6px 0 0;color:#555;font-size:13px">Recibimos y registramos tu pago. ¡Gracias!</p>
     </div>
-    <h2 style="color:#333;font-size:20px;margin:0 0 10px">Hola, ${booking.titular} 💚</h2>
+    <h2 style="color:#333;font-size:20px;margin:0 0 10px">Hola, ${esc(booking.titular)} 💚</h2>
     <p style="color:#555;line-height:1.7;margin:0 0 20px">
       Registramos un nuevo pago en tu reserva. A continuación el detalle:
     </p>
@@ -337,15 +342,15 @@ function emailReminder(booking, item, daysLeft) {
 
   const body = `
   <div style="padding:28px 32px">
-    <h2 style="color:#333;font-size:20px;margin:0 0 16px">Recordatorio de Pago, ${booking.titular} 👋</h2>
+    <h2 style="color:#333;font-size:20px;margin:0 0 16px">Recordatorio de Pago, ${esc(booking.titular)} 👋</h2>
     <div style="background:#FFF8F0;border-left:5px solid ${urgColor};border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <p style="margin:0;color:${urgColor};font-size:15px;font-weight:700">${urgText}</p>
       <p style="margin:6px 0 0;color:#666;font-size:13px">Fecha límite: <strong>${fmtDate(item.fechaLimite)}</strong></p>
     </div>
     <div style="background:#FDFAFF;border:1.5px solid #EDD9FF;border-radius:12px;padding:20px;margin-bottom:20px">
-      <div style="font-size:32px;margin-bottom:8px">${item.icono}</div>
-      <div style="font-size:17px;font-weight:900;color:#333;margin-bottom:4px">${item.tipo}</div>
-      <div style="font-size:12px;color:#888;margin-bottom:16px">${item.descripcion || ''}</div>
+      <div style="font-size:32px;margin-bottom:8px">${esc(item.icono)}</div>
+      <div style="font-size:17px;font-weight:900;color:#333;margin-bottom:4px">${esc(item.tipo)}</div>
+      <div style="font-size:12px;color:#888;margin-bottom:16px">${esc(item.descripcion)}</div>
       <table style="width:100%;font-size:14px">
         <tr><td style="color:#777;padding:4px 0">Total del ítem</td><td style="text-align:right;font-weight:700">${money(item.total, item.moneda)}</td></tr>
         <tr><td style="color:#2E7D32;padding:4px 0">Ya abonado</td><td style="text-align:right;font-weight:700;color:#2E7D32">${money(paid, item.moneda)}</td></tr>

@@ -42,6 +42,25 @@ export default defineConfig({
         server.middlewares.use(async (req, res, next) => {
           const url = req.url.split('?')[0]
 
+          // ── Solo desarrollo: login del panel y lectura de reservas ─────────
+          // (en producción lo hace server.mjs; acá no se exige token)
+          if (url === '/api/admin/login' && req.method === 'POST') {
+            const { password } = JSON.parse(await readBody(req) || '{}')
+            const ok = password === (process.env.ADMIN_PASS || process.env.VITE_ADMIN_PASS || 'mamamouse')
+            return ok
+              ? jsonRes(res, 200, { ok: true, token: 'dev', expiresInMs: 86400000 })
+              : jsonRes(res, 401, { ok: false, error: 'Contraseña incorrecta' })
+          }
+          if (url.startsWith('/api/admin/booking/') && req.method === 'GET') {
+            try {
+              const id = decodeURIComponent(url.slice('/api/admin/booking/'.length))
+              const file = path.resolve('public/bookings', `${id}.json`)
+              if (!file.startsWith(path.resolve('public/bookings') + path.sep)) return jsonRes(res, 400, { ok: false })
+              res.setHeader('Content-Type', 'application/json')
+              return res.end(await (await import('node:fs/promises')).readFile(file, 'utf-8'))
+            } catch { return jsonRes(res, 404, { ok: false, error: 'Reserva no encontrada' }) }
+          }
+
           // ── POST /api/booking – Guardar reserva ────────────────────────────
           if (url === '/api/booking' && req.method === 'POST') {
             try {

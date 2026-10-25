@@ -5,12 +5,109 @@
  */
 
 import express        from 'express'
-import { writeFile, readFile, readdir, access, mkdir, unlink } from 'node:fs/promises'
+import { writeFile, readFile, readdir, access, mkdir, unlink, rename, copyFile } from 'node:fs/promises'
 import path           from 'node:path'
+import crypto         from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import dotenv         from 'dotenv'
 // Cargar variables de entorno
 dotenv.config()
+
+// ── Seguridad: helpers ────────────────────────────────────────────────────────
+
+// Escapa texto de usuario antes de meterlo en HTML (emails)
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+}
+
+// Une dir + name garantizando que el resultado quede DENTRO de dir (anti path traversal)
+function safeJoin(dir, name) {
+  const s = String(name ?? '')
+  if (!s || s.includes('/') || s.includes('\\') || s.includes('\0') || s.includes('..')) {
+    throw Object.assign(new Error('Nombre inválido'), { status: 400 })
+  }
+  const base = path.resolve(dir)
+  const full = path.resolve(base, s)
+  if (!full.startsWith(base + path.sep)) throw Object.assign(new Error('Nombre inválido'), { status: 400 })
+  return full
+}
+
+// Respuesta de error: respeta e.status si viene de safeJoin
+const fail = (res, e) => res.status(e.status || 500).json({ ok: false, error: e.message })
+
+// Escritura atómica: nunca deja un JSON a medio escribir
+async function writeAtomic(file, content) {
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`
+  await writeFile(tmp, content)
+  await rename(tmp, file)
+}
+
+// Limitador en memoria (por clave, ventana fija)
+function makeLimiter(windowMs, max) {
+  const hits = new Map()
+  setInterval(() => { const now = Date.now(); for (const [k, v] of hits) if (v.reset < now) hits.delete(k) }, 60_000).unref()
+  return {
+    blocked(key) { const v = hits.get(key); return !!v && v.reset > Date.now() && v.n >= max },
+    add(key) {
+      const now = Date.now(); const v = hits.get(key)
+      if (!v || v.reset < now) hits.set(key, { n: 1, reset: now + windowMs })
+      else v.n++
+    },
+  }
+}
+const clientIp = req => req.headers['cf-connecting-ip'] || req.ip || 'unknown'
+
+// ── Autenticación del panel admin ─────────────────────────────────────────────
+// La contraseña se valida SIEMPRE en el servidor. Se toma de ADMIN_PASS, o de
+// VITE_ADMIN_PASS (la variable que ya existe en Railway) para no cambiar nada.
+// ADMIN_ENFORCE=1 → los endpoints de admin exigen token. Sin esa variable el
+// servidor funciona en modo permisivo (compatible con pestañas abiertas con la
+// versión anterior) y avisa en el log cada vez que ve un pedido sin token.
+const ADMIN_PASS    = process.env.ADMIN_PASS || process.env.VITE_ADMIN_PASS || 'mamamouse'
+const ADMIN_ENFORCE = process.env.ADMIN_ENFORCE === '1'
+const TOKEN_SECRET  = process.env.ADMIN_SECRET ||
+  crypto.createHash('sha256').update(`mm-admin|${ADMIN_PASS}|${process.env.BREVO_API_KEY || ''}`).digest('hex')
+const TOKEN_TTL_MS  = 30 * 24 * 60 * 60 * 1000 // 30 días
+
+const sha = s => crypto.createHash('sha256').update(String(s)).digest()
+function passwordOk(input) { return crypto.timingSafeEqual(sha(input), sha(ADMIN_PASS)) }
+
+function signToken() {
+  const exp  = String(Date.now() + TOKEN_TTL_MS)
+  const sig  = crypto.createHmac('sha256', TOKEN_SECRET).update(exp).digest('base64url')
+  return `${exp}.${sig}`
+}
+function verifyToken(tok) {
+  if (typeof tok !== 'string') return false
+  const [exp, sig] = tok.split('.')
+  if (!exp || !sig || Number(exp) < Date.now()) return false
+  const good = crypto.createHmac('sha256', TOKEN_SECRET).update(exp).digest('base64url')
+  const a = Buffer.from(sig), b = Buffer.from(good)
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
+function isAdminReq(req) {
+  const h = req.headers.authorization || ''
+  return h.startsWith('Bearer ') && verifyToken(h.slice(7))
+}
+let lastLegacyLog = 0
+function requireAdmin(req, res, next) {
+  if (isAdminReq(req)) return next()
+  if (!ADMIN_ENFORCE) {
+    if (Date.now() - lastLegacyLog > 60_000) {
+      lastLegacyLog = Date.now()
+      console.warn(`[Auth] ⚠️ pedido admin SIN token (modo permisivo): ${req.method} ${req.path}`)
+    }
+    return next()
+  }
+  res.status(401).json({ ok: false, error: 'No autorizado', code: 'admin_auth' })
+}
+
+const adminLoginLimiter = makeLimiter(15 * 60_000, 8)    // fallos por IP
+const viajeroLoginLimiter = makeLimiter(15 * 60_000, 10) // fallos por IP
+const lookupLimiter = makeLimiter(10 * 60_000, 40)       // ids inexistentes por IP
+const cotizarLimiter = makeLimiter(60 * 60_000, 5)
+const cotizarGlobal  = makeLimiter(60 * 60_000, 60)
+const resenaLimiter  = makeLimiter(60 * 60_000, 5)
 
 // ── Email vía Brevo API (HTTPS – funciona en Railway sin puertos SMTP) ────────
 async function sendEmail({ to, subject, html, text }) {
@@ -50,8 +147,12 @@ const GUIDES_DIR   = path.join(DATA_DIR, 'guides')
 const GUIDES_INDEX = path.join(DATA_DIR, 'guides', 'index.json')
 const PROMO_DIR    = path.join(DATA_DIR, 'promo')
 const PROMO_FILE   = path.join(DATA_DIR, 'promo.json')
+const BACKUPS_DIR  = path.join(DATA_DIR, 'backups')
+const LEADS_FILE   = path.join(DATA_DIR, 'leads.json')
+const REMINDERS_FILE = path.join(DATA_DIR, 'reminders-sent.json')
 
 // Crear directorios necesarios
+await mkdir(BACKUPS_DIR,  { recursive: true })
 await mkdir(BOOKINGS_DIR, { recursive: true })
 await mkdir(PDFS_DIR,     { recursive: true })
 await mkdir(GUIDES_DIR,   { recursive: true })
@@ -81,9 +182,31 @@ async function initDataDir() {
       await copyFile(srcGuides, GUIDES_INDEX).catch(() => {})
       console.log('[Init] Copiado guides/index.json a DATA_DIR')
     }
+    // Migrar leads y recordatorios enviados: antes vivían en public/ (efímero y
+    // descargable por cualquiera). Ahora van al volumen, fuera de lo que se sirve.
+    for (const [from, to] of [
+      [path.join(__dirname, 'public', 'leads.json'),          LEADS_FILE],
+      [path.join(__dirname, 'public', 'reminders-sent.json'), REMINDERS_FILE],
+    ]) {
+      if (!(await fileExists(to)) && (await fileExists(from))) {
+        await copyFile(from, to).catch(() => {})
+        console.log(`[Init] Migrado ${path.basename(from)} a DATA_DIR`)
+      }
+    }
   } catch (e) { console.warn('[Init] Error inicializando DATA_DIR:', e.message) }
 }
 await initDataDir()
+
+// Copia de seguridad previa a cada cambio/borrado de una reserva (últimas 30 por reserva)
+async function backupBooking(id, filePath) {
+  try {
+    const dir = safeJoin(BACKUPS_DIR, id)
+    await mkdir(dir, { recursive: true })
+    await copyFile(filePath, path.join(dir, `${new Date().toISOString().replace(/[:.]/g, '-')}.json`))
+    const files = (await readdir(dir)).filter(f => f.endsWith('.json')).sort()
+    for (const f of files.slice(0, Math.max(0, files.length - 30))) await unlink(path.join(dir, f)).catch(() => {})
+  } catch (e) { console.warn('[Backup] No se pudo respaldar', id, e.message) }
+}
 
 // ── Notificaciones ────────────────────────────────────────────────────────────
 const {
@@ -97,15 +220,58 @@ const {
 
 // ── App Express ───────────────────────────────────────────────────────────────
 const app = express()
+app.set('trust proxy', true)               // detrás de Cloudflare + Railway
 app.use(express.json({ limit: '10mb' }))   // reservas grandes con muchos pagos/items
 
-// CORS: permitir requests desde cualquier origen (admin desde distintos equipos)
+// CORS: solo los orígenes propios (antes era "*")
+const ALLOWED_ORIGINS = new Set([
+  process.env.APP_URL,
+  'https://www.mamamouse.com.ar', 'https://mamamouse.com.ar',
+  'http://localhost:5173', 'http://localhost:3000',
+].filter(Boolean).map(u => u.replace(/\/$/, '')))
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  const origin = req.headers.origin
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Vary', 'Origin')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  }
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
   if (req.method === 'OPTIONS') return res.sendStatus(204)
   next()
+})
+
+// Archivos internos que nunca deben descargarse aunque queden en public/
+app.use((req, res, next) => {
+  if (['/leads.json', '/reminders-sent.json'].includes(req.path)) return res.status(404).end()
+  next()
+})
+
+// ── API: Login del panel admin ────────────────────────────────────────────────
+app.post('/api/admin/login', (req, res) => {
+  const ip = clientIp(req)
+  if (adminLoginLimiter.blocked(ip)) return res.status(429).json({ ok: false, error: 'Demasiados intentos. Probá de nuevo en unos minutos.' })
+  const { password } = req.body || {}
+  if (typeof password !== 'string' || !passwordOk(password)) {
+    adminLoginLimiter.add(ip)
+    console.warn(`[Auth] Login admin fallido desde ${ip}`)
+    return res.status(401).json({ ok: false, error: 'Contraseña incorrecta' })
+  }
+  res.json({ ok: true, token: signToken(), expiresInMs: TOKEN_TTL_MS })
+})
+
+// Reserva completa (con usuario/contraseña) para el editor del panel
+app.get('/api/admin/booking/:id', requireAdmin, async (req, res) => {
+  try {
+    const file = safeJoin(BOOKINGS_DIR, `${req.params.id}.json`)
+    res.setHeader('Cache-Control', 'no-store')
+    res.type('json').send(await readFile(file, 'utf-8'))
+  } catch (e) {
+    if (e.status) return fail(res, e)
+    res.status(404).json({ ok: false, error: 'Reserva no encontrada' })
+  }
 })
 
 // Helper: detectar si un archivo existe
@@ -116,8 +282,12 @@ async function fileExists(p) {
 // ── API: Login viajero ────────────────────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
   try {
-    const { usuario, password } = req.body
-    if (!usuario || !password) return res.status(400).json({ ok: false, error: 'Faltan credenciales' })
+    const { usuario, password } = req.body || {}
+    if (typeof usuario !== 'string' || typeof password !== 'string' || !usuario || !password)
+      return res.status(400).json({ ok: false, error: 'Faltan credenciales' })
+    const ip = clientIp(req)
+    if (viajeroLoginLimiter.blocked(ip))
+      return res.status(429).json({ ok: false, error: 'Demasiados intentos. Probá de nuevo en unos minutos.' })
 
     const files = await readdir(BOOKINGS_DIR)
     for (const file of files) {
@@ -132,6 +302,7 @@ app.post('/api/login', async (req, res) => {
         }
       } catch { /* archivo corrupto, skip */ }
     }
+    viajeroLoginLimiter.add(ip)
     console.log(`[API] Login fallido: ${usuario}`)
     res.status(401).json({ ok: false, error: 'Usuario o contraseña incorrectos' })
   } catch (e) {
@@ -142,17 +313,20 @@ app.post('/api/login', async (req, res) => {
 
 // ── API: Upload PDF ───────────────────────────────────────────────────────────
 app.post('/api/upload-pdf/:bookingId/:itemId',
+  requireAdmin,
   express.raw({ type: ['application/pdf', 'application/octet-stream'], limit: '20mb' }),
   async (req, res) => {
     try {
       const { bookingId, itemId } = req.params
       const filename = `${bookingId}-${itemId}.pdf`
-      await writeFile(path.join(PDFS_DIR, filename), req.body)
+      const target   = safeJoin(PDFS_DIR, filename)
+      if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ ok: false, error: 'Archivo vacío' })
+      await writeFile(target, req.body)
       console.log(`[API] PDF guardado: ${filename}`)
       res.json({ ok: true, url: `/bookings/pdfs/${filename}` })
     } catch (e) {
       console.error('[API] Error PDF upload:', e.message)
-      res.status(500).json({ ok: false, error: e.message })
+      fail(res, e)
     }
   }
 )
@@ -160,20 +334,29 @@ app.post('/api/upload-pdf/:bookingId/:itemId',
 // ── API: Formulario de cotización ────────────────────────────────────────────
 app.post('/api/cotizar', async (req, res) => {
   try {
-    const { nombre, email, telefono, destino, fechas, adultos, ninos, edadesNinos, mensaje } = req.body
+    const ip = clientIp(req)
+    if (cotizarLimiter.blocked(ip) || cotizarGlobal.blocked('all'))
+      return res.status(429).json({ ok: false, error: 'Demasiadas consultas. Probá de nuevo más tarde.' })
+    cotizarLimiter.add(ip); cotizarGlobal.add('all')
+
+    // Texto plano acotado: evita payloads enormes y valores que no son strings
+    const t = (v, n = 300) => (typeof v === 'string' || typeof v === 'number') ? String(v).slice(0, n) : ''
+    const nombre = t(req.body?.nombre, 120), email = t(req.body?.email, 160), telefono = t(req.body?.telefono, 40)
+    const destino = t(req.body?.destino, 120), fechas = t(req.body?.fechas, 120)
+    const adultos = t(req.body?.adultos, 10), ninos = t(req.body?.ninos, 10), mensaje = t(req.body?.mensaje, 2000)
+    const edadesNinos = Array.isArray(req.body?.edadesNinos) ? req.body.edadesNinos.slice(0, 20).map(x => t(x, 10)) : []
     console.log(`[API] Cotización de ${nombre} (${email} / ${telefono}) → ${destino}`)
 
-    // Guardar en archivo de leads (opcional, no crítico)
+    // Guardar en archivo de leads (en el volumen, no público)
     try {
-      const leadsPath = path.join(__dirname, 'public', 'leads.json')
       let leads = []
-      try { leads = JSON.parse(await readFile(leadsPath, 'utf-8')) } catch {}
+      try { leads = JSON.parse(await readFile(LEADS_FILE, 'utf-8')) } catch {}
       leads.push({ nombre, email, telefono, destino, fechas, adultos, ninos, edadesNinos, mensaje, fecha: new Date().toISOString() })
-      await writeFile(leadsPath, JSON.stringify(leads, null, 2), 'utf-8')
+      await writeAtomic(LEADS_FILE, JSON.stringify(leads, null, 2))
     } catch (e) { console.warn('[API] No se pudo guardar lead:', e.message) }
 
     // ── Enviar email a Carolina ──────────────────────────────────────────────
-    const edadesStr = edadesNinos?.length
+    const edadesStr = edadesNinos.length
       ? `\nEdades de los niños: ${edadesNinos.join(', ')} años`
       : ''
 
@@ -183,14 +366,14 @@ app.post('/api/cotizar', async (req, res) => {
   <p style="color:#888;margin-top:0;font-size:13px;">Mama Mouse – ${new Date().toLocaleString('es-AR')}</p>
   <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
   <table style="width:100%;border-collapse:collapse;font-size:15px;">
-    <tr><td style="padding:8px 0;color:#666;width:140px;"><strong>Nombre</strong></td><td>${nombre || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Email</strong></td><td>${email || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${telefono || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Destino</strong></td><td>${destino || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Fechas</strong></td><td>${fechas || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Adultos</strong></td><td>${adultos || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Niños</strong></td><td>${ninos || '0'}${edadesStr ? ' — Edades: ' + edadesNinos.join(', ') + ' años' : ''}</td></tr>
-    ${mensaje ? `<tr><td style="padding:8px 0;color:#666;vertical-align:top;"><strong>Mensaje</strong></td><td>${mensaje}</td></tr>` : ''}
+    <tr><td style="padding:8px 0;color:#666;width:140px;"><strong>Nombre</strong></td><td>${esc(nombre) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Email</strong></td><td>${esc(email) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${esc(telefono) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Destino</strong></td><td>${esc(destino) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Fechas</strong></td><td>${esc(fechas) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Adultos</strong></td><td>${esc(adultos) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Niños</strong></td><td>${esc(ninos) || '0'}${edadesStr ? ' — Edades: ' + esc(edadesNinos.join(', ')) + ' años' : ''}</td></tr>
+    ${mensaje ? `<tr><td style="padding:8px 0;color:#666;vertical-align:top;"><strong>Mensaje</strong></td><td>${esc(mensaje)}</td></tr>` : ''}
   </table>
   <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
   <p style="font-size:12px;color:#aaa;">Enviado desde el formulario de cotización de mamamouse.com.ar</p>
@@ -238,7 +421,13 @@ app.get('/api/resenas', async (req, res) => {
 
 app.post('/api/resena', async (req, res) => {
   try {
-    const { nombre, origen, destino, anio, titulo, historia, avatar } = req.body
+    const ip = clientIp(req)
+    if (resenaLimiter.blocked(ip)) return res.status(429).json({ ok: false, error: 'Demasiados envíos. Probá más tarde.' })
+    resenaLimiter.add(ip)
+    const cap = (v, n) => typeof v === 'string' ? v.slice(0, n) : v
+    const b = req.body || {}
+    const nombre = cap(b.nombre, 120), origen = cap(b.origen, 120), destino = cap(b.destino, 120), anio = cap(b.anio, 10)
+    const titulo = cap(b.titulo, 200), historia = cap(b.historia, 5000), avatar = cap(b.avatar, 16)
     if (!nombre?.trim() || !titulo?.trim() || !historia?.trim()) {
       return res.status(400).json({ ok: false, error: 'Faltan campos obligatorios' })
     }
@@ -268,7 +457,7 @@ app.post('/api/resena', async (req, res) => {
 })
 
 // ── API: Listar todas las reservas ───────────────────────────────────────────
-app.get('/api/bookings', async (req, res) => {
+app.get('/api/bookings', requireAdmin, async (req, res) => {
   try {
     const files = await readdir(BOOKINGS_DIR)
     const bookings = []
@@ -360,14 +549,17 @@ async function resolveUniqueCredentials(apellido) {
 
 // ── Helper: resolver id único (nombre de archivo) ────────────────────────────
 async function resolveUniqueId(baseId) {
+  // El id viene de la IA: normalizar a [a-z0-9-] (también evita path traversal)
+  baseId = String(baseId || 'viajero').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'viajero'
   // Si el archivo no existe, usar el id tal cual
-  const filePath = path.join(BOOKINGS_DIR, `${baseId}.json`)
+  const filePath = safeJoin(BOOKINGS_DIR, `${baseId}.json`)
   if (!(await fileExists(filePath))) return baseId
 
   // Si existe, agregar sufijo numérico hasta encontrar uno libre
   for (let i = 2; i <= 20; i++) {
     const candidate = `${baseId}-${i}`
-    if (!(await fileExists(path.join(BOOKINGS_DIR, `${candidate}.json`)))) {
+    if (!(await fileExists(safeJoin(BOOKINGS_DIR, `${candidate}.json`)))) {
       return candidate
     }
   }
@@ -375,9 +567,11 @@ async function resolveUniqueId(baseId) {
 }
 
 // ── API: Importar reserva desde email (Claude AI) ────────────────────────────
-app.post('/api/import-booking', async (req, res) => {
+app.post('/api/import-booking', requireAdmin, async (req, res) => {
   try {
-    const { emailText } = req.body
+    const { emailText } = req.body || {}
+    if (typeof emailText !== 'string' || emailText.length > 60_000)
+      return res.status(400).json({ ok: false, error: 'Texto de email inválido o demasiado largo' })
     if (!emailText?.trim()) return res.status(400).json({ ok: false, error: 'Falta el texto del email' })
 
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -529,21 +723,28 @@ REGLAS DE ORO — OTROS:
 })
 
 // ── API: Guardar reserva ──────────────────────────────────────────────────────
-app.post('/api/booking', async (req, res) => {
+app.post('/api/booking', requireAdmin, async (req, res) => {
   try {
-    const { id, data, notify } = req.body
-    if (!id || !data) return res.status(400).json({ ok: false, error: 'Faltan id o data' })
+    const { id, data, notify } = req.body || {}
+    if (!id || !data || typeof data !== 'object' || Array.isArray(data))
+      return res.status(400).json({ ok: false, error: 'Faltan id o data' })
 
-    const filePath = path.join(BOOKINGS_DIR, `${id}.json`)
+    const filePath = safeJoin(BOOKINGS_DIR, `${id}.json`)
     const isNew    = !(await fileExists(filePath))
 
     // Leer reserva anterior para detectar cambios (solo si existe)
     let oldData = null
     if (!isNew) {
       try { oldData = JSON.parse(await readFile(filePath, 'utf-8')) } catch {}
+      // Nunca perder las credenciales si el cliente no las envió
+      if (oldData) {
+        if (data.password === undefined && oldData.password !== undefined) data.password = oldData.password
+        if (data.usuario  === undefined && oldData.usuario  !== undefined) data.usuario  = oldData.usuario
+      }
+      await backupBooking(id, filePath)
     }
 
-    await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
+    await writeAtomic(filePath, JSON.stringify(data, null, 2))
     console.log(`[API] Reserva guardada: ${id}`)
 
     let notifResult = null
@@ -591,28 +792,29 @@ app.post('/api/booking', async (req, res) => {
     res.json({ ok: true, isNew, notifResult })
   } catch (e) {
     console.error('[API] Error saving booking:', e.message)
-    res.status(500).json({ ok: false, error: e.message })
+    fail(res, e)
   }
 })
 
 // ── API: Eliminar reserva ─────────────────────────────────────────────────────
-app.delete('/api/booking/:id', async (req, res) => {
+app.delete('/api/booking/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
-    const filePath = path.join(BOOKINGS_DIR, `${id}.json`)
+    const filePath = safeJoin(BOOKINGS_DIR, `${id}.json`)
     if (!(await fileExists(filePath)))
       return res.status(404).json({ ok: false, error: 'Reserva no encontrada' })
+    await backupBooking(id, filePath)   // queda recuperable en DATA_DIR/backups/<id>/
     await unlink(filePath)
     console.log(`[API] Reserva eliminada: ${id}`)
     res.json({ ok: true })
   } catch (e) {
     console.error('[API] Error eliminando reserva:', e.message)
-    res.status(500).json({ ok: false, error: e.message })
+    fail(res, e)
   }
 })
 
 // ── API: Notificaciones manuales ─────────────────────────────────────────────
-app.post('/api/notify/summary', async (req, res) => {
+app.post('/api/notify/summary', requireAdmin, async (req, res) => {
   try {
     const { booking } = req.body
     if (!booking) return res.status(400).json({ ok: false, error: 'Falta booking' })
@@ -627,7 +829,7 @@ app.post('/api/notify/summary', async (req, res) => {
   }
 })
 
-app.post('/api/notify/update', async (req, res) => {
+app.post('/api/notify/update', requireAdmin, async (req, res) => {
   try {
     const { booking } = req.body
     if (!booking) return res.status(400).json({ ok: false, error: 'Falta booking' })
@@ -643,7 +845,7 @@ app.post('/api/notify/update', async (req, res) => {
 })
 
 // ── API: Diagnóstico del sistema ─────────────────────────────────────────────
-app.get('/api/status', async (req, res) => {
+app.get('/api/status', requireAdmin, async (req, res) => {
   try {
     const files = await readdir(BOOKINGS_DIR).catch(() => [])
     const testFile = path.join(BOOKINGS_DIR, '_test_write.tmp')
@@ -667,7 +869,7 @@ app.get('/api/status', async (req, res) => {
 })
 
 // ── API: Test Anthropic ───────────────────────────────────────────────────────
-app.get('/api/test-anthropic', async (req, res) => {
+app.get('/api/test-anthropic', requireAdmin, async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return res.json({ ok: false, error: 'ANTHROPIC_API_KEY no configurado' })
   try {
@@ -689,7 +891,7 @@ app.get('/api/test-anthropic', async (req, res) => {
 })
 
 // ── API: Test de email ────────────────────────────────────────────────────────
-app.get('/api/test-email', async (req, res) => {
+app.get('/api/test-email', requireAdmin, async (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const cfg = { resendKeySet: !!process.env.RESEND_API_KEY }
   console.log('[API] Test email – config:', cfg)
@@ -713,7 +915,7 @@ async function loadGuidesIndex() {
   try { return JSON.parse(await readFile(GUIDES_INDEX, 'utf-8')) } catch { return [] }
 }
 async function saveGuidesIndex(data) {
-  await writeFile(GUIDES_INDEX, JSON.stringify(data, null, 2), 'utf-8')
+  await writeAtomic(GUIDES_INDEX, JSON.stringify(data, null, 2))
 }
 
 // Listar todas las guías
@@ -731,10 +933,13 @@ app.get('/api/guides', async (req, res) => {
 })
 
 // Crear o actualizar una guía (metadata)
-app.post('/api/guides', async (req, res) => {
+app.post('/api/guides', requireAdmin, async (req, res) => {
   try {
-    const { guide } = req.body
+    const { guide } = req.body || {}
     if (!guide?.id || !guide?.nombre) return res.status(400).json({ ok: false, error: 'Faltan campos' })
+    // id y archivo se usan como nombre de archivo: deben ser nombres simples
+    safeJoin(GUIDES_DIR, `${guide.id}.pdf`)
+    if (guide.archivo !== undefined && guide.archivo !== '') safeJoin(GUIDES_DIR, guide.archivo)
     const guides = await loadGuidesIndex()
     const idx = guides.findIndex(g => g.id === guide.id)
     if (idx >= 0) {
@@ -746,12 +951,12 @@ app.post('/api/guides', async (req, res) => {
     console.log(`[API] Guía guardada: ${guide.id}`)
     res.json({ ok: true })
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message })
+    fail(res, e)
   }
 })
 
 // Eliminar una guía
-app.delete('/api/guides/:id', async (req, res) => {
+app.delete('/api/guides/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
     const guides = await loadGuidesIndex()
@@ -760,7 +965,7 @@ app.delete('/api/guides/:id', async (req, res) => {
     await saveGuidesIndex(updated)
     // Eliminar PDF si existe
     if (guide?.archivo) {
-      await unlink(path.join(GUIDES_DIR, guide.archivo)).catch(() => {})
+      await unlink(safeJoin(GUIDES_DIR, guide.archivo)).catch(() => {})
     }
     console.log(`[API] Guía eliminada: ${id}`)
     res.json({ ok: true })
@@ -771,6 +976,7 @@ app.delete('/api/guides/:id', async (req, res) => {
 
 // Subir PDF de una guía
 app.post('/api/upload-guide/:id',
+  requireAdmin,
   express.raw({ type: ['application/pdf', 'application/octet-stream'], limit: '30mb' }),
   async (req, res) => {
     try {
@@ -780,12 +986,14 @@ app.post('/api/upload-guide/:id',
       if (!guide) return res.status(404).json({ ok: false, error: 'Guía no encontrada' })
 
       const filename = guide.archivo || `${id}.pdf`
-      await writeFile(path.join(GUIDES_DIR, filename), req.body)
+      const target   = safeJoin(GUIDES_DIR, filename)
+      if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ ok: false, error: 'Archivo vacío' })
+      await writeFile(target, req.body)
       console.log(`[API] PDF guía guardado: ${filename}`)
       res.json({ ok: true, url: `/guides/${filename}` })
     } catch (e) {
       console.error('[API] Error subiendo PDF guía:', e.message)
-      res.status(500).json({ ok: false, error: e.message })
+      fail(res, e)
     }
   }
 )
@@ -820,9 +1028,16 @@ app.get('/api/promo', async (req, res) => {
   }
 })
 
-app.post('/api/promo', async (req, res) => {
+app.post('/api/promo', requireAdmin, async (req, res) => {
   try {
-    await writeFile(PROMO_FILE, JSON.stringify(req.body, null, 2), 'utf-8')
+    const b = req.body || {}
+    // Solo links http(s) en el botón del popup (bloquea javascript:, data:, etc.)
+    const okUrl = u => typeof u === 'string' && (u === '' || /^https?:\/\//i.test(u))
+    const okImg = u => typeof u === 'string' && (u === '' || u.startsWith('/promo/') || /^https?:\/\//i.test(u))
+    if (!okUrl(b.ctaUrl ?? '') || !okImg(b.imagen ?? ''))
+      return res.status(400).json({ ok: false, error: 'El link del botón debe empezar con http:// o https://' })
+    const clean = { ...b, activa: !!b.activa, ctaLabel: typeof b.ctaLabel === 'string' ? b.ctaLabel.slice(0, 120) : '' }
+    await writeAtomic(PROMO_FILE, JSON.stringify(clean, null, 2))
     res.json({ ok: true })
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
@@ -830,6 +1045,7 @@ app.post('/api/promo', async (req, res) => {
 })
 
 app.post('/api/upload-promo',
+  requireAdmin,
   express.raw({ type: ['image/jpeg', 'image/png', 'image/webp', 'application/octet-stream'], limit: '10mb' }),
   async (req, res) => {
     try {
@@ -867,8 +1083,8 @@ app.get('/promo/:filename', async (req, res) => {
 
 // ── Ruta explícita para PDFs de vouchers (DATA_DIR/bookings/pdfs/) ─────────────
 app.get('/bookings/pdfs/:filename', async (req, res) => {
-  const filePath = path.join(PDFS_DIR, req.params.filename)
   try {
+    const filePath = safeJoin(PDFS_DIR, req.params.filename)
     await access(filePath)
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader('Content-Disposition', `inline; filename="${req.params.filename}"`)
@@ -883,29 +1099,42 @@ app.get('/bookings/pdfs/:filename', async (req, res) => {
 // ── Ruta explícita para bookings (SIEMPRE desde DATA_DIR, nunca desde public/) ─
 // Esto evita que public/bookings/*.json (archivos del repo git) tape los cambios
 app.get('/bookings/:id.json', async (req, res) => {
-  const filePath = path.join(BOOKINGS_DIR, `${req.params.id}.json`)
-  try {
-    const data = await readFile(filePath, 'utf-8')
+  const ip = clientIp(req)
+  const admin = isAdminReq(req)
+
+  // La vista del viajero nunca necesita usuario/contraseña. Con ADMIN_ENFORCE=1 se
+  // quitan salvo que el pedido venga del panel (con token). En modo permisivo se
+  // sirve completo para no romper pestañas del panel abiertas con la versión vieja.
+  const send = (raw) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
-    res.send(data)
-  } catch {
-    // Fallback: buscar en public/bookings (archivos semilla del repo)
-    const fallback = path.join(PUBLIC_DIR, 'bookings', `${req.params.id}.json`)
+    if (!ADMIN_ENFORCE || admin) return res.send(raw)
     try {
-      const data = await readFile(fallback, 'utf-8')
-      res.setHeader('Content-Type', 'application/json; charset=utf-8')
-      res.setHeader('Cache-Control', 'no-store')
-      res.send(data)
+      const d = JSON.parse(raw)
+      delete d.password; delete d.usuario
+      res.json(d)
+    } catch { res.send(raw) }
+  }
+
+  if (!admin && lookupLimiter.blocked(ip)) return res.status(429).json({ error: 'Demasiados intentos' })
+
+  try {
+    const filePath = safeJoin(BOOKINGS_DIR, `${req.params.id}.json`)
+    try {
+      return send(await readFile(filePath, 'utf-8'))
     } catch {
-      res.status(404).json({ error: 'Reserva no encontrada' })
+      // Fallback: buscar en public/bookings (archivos semilla del repo)
+      const fallback = safeJoin(path.join(PUBLIC_DIR, 'bookings'), `${req.params.id}.json`)
+      return send(await readFile(fallback, 'utf-8'))
     }
+  } catch (e) {
+    if (!admin) lookupLimiter.add(ip)
+    res.status(e.status || 404).json({ error: 'Reserva no encontrada' })
   }
 })
 
 // ── Cron: recordatorios de fechas límite de pago ─────────────────────────────
-const REMINDERS_FILE  = path.join(__dirname, 'public', 'reminders-sent.json')
-const REMINDER_DAYS   = [7, 5, 3, 1, 0] // días antes del vencimiento para avisar al viajero
+const REMINDER_DAYS  = [7, 5, 3, 1, 0] // días antes del vencimiento para avisar al viajero
 const CAROLINA_EMAIL  = 'carolina@fasttravelvacation.com'
 const CAROLINA_ALERT_DAYS = [5] // días en que también se avisa a Carolina
 
@@ -913,7 +1142,7 @@ async function loadRemindersSent() {
   try { return JSON.parse(await readFile(REMINDERS_FILE, 'utf-8')) } catch { return {} }
 }
 async function saveRemindersSent(data) {
-  await writeFile(REMINDERS_FILE, JSON.stringify(data, null, 2), 'utf-8').catch(() => {})
+  await writeAtomic(REMINDERS_FILE, JSON.stringify(data, null, 2)).catch(() => {})
 }
 
 async function runPaymentReminders() {
@@ -957,13 +1186,13 @@ async function runPaymentReminders() {
   <p style="color:#888;margin-top:0;font-size:13px;">Mama Mouse – ${new Date().toLocaleString('es-AR')}</p>
   <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
   <table style="width:100%;border-collapse:collapse;font-size:15px;">
-    <tr><td style="padding:8px 0;color:#666;width:160px;"><strong>Viajero</strong></td><td>${booking.titular || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Reserva</strong></td><td>${booking.id || '—'}</td></tr>
-    <tr><td style="padding:8px 0;color:#666;"><strong>Ítem</strong></td><td>${item.icono || ''} ${item.tipo}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;width:160px;"><strong>Viajero</strong></td><td>${esc(booking.titular) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Reserva</strong></td><td>${esc(booking.id) || '—'}</td></tr>
+    <tr><td style="padding:8px 0;color:#666;"><strong>Ítem</strong></td><td>${esc(item.icono)} ${esc(item.tipo)}</td></tr>
     <tr><td style="padding:8px 0;color:#666;"><strong>Saldo pendiente</strong></td><td style="color:#C62828;font-weight:700;">${saldoFmt}</td></tr>
     <tr><td style="padding:8px 0;color:#666;"><strong>Fecha límite</strong></td><td style="color:#E65100;font-weight:700;">${fechaFmt} (en ${days} días)</td></tr>
-    ${booking.email ? `<tr><td style="padding:8px 0;color:#666;"><strong>Email viajero</strong></td><td>${booking.email}</td></tr>` : ''}
-    ${booking.telefono ? `<tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${booking.telefono}</td></tr>` : ''}
+    ${booking.email ? `<tr><td style="padding:8px 0;color:#666;"><strong>Email viajero</strong></td><td>${esc(booking.email)}</td></tr>` : ''}
+    ${booking.telefono ? `<tr><td style="padding:8px 0;color:#666;"><strong>WhatsApp</strong></td><td>${esc(booking.telefono)}</td></tr>` : ''}
   </table>
   <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
   <p style="font-size:12px;color:#aaa;">Alerta automática generada por el sistema Mama Mouse</p>
