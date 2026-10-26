@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { localYMD } from '../booking'
 
 const DIAS  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -53,7 +54,7 @@ export default function CalendarAdmin({ onBack, onOpenBooking }) {
   const goToday = () => { setYear(today.getFullYear()); setMonth(today.getMonth()) }
 
   const calDays = getCalDays(year, month)
-  const todayStr = today.toISOString().slice(0, 10)
+  const todayStr = localYMD(today)
 
   // Map: dateStr → [booking, ...]  (all days the trip is active)
   const byDate = {}
@@ -65,7 +66,7 @@ export default function CalendarAdmin({ onBack, onOpenBooking }) {
     const cur = new Date(inicio + 'T00:00:00')
     const end = new Date(fin   + 'T00:00:00')
     while (cur <= end) {
-      const ds = cur.toISOString().slice(0, 10)
+      const ds = localYMD(cur)
       if (!byDate[ds]) byDate[ds] = []
       byDate[ds].push({ ...b, isStart: ds === inicio, isEnd: ds === fin })
       cur.setDate(cur.getDate() + 1)

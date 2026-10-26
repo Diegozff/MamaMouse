@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { localYMD } from '../booking'
 
 function formatDate(dateStr) {
   const [year, month, day] = dateStr.split('-')
@@ -86,7 +87,7 @@ function formatFechaNac(d) {
 
 // Alertas de vencimiento para el resumen
 function DeadlineAlerts({ items, onTabChange }) {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localYMD()
   const alertas = items
     .map(it => {
       if (!it.fechaLimite) return null

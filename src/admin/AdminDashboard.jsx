@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { localYMD } from '../booking'
 
 function diasHasta(dateStr) {
   if (!dateStr) return null
@@ -72,7 +73,7 @@ export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, 
   const sinPago        = bookings.filter(b => b.estado === 'pendiente').length
 
   // Próximos viajes (30 días)
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localYMD()
   const proximosViajes = bookings
     .filter(b => b.fechaViaje && b.fechaViaje >= today)
     .sort((a, b) => a.fechaViaje.localeCompare(b.fechaViaje))

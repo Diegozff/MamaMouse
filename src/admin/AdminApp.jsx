@@ -8,6 +8,7 @@ import GuidesAdmin     from './GuidesAdmin'
 import PromoAdmin      from './PromoAdmin'
 import CalendarAdmin   from './CalendarAdmin'
 import { getToken, clearToken, installAdminFetch } from './adminAuth'
+import { normalizeBooking } from '../booking'
 
 installAdminFetch()
 
@@ -184,7 +185,7 @@ function AdminInner() {
     try {
       const r = await fetch(`/api/admin/booking/${encodeURIComponent(id)}?t=${Date.now()}`)
       if (r.status === 401) return            // se pide la contraseña en el overlay
-      if (r.ok) setBooking(await r.json())
+      if (r.ok) setBooking(normalizeBooking(await r.json()))
       else if (r.status === 404) setBooking(emptyBooking(id))   // reserva nueva
       else { alert('No se pudo abrir la reserva.'); return }
       setBookingId(id)
@@ -201,7 +202,7 @@ function AdminInner() {
         if (r.status !== 401) alert('No se pudo abrir la reserva.')
         return
       }
-      setBooking(await r.json())
+      setBooking(normalizeBooking(await r.json()))
       setBookingId(id)
     } catch {
       alert('Error de conexión al abrir la reserva.')

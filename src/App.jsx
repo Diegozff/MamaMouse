@@ -11,6 +11,7 @@ import Benefits from './components/Benefits'
 import SplashScreen from './components/SplashScreen'
 import LoginForm from './components/LoginForm'
 import LandingPage from './components/LandingPage'
+import { normalizeBooking } from './booking'
 
 function getEstado(items = []) {
   let total = 0, paid = 0
@@ -69,7 +70,7 @@ function BookingView({ id, onLogout }) {
   useEffect(() => {
     fetch(`/bookings/${id}.json`)
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(d  => { setBooking(d); setStatus('ok') })
+      .then(d  => { setBooking(normalizeBooking(d)); setStatus('ok') })
       .catch(() => setStatus('error'))
   }, [id])
 

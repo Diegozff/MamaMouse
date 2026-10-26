@@ -96,6 +96,28 @@ function ViajerRow({ viajero, onChange, onRemove }) {
   )
 }
 
+/* ── Subida de PDF: devuelve la URL o avisa con un mensaje claro si falla ── */
+const MAX_PDF_MB = 20
+async function uploadPdf(file, bookingId, itemId) {
+  if (file.size > MAX_PDF_MB * 1024 * 1024) {
+    alert(`El PDF pesa ${(file.size / 1048576).toFixed(1)} MB y el máximo es ${MAX_PDF_MB} MB. Comprimilo e intentá de nuevo.`)
+    return null
+  }
+  try {
+    const r = await fetch(
+      `/api/upload-pdf/${encodeURIComponent(bookingId)}/${encodeURIComponent(itemId)}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: await file.arrayBuffer() }
+    )
+    if (r.status === 401) return null          // se pide la contraseña en el overlay; volvé a subir el archivo
+    const data = await r.json().catch(() => ({}))
+    if (r.ok && data.ok) return data.url
+    alert(`No se pudo subir el PDF (${r.status}): ${data.error || 'error del servidor'}`)
+  } catch {
+    alert('No se pudo subir el PDF: error de conexión.')
+  }
+  return null
+}
+
 /* ── Voucher row ── */
 function VoucherRow({ voucher, onChange, onRemove, bookingId }) {
   const [uploading, setUploading] = useState(false)
@@ -104,16 +126,10 @@ function VoucherRow({ voucher, onChange, onRemove, bookingId }) {
     const file = e.target.files[0]
     if (!file) return
     setUploading(true)
-    try {
-      const buf = await file.arrayBuffer()
-      const r = await fetch(
-        `/api/upload-pdf/${encodeURIComponent(bookingId)}/${encodeURIComponent(voucher.id)}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: buf }
-      )
-      const data = await r.json()
-      if (data.ok) onChange({ ...voucher, url: data.url })
-    } catch (err) { console.error(err) }
+    const url = await uploadPdf(file, bookingId, voucher.id)
+    if (url) onChange({ ...voucher, url })
     setUploading(false)
+    e.target.value = ''
   }
 
   return (
@@ -313,17 +329,10 @@ function HotelFields({ item, setField, bookingId }) {
     const file = e.target.files[0]
     if (!file) return
     setUploading(true)
-    try {
-      const buf = await file.arrayBuffer()
-      const r = await fetch(`/api/upload-pdf/${encodeURIComponent(bookingId)}/${encodeURIComponent(item.id)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/pdf' },
-        body: buf,
-      })
-      const data = await r.json()
-      if (data.ok) setField('pdfUrl', data.url)
-    } catch (err) { console.error(err) }
+    const url = await uploadPdf(file, bookingId, item.id)
+    if (url) setField('pdfUrl', url)
     setUploading(false)
+    e.target.value = ''
   }
 
   return (
