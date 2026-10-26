@@ -972,7 +972,7 @@ function Footer() {
             © {new Date().getFullYear()} Mama Mouse Viajes. Todos los derechos reservados.
           </p>
           <p className="lp-footer-disclaimer">
-            Mama Mouse Viajes es una agencia de viajes independiente. Los nombres, logos y marcas de Disney®, Universal Studios®, Walt Disney World®, Disneyland® y sus respectivos parques son propiedad exclusiva de The Walt Disney Company y Universal Parks & Resorts. No estamos afiliados, patrocinados ni respaldados oficialmente por estas empresas.
+            Mama Mouse Viajes es un agente de viajes independiente. Los nombres, logos y marcas de Disney®, Universal Studios®, Walt Disney World®, Disneyland® y sus respectivos parques son propiedad exclusiva de The Walt Disney Company y Universal Parks & Resorts. No estamos afiliados, patrocinados ni respaldados oficialmente por estas empresas.
           </p>
         </div>
       </div>
