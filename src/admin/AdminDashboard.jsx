@@ -94,7 +94,7 @@ export default function AdminDashboard({ onOpenBooking, onNewBooking, onImport, 
 
       {/* ── BIENVENIDA ── */}
       <div className="dash-hero">
-        <img src="/logo.png" alt="Mama Mouse" className="dash-logo" />
+        <img src="/logo.webp" alt="Mama Mouse" className="dash-logo" />
         <div>
           <div className="dash-hero-title">Bienvenida, Carolina ✨</div>
           <div className="dash-hero-sub">Panel de Administración · Mama Mouse</div>

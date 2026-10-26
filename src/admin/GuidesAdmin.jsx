@@ -357,7 +357,7 @@ export default function GuidesAdmin({ onBack }) {
       {/* Header */}
       <header className="admin-topbar admin-topbar-sticky">
         <div className="admin-topbar-brand">
-          <img src="/logo.png" alt="Mama Mouse" className="admin-topbar-logo" />
+          <img src="/logo.webp" alt="Mama Mouse" className="admin-topbar-logo" />
           <div>
             <div className="admin-topbar-name">MAMA MOUSE</div>
             <div className="admin-topbar-sub">Gestión de Guías</div>

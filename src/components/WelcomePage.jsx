@@ -2,7 +2,7 @@ export default function WelcomePage() {
   return (
     <div className="welcome-page">
       <div className="welcome-card">
-        <img src="/logo.png" alt="Mama Mouse" className="welcome-logo" />
+        <img src="/logo.webp" alt="Mama Mouse" className="welcome-logo" />
         <h1 className="welcome-title">Mama Mouse Viajes</h1>
         <p className="welcome-sub">Tu agencia especialista en Disney &amp; Universal</p>
 

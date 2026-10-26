@@ -11,7 +11,7 @@ export default function SplashScreen({ onDone }) {
 
   return (
     <div className={`splash ${fading ? 'splash-fading' : ''}`}>
-      <img src="/logo2.jpeg" alt="Mama Mouse" className="splash-logo" />
+      <img src="/logo2.webp" alt="Mama Mouse" className="splash-logo" />
     </div>
   )
 }

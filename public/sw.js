@@ -4,6 +4,7 @@ const PRECACHE = [
   '/',
   '/index.html',
   '/logo.png',
+  '/logo.webp',
 ]
 
 self.addEventListener('install', e => {

@@ -29,6 +29,13 @@ const params  = new URLSearchParams(window.location.search)
 const isAdmin = params.has('admin')
 const urlId   = params.get('id')
 
+// Panel y reservas de viajeros: que los buscadores no los indexen
+if (isAdmin || urlId) {
+  const m = document.createElement('meta')
+  m.name = 'robots'; m.content = 'noindex, nofollow'
+  document.head.appendChild(m)
+}
+
 /* ── Componente principal ─────────────────────────────────────────────── */
 export default function App() {
   const [loggedId, setLoggedId] = useState(() => sessionStorage.getItem('mm_booking_id'))

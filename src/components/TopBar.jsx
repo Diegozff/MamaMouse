@@ -5,7 +5,7 @@ export default function TopBar({ titular, destinos, estado, onLogout }) {
     <header className="topbar">
       <div className="topbar-brand">
         <div className="topbar-logo">
-          <img src="/logo.png" alt="Mama Mouse" />
+          <img src="/logo.webp" alt="Mama Mouse" />
         </div>
         <span className="topbar-name">MAMA MOUSE</span>
       </div>

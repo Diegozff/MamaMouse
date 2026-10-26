@@ -156,7 +156,7 @@ function Navbar({ onLoginClick }) {
     <nav className={`lp-nav ${scrolled ? 'lp-nav-solid' : ''}`}>
       <div className="lp-nav-inner">
         <div className="lp-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src="/logo.png" alt="Mama Mouse" className="lp-nav-logo" />
+          <img src="/logo.webp" alt="Mama Mouse" className="lp-nav-logo" />
           <div className="lp-nav-brand-texts">
             <span className="lp-nav-brand-text">MAMA MOUSE</span>
             <div className="lp-nav-fasttravel">
@@ -259,7 +259,7 @@ function SobreMamaMouse({ onCotizarClick }) {
         <div className="lp-sobre-card">
           <div className="lp-sobre-photo">
             <div className="lp-sobre-photo-frame">
-              <img src="/logo2.jpeg" alt="Mama Mouse" className="lp-sobre-img" />
+              <img src="/logo2.webp" alt="Mama Mouse" className="lp-sobre-img" />
               <div className="lp-sobre-badge-float">🌟 Agente Oficial</div>
             </div>
           </div>
@@ -928,7 +928,7 @@ function Footer() {
       <div className="lp-container">
         <div className="lp-footer-grid">
           <div className="lp-footer-brand">
-            <img src="/logo.png" alt="Mama Mouse" className="lp-footer-logo" />
+            <img src="/logo.webp" alt="Mama Mouse" className="lp-footer-logo" />
             <p className="lp-footer-tagline">No vendo viajes...<br /><em>hago que el tuyo sea la mejor experiencia de tu vida.</em></p>
             <div className="lp-footer-respaldo">
               <span className="lp-footer-respaldo-label">Respaldada por</span>

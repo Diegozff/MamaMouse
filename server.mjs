@@ -108,9 +108,11 @@ const lookupLimiter = makeLimiter(10 * 60_000, 40)       // ids inexistentes por
 const cotizarLimiter = makeLimiter(60 * 60_000, 5)
 const cotizarGlobal  = makeLimiter(60 * 60_000, 60)
 const resenaLimiter  = makeLimiter(60 * 60_000, 5)
+const confirmEmailLimiter = makeLimiter(24 * 60 * 60_000, 1)   // 1 confirmación por email por día
+const isEmail = v => /^[^s@<>"]{1,64}@[^s@<>"]{1,255}.[^s@<>"]{2,}$/.test(v)
 
 // ── Email vía Brevo API (HTTPS – funciona en Railway sin puertos SMTP) ────────
-async function sendEmail({ to, subject, html, text }) {
+async function sendEmail({ to, subject, html, text, replyTo }) {
   const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) throw new Error('BREVO_API_KEY no configurado en Railway Variables')
 
@@ -122,6 +124,7 @@ async function sendEmail({ to, subject, html, text }) {
     body: JSON.stringify({
       sender:      { name: 'Mama Mouse', email: senderEmail },
       to:          [{ email: to }],
+      ...(replyTo ? { replyTo: { email: replyTo } } : {}),
       subject,
       htmlContent: html,
       textContent: text || subject,
@@ -383,8 +386,29 @@ app.post('/api/cotizar', async (req, res) => {
       to:      'dm.zumoffen@gmail.com',
       subject: `🐭 Nueva consulta: ${nombre} → ${destino || 'sin destino'}`,
       html:    htmlBody,
+      replyTo: isEmail(email) ? email : undefined,
     }).then(() => console.log(`[API] Email cotización enviado a dm.zumoffen@gmail.com`))
       .catch(e => console.warn('[API] Error enviando email cotización:', e.message))
+
+    // ── Confirmación al cliente (1 por email por día, para que no sirva de relé de spam)
+    if (isEmail(email) && !confirmEmailLimiter.blocked(email.toLowerCase())) {
+      confirmEmailLimiter.add(email.toLowerCase())
+      const primerNombre = esc(nombre.split(' ')[0] || '')
+      sendEmail({
+        to:      email,
+        subject: '🐭 Recibimos tu consulta – Mama Mouse',
+        replyTo: process.env.REPLY_TO || 'dm.zumoffen@gmail.com',
+        html: `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fafafa;border-radius:12px;">
+  <h2 style="color:#9B7EC8;margin-bottom:4px;">🐭 ¡Gracias${primerNombre ? ', ' + primerNombre : ''}!</h2>
+  <p style="color:#555;line-height:1.7;">Recibimos tu consulta${destino ? ' para <strong>' + esc(destino) + '</strong>' : ''}. En las próximas <strong>24 horas</strong> nos ponemos en contacto con vos para empezar a diseñar tu viaje.</p>
+  <p style="color:#555;line-height:1.7;">Si querés agilizar, escribinos por WhatsApp: <a href="https://wa.me/5493412143631" style="color:#9B7EC8;">+54 9 341 214 3631</a>.</p>
+  <hr style="border:none;border-top:1px solid #eee;margin:16px 0"/>
+  <p style="font-size:12px;color:#aaa;">Mama Mouse · Agente de viajes · www.mamamouse.com.ar<br/>Recibís este mail porque completaste el formulario de cotización de nuestro sitio.</p>
+</div>`,
+      }).then(() => console.log('[API] Confirmación enviada al cliente'))
+        .catch(e => console.warn('[API] Error enviando confirmación al cliente:', e.message))
+    }
 
     // Notificar por WhatsApp si está configurado
     const WA_TOKEN = process.env.TWILIO_ACCOUNT_SID
@@ -750,7 +774,7 @@ app.post('/api/booking', requireAdmin, async (req, res) => {
     let notifResult = null
     const contact = data.email || data.telefono
 
-    if (contact) {
+    if (contact && notify !== 'none') {   // notify:'none' = guardar sin avisar al viajero
       if (isNew) {
         // ── Nueva reserva: enviar bienvenida ──────────────────────────────
         console.log(`[API] Nueva reserva – enviando bienvenida a ${contact}`)
@@ -1231,8 +1255,15 @@ app.get('/api/run-reminders', async (req, res) => {
 })
 
 // ── Archivos estáticos ────────────────────────────────────────────────────────
-app.use(express.static(DIST_DIR))
-app.use(express.static(PUBLIC_DIR))
+app.use('/assets', express.static(path.join(DIST_DIR, 'assets'), { maxAge: '365d', immutable: true }))
+// Imágenes: 1 día de caché (el HTML y los JSON siguen sin caché)
+const staticOpts = {
+  setHeaders(res, file) {
+    if (/.(png|jpe?g|webp|svg|ico)$/i.test(file)) res.setHeader('Cache-Control', 'public, max-age=86400')
+  },
+}
+app.use(express.static(DIST_DIR, staticOpts))
+app.use(express.static(PUBLIC_DIR, staticOpts))
 
 // ── SPA Fallback: todas las rutas sirven index.html ───────────────────────────
 app.get('/{*path}', (req, res) => {

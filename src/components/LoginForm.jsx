@@ -34,7 +34,7 @@ export default function LoginForm({ onLogin, onBack }) {
         {onBack && (
           <button className="login-back-btn" onClick={onBack}>← Volver</button>
         )}
-        <img src="/logo2.jpeg" alt="Mama Mouse" className="login-logo" />
+        <img src="/logo2.webp" alt="Mama Mouse" className="login-logo" />
 
         <h2 className="login-title">Accedé a tu reserva</h2>
         <p className="login-sub">Ingresá con los datos que te dio tu agente</p>

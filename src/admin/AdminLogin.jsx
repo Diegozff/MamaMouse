@@ -23,7 +23,7 @@ export default function AdminLogin({ onLogin, expired = false }) {
   return (
     <div className="admin-login">
       <div className="admin-login-card">
-        <img src="/logo.png" alt="Mama Mouse" className="admin-login-logo" />
+        <img src="/logo.webp" alt="Mama Mouse" className="admin-login-logo" />
         <h2 className="admin-login-title">Panel de Administración</h2>
         <p className="admin-login-sub">
           {expired ? 'Tu sesión venció. Ingresá de nuevo: no se pierde lo que tenés en pantalla.' : 'Mama Mouse · Agente Oficial'}

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /bookings/
+Disallow: /*?admin
+Disallow: /*?id=
+
+Sitemap: https://www.mamamouse.com.ar/sitemap.xml

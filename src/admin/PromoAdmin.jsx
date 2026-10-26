@@ -66,7 +66,7 @@ export default function PromoAdmin({ onBack }) {
     <div className="admin-shell">
       <header className="admin-topbar">
         <div className="admin-topbar-brand">
-          <img src="/logo.png" alt="Mama Mouse" className="admin-topbar-logo" />
+          <img src="/logo.webp" alt="Mama Mouse" className="admin-topbar-logo" />
           <div>
             <div className="admin-topbar-name">MAMA MOUSE</div>
             <div className="admin-topbar-sub">Popup de Novedad</div>
